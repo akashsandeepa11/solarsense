@@ -1,0 +1,29 @@
+/*
+ * Custom SCSS Utility Library
+ * A modular, utility-first CSS framework with hover states and responsive design
+ */
+
+// Import base styles and variables
+@use "base/variables";
+@use "base/reset";
+
+// Import utility classes
+@use "utilities/display";
+@use "utilities/flexbox";
+@use "utilities/positioning";
+@use "utilities/spacing";
+@use "utilities/sizing";
+@use "utilities/colors";
+@use "utilities/typography";
+@use "utilities/borders";
+@use "utilities/effects";
+@use "utilities/layout";
+@use "utilities/interactivity";
+
+// Import components
+@use "components/buttons";
+@use "components/cards";
+@use "components/forms";
+
+// Import responsive utilities (must be last)
+@use "utilities/responsive";

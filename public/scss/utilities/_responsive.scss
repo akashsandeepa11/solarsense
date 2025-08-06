@@ -1,0 +1,166 @@
+@use "../base/variables" as *;
+
+// Responsive utilities
+@each $breakpoint, $value in $breakpoints {
+  @media (min-width: $value) {
+    // Display
+    .#{$breakpoint}\:block {
+      display: block;
+    }
+    .#{$breakpoint}\:inline-block {
+      display: inline-block;
+    }
+    .#{$breakpoint}\:inline {
+      display: inline;
+    }
+    .#{$breakpoint}\:flex {
+      display: flex;
+    }
+    .#{$breakpoint}\:inline-flex {
+      display: inline-flex;
+    }
+    .#{$breakpoint}\:grid {
+      display: grid;
+    }
+    .#{$breakpoint}\:hidden {
+      display: none;
+    }
+
+    // Flexbox
+    .#{$breakpoint}\:flex-row {
+      flex-direction: row;
+    }
+    .#{$breakpoint}\:flex-col {
+      flex-direction: column;
+    }
+    .#{$breakpoint}\:flex-wrap {
+      flex-wrap: wrap;
+    }
+    .#{$breakpoint}\:flex-nowrap {
+      flex-wrap: nowrap;
+    }
+    .#{$breakpoint}\:items-start {
+      align-items: flex-start;
+    }
+    .#{$breakpoint}\:items-center {
+      align-items: center;
+    }
+    .#{$breakpoint}\:items-end {
+      align-items: flex-end;
+    }
+    .#{$breakpoint}\:justify-start {
+      justify-content: flex-start;
+    }
+    .#{$breakpoint}\:justify-center {
+      justify-content: center;
+    }
+    .#{$breakpoint}\:justify-end {
+      justify-content: flex-end;
+    }
+    .#{$breakpoint}\:justify-between {
+      justify-content: space-between;
+    }
+
+    // Spacing
+    @each $key, $spacing-value in $spacing {
+      // Margin
+      .#{$breakpoint}\:m-#{$key} {
+        margin: $spacing-value;
+      }
+      .#{$breakpoint}\:mx-#{$key} {
+        margin-left: $spacing-value;
+        margin-right: $spacing-value;
+      }
+      .#{$breakpoint}\:my-#{$key} {
+        margin-top: $spacing-value;
+        margin-bottom: $spacing-value;
+      }
+      .#{$breakpoint}\:mt-#{$key} {
+        margin-top: $spacing-value;
+      }
+      .#{$breakpoint}\:mr-#{$key} {
+        margin-right: $spacing-value;
+      }
+      .#{$breakpoint}\:mb-#{$key} {
+        margin-bottom: $spacing-value;
+      }
+      .#{$breakpoint}\:ml-#{$key} {
+        margin-left: $spacing-value;
+      }
+
+      // Padding
+      .#{$breakpoint}\:p-#{$key} {
+        padding: $spacing-value;
+      }
+      .#{$breakpoint}\:px-#{$key} {
+        padding-left: $spacing-value;
+        padding-right: $spacing-value;
+      }
+      .#{$breakpoint}\:py-#{$key} {
+        padding-top: $spacing-value;
+        padding-bottom: $spacing-value;
+      }
+      .#{$breakpoint}\:pt-#{$key} {
+        padding-top: $spacing-value;
+      }
+      .#{$breakpoint}\:pr-#{$key} {
+        padding-right: $spacing-value;
+      }
+      .#{$breakpoint}\:pb-#{$key} {
+        padding-bottom: $spacing-value;
+      }
+      .#{$breakpoint}\:pl-#{$key} {
+        padding-left: $spacing-value;
+      }
+
+      // Width and height
+      .#{$breakpoint}\:w-#{$key} {
+        width: $spacing-value;
+      }
+      .#{$breakpoint}\:h-#{$key} {
+        height: $spacing-value;
+      }
+    }
+
+    // Typography
+    .#{$breakpoint}\:text-xs {
+      font-size: 0.75rem;
+      line-height: 1rem;
+    }
+    .#{$breakpoint}\:text-sm {
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+    }
+    .#{$breakpoint}\:text-base {
+      font-size: 1rem;
+      line-height: 1.5rem;
+    }
+    .#{$breakpoint}\:text-lg {
+      font-size: 1.125rem;
+      line-height: 1.75rem;
+    }
+    .#{$breakpoint}\:text-xl {
+      font-size: 1.25rem;
+      line-height: 1.75rem;
+    }
+    .#{$breakpoint}\:text-2xl {
+      font-size: 1.5rem;
+      line-height: 2rem;
+    }
+    .#{$breakpoint}\:text-3xl {
+      font-size: 1.875rem;
+      line-height: 2.25rem;
+    }
+
+    // Text alignment
+    .#{$breakpoint}\:text-left {
+      text-align: left;
+    }
+    .#{$breakpoint}\:text-center {
+      text-align: center;
+    }
+    .#{$breakpoint}\:text-right {
+      text-align: right;
+    }
+  }
+}
