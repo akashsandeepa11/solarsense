@@ -57,8 +57,17 @@ $spacing: (
 ) !default;
 
 // Typography
-$font-family-primary: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
-  sans-serif !default;
+// Load local Roboto (Regular) and set as primary font
+@font-face {
+  font-family: "Roboto";
+  src: url("../fonts/Roboto-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+$font-family-primary: "Roboto", "Poppins", -apple-system, BlinkMacSystemFont,
+  "Segoe UI", sans-serif !default;
 $font-family-secondary: Georgia, "Times New Roman", serif !default;
 $font-family-mono: "Fira Code", Consolas, monospace !default;
 
@@ -265,11 +274,16 @@ html {
   scroll-behavior: smooth;
 }
 
-body {
+
+body,
+input,
+textarea,
+select,
+button {
   min-height: 100%;
-  font-family: $font-family-primary;
+  font-family: $font-family-primary !important;
   font-size: font-size(base);
-  font-weight: map.get($font-weights, normal);
+  font-weight: 400 !important;
   line-height: 1.5;
   color: color(text);
   background-color: color(background);

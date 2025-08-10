@@ -39,14 +39,13 @@ if (!defined(constant_name: 'INPUT_BEM_ASSETS')):
         left: 0;
         top: 0;
         padding: 0.25rem;
-        margin: 0.5rem;
-        margin-top: 0.4rem;
+        margin-top: 0.6rem;
         white-space: nowrap;
         transform: translate(0, 0);
         transform-origin: 0 0;
         background: var(--color-background, #fff); /* Fallback color */
         transition: transform 120ms ease-in, color 120ms ease-in;
-        font-weight: 600; /* Corresponds to semibold */
+        font-weight: 400; /* Corresponds to semibold */
         line-height: 1.2;
         color: #9ca3af; /* A neutral placeholder color */
         pointer-events: none;
