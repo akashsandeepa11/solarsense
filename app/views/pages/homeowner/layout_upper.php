@@ -1,5 +1,7 @@
 <?php require APPROOT.'/views/inc/header.php'; ?>
     
+    
+
     <!-- Navbar/Top Bar Component -->
     <header class="h-16 bg-[#FFFFFF] border-b border-gray-200 flex items-center justify-between px-6">
         <div class="flex items-center">
@@ -27,6 +29,6 @@
             </div>
         </div>
     </header>
-<body>
+
 
  

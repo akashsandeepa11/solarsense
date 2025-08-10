@@ -2,7 +2,7 @@
  
 <div class="h-screen flex ">
 
-  <!-- Left Section -->
+  <!-- Left Section --> 
   <div class="w-1/2 bg-orange-500 flex items-center justify-center text-white p-10">
     <div>
       <h1 class="text-4xl font-bold mb-2">SolarSense</h1>

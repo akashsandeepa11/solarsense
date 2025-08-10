@@ -1,29 +1,1113 @@
-/*
- * Custom SCSS Utility Library
- * A modular, utility-first CSS framework with hover states and responsive design
- */
+// =============================================================================
+// CUSTOM CSS LIBRARY - MAIN SCSS FILE
+// =============================================================================
 
-// Import base styles and variables
-@use "base/variables";
-@use "base/reset";
+@use "sass:map";
+@use "sass:math";
+@use "sass:color";
+@use "sass:list";
 
-// Import utility classes
-@use "utilities/display";
-@use "utilities/flexbox";
-@use "utilities/positioning";
-@use "utilities/spacing";
-@use "utilities/sizing";
-@use "utilities/colors";
-@use "utilities/typography";
-@use "utilities/borders";
-@use "utilities/effects";
-@use "utilities/layout";
-@use "utilities/interactivity";
+// =============================================================================
+// 1. CONFIGURATION & VARIABLES
+// =============================================================================
 
-// Import components
-@use "components/buttons";
-@use "components/cards";
-@use "components/forms";
+// Color Palette (Based on your provided colors)
+$colors: (
+  primary: #fe9630,
+  secondary: #0d47a1,
+  accent: #03a9f4,
+  success: #4caf50,
+  warning: #ffc107,
+  error: #f44336,
+  surface: #ffffff,
+  text: #212121,
+  background: #f5f5f5,
+) !default;
 
-// Import responsive utilities (must be last)
-@use "utilities/responsive";
+// Spacing Scale
+$spacing-base: 1rem !default;
+$spacing: (
+  0: 0,
+  1: $spacing-base * 0.25,
+  // 4px
+  2: $spacing-base * 0.5,
+  // 8px
+  3: $spacing-base * 0.75,
+  // 12px
+  4: $spacing-base,
+  // 16px
+  5: $spacing-base * 1.25,
+  // 20px
+  6: $spacing-base * 1.5,
+  // 24px
+  8: $spacing-base * 2,
+  // 32px
+  10: $spacing-base * 2.5,
+  // 40px
+  12: $spacing-base * 3,
+  // 48px
+  16: $spacing-base * 4,
+  // 64px
+  20: $spacing-base * 5,
+  // 80px
+  24: $spacing-base * 6,
+  // 96px
+  32: $spacing-base * 8,
+  // 128px
+) !default;
+
+// Typography
+$font-family-primary: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
+  sans-serif !default;
+$font-family-secondary: Georgia, "Times New Roman", serif !default;
+$font-family-mono: "Fira Code", Consolas, monospace !default;
+
+$font-sizes: (
+  xs: 0.75rem,
+  // 12px
+  sm: 0.875rem,
+  // 14px
+  base: 1rem,
+  // 16px
+  lg: 1.125rem,
+  // 18px
+  xl: 1.25rem,
+  // 20px
+  2xl: 1.5rem,
+  // 24px
+  3xl: 1.875rem,
+  // 30px
+  4xl: 2.25rem,
+  // 36px
+  5xl: 3rem,
+  // 48px
+  6xl: 3.75rem,
+  // 60px
+) !default;
+
+$font-weights: (
+  thin: 100,
+  light: 300,
+  normal: 400,
+  medium: 500,
+  semibold: 600,
+  bold: 700,
+  extrabold: 800,
+  black: 900,
+) !default;
+
+// Breakpoints
+$breakpoints: (
+  xs: 0,
+  sm: 576px,
+  md: 768px,
+  lg: 992px,
+  xl: 1200px,
+  2xl: 1400px,
+) !default;
+
+// Grid System
+$grid-columns: 12 !default;
+$grid-gutter: 30px !default;
+$container-max-widths: (
+  sm: 540px,
+  md: 720px,
+  lg: 960px,
+  xl: 1140px,
+  2xl: 1320px,
+) !default;
+
+// Border Radius
+$border-radius: (
+  none: 0,
+  sm: 0.125rem,
+  // 2px
+  base: 0.25rem,
+  // 4px
+  md: 0.375rem,
+  // 6px
+  lg: 0.5rem,
+  // 8px
+  xl: 0.75rem,
+  // 12px
+  2xl: 1rem,
+  // 16px
+  3xl: 1.5rem,
+  // 24px
+  full: 9999px,
+) !default;
+
+// Box Shadow
+$shadows: (
+  none: none,
+  sm: (
+    0 1px 2px 0 rgba(0, 0, 0, 0.05),
+  ),
+  base: (
+    0 1px 3px 0 rgba(0, 0, 0, 0.1),
+    0 1px 2px 0 rgba(0, 0, 0, 0.06),
+  ),
+  md: (
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+  ),
+  lg: (
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05),
+  ),
+  xl: (
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04),
+  ),
+  "2xl": (
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+  ),
+  inner: (
+    inset 0 2px 4px 0 rgba(0, 0, 0, 0.06),
+  ),
+) !default;
+
+// Transitions
+$transition-duration: 0.15s !default;
+$transition-timing: ease-in-out !default;
+
+// =============================================================================
+// 2. MIXINS & FUNCTIONS
+// =============================================================================
+
+// Media Query Mixin
+@mixin media($breakpoint) {
+  @if map.has-key($breakpoints, $breakpoint) {
+    $value: map.get($breakpoints, $breakpoint);
+    @if $value == 0 {
+      @content;
+    } @else {
+      @media (min-width: $value) {
+        @content;
+      }
+    }
+  }
+}
+
+// Color Function
+@function color($key) {
+  @return map.get($colors, $key);
+}
+
+// Spacing Function
+@function spacing($key) {
+  @return map.get($spacing, $key);
+}
+
+// Font Size Function
+@function font-size($key) {
+  @return map.get($font-sizes, $key);
+}
+
+// Button Mixin
+@mixin button-variant(
+  $bg,
+  $color: white,
+  $hover-bg: color.adjust($bg, $lightness: -10%)
+) {
+  background-color: $bg;
+  color: $color;
+  border-color: $bg;
+
+  &:hover {
+    background-color: $hover-bg;
+    border-color: $hover-bg;
+    color: $color;
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 3px rgba($bg, 0.25);
+  }
+
+  &:active {
+    background-color: color.adjust($bg, $lightness: -15%);
+    border-color: color.adjust($bg, $lightness: -15%);
+  }
+}
+
+// Flexbox utilities mixin
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Truncate text mixin
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// =============================================================================
+// 3. BASE STYLES
+// =============================================================================
+
+// Reset & Base
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100%;
+  font-family: $font-family-primary;
+  font-size: font-size(base);
+  font-weight: map.get($font-weights, normal);
+  line-height: 1.5;
+  color: color(text);
+  background-color: color(background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// =============================================================================
+// 4. LAYOUT SYSTEM
+// =============================================================================
+
+// Container
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: spacing(4);
+  padding-right: spacing(4);
+
+  @each $breakpoint, $max-width in $container-max-widths {
+    @include media($breakpoint) {
+      max-width: $max-width;
+    }
+  }
+}
+
+.container-fluid {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: spacing(4);
+  padding-right: spacing(4);
+}
+
+// Grid System
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -(math.div($grid-gutter, 2));
+  margin-right: -(math.div($grid-gutter, 2));
+}
+
+@for $i from 1 through $grid-columns {
+  .col-#{$i} {
+    flex: 0 0 math.percentage(math.div($i, $grid-columns));
+    max-width: math.percentage(math.div($i, $grid-columns));
+    padding-left: math.div($grid-gutter, 2);
+    padding-right: math.div($grid-gutter, 2);
+  }
+}
+
+.col {
+  flex: 1 0 0%;
+  padding-left: math.div($grid-gutter, 2);
+  padding-right: math.div($grid-gutter, 2);
+}
+
+// Responsive Grid
+@each $breakpoint, $value in $breakpoints {
+  @if $value > 0 {
+    @include media($breakpoint) {
+      @for $i from 1 through $grid-columns {
+        .col-#{$breakpoint}-#{$i} {
+          flex: 0 0 math.percentage(math.div($i, $grid-columns));
+          max-width: math.percentage(math.div($i, $grid-columns));
+        }
+      }
+
+      .col-#{$breakpoint} {
+        flex: 1 0 0%;
+      }
+    }
+  }
+}
+
+// =============================================================================
+// 5. TYPOGRAPHY
+// =============================================================================
+
+// Headings
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-top: 0;
+  margin-bottom: spacing(4);
+  font-weight: map.get($font-weights, semibold);
+  line-height: 1.2;
+  color: color(text);
+}
+
+h1 {
+  font-size: font-size(5xl);
+}
+h2 {
+  font-size: font-size(4xl);
+}
+h3 {
+  font-size: font-size(3xl);
+}
+h4 {
+  font-size: font-size(2xl);
+}
+h5 {
+  font-size: font-size(xl);
+}
+h6 {
+  font-size: font-size(lg);
+}
+
+// Paragraph
+p {
+  margin-top: 0;
+  margin-bottom: spacing(4);
+}
+
+// Links
+a {
+  color: color(primary);
+  text-decoration: none;
+  transition: color $transition-duration $transition-timing;
+
+  &:hover {
+    color: color.adjust(color(primary), $lightness: -15%);
+    text-decoration: underline;
+  }
+}
+
+// Text Utilities
+.text-left {
+  text-align: left;
+}
+.text-center {
+  text-align: center;
+}
+.text-right {
+  text-align: right;
+}
+.text-justify {
+  text-align: justify;
+}
+
+@each $name, $weight in $font-weights {
+  .font-#{"" + $name} {
+    font-weight: $weight;
+  }
+}
+
+@each $name, $size in $font-sizes {
+  .text-#{$name} {
+    font-size: $size;
+  }
+}
+
+@each $name, $color-value in $colors {
+  .text-#{$name} {
+    color: $color-value;
+  }
+}
+
+.text-truncate {
+  @include truncate;
+}
+
+// =============================================================================
+// 6. COMPONENTS
+// =============================================================================
+
+// Buttons
+.btn {
+  display: inline-block;
+  padding: spacing(2) spacing(4);
+  margin-bottom: 0;
+  font-size: font-size(base);
+  font-weight: map.get($font-weights, medium);
+  line-height: 1.5;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: map.get($border-radius, base);
+  transition: all $transition-duration $transition-timing;
+  user-select: none;
+
+  &:focus {
+    outline: 0;
+  }
+
+  &:disabled,
+  &.disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+}
+
+// Button Variants
+.btn-primary {
+  @include button-variant(color(primary));
+}
+.btn-secondary {
+  @include button-variant(color(secondary));
+}
+.btn-success {
+  @include button-variant(color(success));
+}
+.btn-warning {
+  @include button-variant(color(warning));
+}
+.btn-error {
+  @include button-variant(color(error));
+}
+.btn-accent {
+  @include button-variant(color(accent));
+}
+
+// Button Sizes
+.btn-sm {
+  padding: spacing(1) spacing(3);
+  font-size: font-size(sm);
+  border-radius: map.get($border-radius, sm);
+}
+
+.btn-lg {
+  padding: spacing(3) spacing(6);
+  font-size: font-size(lg);
+  border-radius: map.get($border-radius, lg);
+}
+
+.btn-block {
+  display: block;
+  width: 100%;
+}
+
+// Card Component
+.card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  word-wrap: break-word;
+  background-color: color(surface);
+  background-clip: border-box;
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  border-radius: map.get($border-radius, lg);
+  box-shadow: map.get($shadows, sm);
+}
+
+.card-header,
+.card-footer {
+  padding: spacing(4);
+}
+
+.card-footer {
+  border-bottom: none;
+}
+
+.card-body {
+  flex: 1 1 auto;
+  padding: spacing(4);
+}
+
+.card-title {
+  margin-bottom: spacing(3);
+}
+
+.card-text:last-child {
+  margin-bottom: 0;
+}
+
+// Form Controls
+.form-group {
+  margin-bottom: spacing(4);
+}
+
+.form-label {
+  display: inline-block;
+  margin-bottom: spacing(1);
+  font-weight: map.get($font-weights, medium);
+  color: color(text);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  padding: spacing(2) spacing(3);
+  font-size: font-size(base);
+  font-weight: map.get($font-weights, normal);
+  line-height: 1.5;
+  color: color(text);
+  background-color: color(surface);
+  background-clip: padding-box;
+  border: 1px solid #ced4da;
+  border-radius: map.get($border-radius, base);
+  transition: border-color $transition-duration $transition-timing,
+    box-shadow $transition-duration $transition-timing;
+
+  &:focus {
+    color: color(text);
+    background-color: color(surface);
+    border-color: color.adjust(color(primary), $lightness: 25%);
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(color(primary), 0.25);
+  }
+
+  &::placeholder {
+    color: #6c757d;
+    opacity: 1;
+  }
+
+  &:disabled,
+  &[readonly] {
+    background-color: #e9ecef;
+    opacity: 1;
+  }
+}
+
+// Floating label input component with optional left icon
+.form-field {
+  position: relative;
+  display: block;
+}
+
+.form-field__icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af; // gray-400
+  pointer-events: none;
+}
+
+.form-field--has-icon .form-field__input {
+  padding-left: spacing(8);
+}
+
+.form-field__label {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  background: transparent;
+  padding: 0 6px;
+  transition: transform $transition-duration $transition-timing,
+    color $transition-duration $transition-timing,
+    top $transition-duration $transition-timing,
+    font-size $transition-duration $transition-timing;
+  pointer-events: none;
+}
+
+.form-field--has-icon .form-field__label {
+  left: 40px;
+}
+
+// Use placeholder=" " on input to trigger :placeholder-shown
+.form-field__input {
+  transition: padding $transition-duration $transition-timing;
+  &:focus + .form-field__label,
+  &:not(:placeholder-shown) + .form-field__label {
+    top: 0;
+    transform: translateY(-50%) scale(0.9);
+    color: color(primary);
+  }
+}
+
+// Alternative BEM-style input (matches provided snippet semantics)
+.input {
+  position: relative;
+  display: block;
+}
+
+.input__icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.input--has-icon .input__field {
+  padding-left: spacing(8);
+}
+
+.input__label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: spacing(2) spacing(1);
+  margin: spacing(2) spacing(1);
+  background: transparent;
+  white-space: nowrap;
+  transform: translate(0, 0);
+  transform-origin: 0 0;
+  transition: transform 120ms ease-in;
+  font-weight: map.get($font-weights, semibold);
+  line-height: 1.2;
+}
+
+.input__field {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border: 1px solid #ced4da;
+  padding: spacing(3) spacing(2);
+  color: color(text);
+  background: transparent;
+  border-radius: map.get($border-radius, base);
+}
+
+.input__field:focus + .input__label,
+.input__field:not(:placeholder-shown) + .input__label {
+  transform: translate(0.25rem, -65%) scale(0.8);
+  color: color(primary);
+}
+
+// =============================================================================
+// 7. UTILITIES
+// =============================================================================
+
+// Display Utilities
+.d-none {
+  display: none;
+}
+.d-inline {
+  display: inline;
+}
+.d-inline-block {
+  display: inline-block;
+}
+.d-block {
+  display: block;
+}
+.d-flex {
+  display: flex;
+}
+.d-inline-flex {
+  display: inline-flex;
+}
+.d-grid {
+  display: grid;
+}
+.d-table {
+  display: table;
+}
+
+// Responsive Display
+@each $breakpoint in map.keys($breakpoints) {
+  @if map.get($breakpoints, $breakpoint) > 0 {
+    @include media($breakpoint) {
+      .d-#{$breakpoint}-none {
+        display: none;
+      }
+      .d-#{$breakpoint}-inline {
+        display: inline;
+      }
+      .d-#{$breakpoint}-inline-block {
+        display: inline-block;
+      }
+      .d-#{$breakpoint}-block {
+        display: block;
+      }
+      .d-#{$breakpoint}-flex {
+        display: flex;
+      }
+      .d-#{$breakpoint}-inline-flex {
+        display: inline-flex;
+      }
+      .d-#{$breakpoint}-grid {
+        display: grid;
+      }
+    }
+  }
+}
+
+// Flexbox Utilities
+.flex-row {
+  flex-direction: row;
+}
+.flex-column {
+  flex-direction: column;
+}
+.flex-row-reverse {
+  flex-direction: row-reverse;
+}
+.flex-column-reverse {
+  flex-direction: column-reverse;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+.flex-nowrap {
+  flex-wrap: nowrap;
+}
+.flex-wrap-reverse {
+  flex-wrap: wrap-reverse;
+}
+
+.justify-start {
+  justify-content: flex-start;
+}
+.justify-end {
+  justify-content: flex-end;
+}
+.justify-center {
+  justify-content: center;
+}
+.justify-between {
+  justify-content: space-between;
+}
+.justify-around {
+  justify-content: space-around;
+}
+.justify-evenly {
+  justify-content: space-evenly;
+}
+
+.align-start {
+  align-items: flex-start;
+}
+.align-end {
+  align-items: flex-end;
+}
+.align-center {
+  align-items: center;
+}
+.align-baseline {
+  align-items: baseline;
+}
+.align-stretch {
+  align-items: stretch;
+}
+
+.flex-1 {
+  flex: 1 1 0%;
+}
+.flex-auto {
+  flex: 1 1 auto;
+}
+.flex-initial {
+  flex: 0 1 auto;
+}
+.flex-none {
+  flex: none;
+}
+
+// Spacing Utilities
+@each $prop, $abbrev in (margin: m, padding: p) {
+  @each $size-name, $size-value in $spacing {
+    .#{$abbrev}-#{$size-name} {
+      #{$prop}: $size-value;
+    }
+    .#{$abbrev}t-#{$size-name} {
+      #{$prop}-top: $size-value;
+    }
+    .#{$abbrev}r-#{$size-name} {
+      #{$prop}-right: $size-value;
+    }
+    .#{$abbrev}b-#{$size-name} {
+      #{$prop}-bottom: $size-value;
+    }
+    .#{$abbrev}l-#{$size-name} {
+      #{$prop}-left: $size-value;
+    }
+    .#{$abbrev}x-#{$size-name} {
+      #{$prop}-left: $size-value;
+      #{$prop}-right: $size-value;
+    }
+    .#{$abbrev}y-#{$size-name} {
+      #{$prop}-top: $size-value;
+      #{$prop}-bottom: $size-value;
+    }
+  }
+}
+
+// Background Colors
+@each $name, $color-value in $colors {
+  .bg-#{$name} {
+    background-color: $color-value;
+  }
+}
+
+// Border Utilities
+.border {
+  border: 1px solid #dee2e6;
+}
+.border-0 {
+  border: 0;
+}
+.border-top {
+  border-top: 1px solid #dee2e6;
+}
+.border-right {
+  border-right: 1px solid #dee2e6;
+}
+.border-bottom {
+  border-bottom: 1px solid #dee2e6;
+}
+.border-left {
+  border-left: 1px solid #dee2e6;
+}
+
+@each $name, $radius in $border-radius {
+  .rounded-#{"" + $name} {
+    border-radius: $radius;
+  }
+}
+
+// Shadow Utilities
+@each $name, $shadow in $shadows {
+  .shadow-#{"" + $name} {
+    box-shadow: $shadow;
+  }
+}
+
+// Position Utilities
+.position-static {
+  position: static;
+}
+.position-relative {
+  position: relative;
+}
+.position-absolute {
+  position: absolute;
+}
+.position-fixed {
+  position: fixed;
+}
+.position-sticky {
+  position: sticky;
+}
+
+// Width & Height Utilities
+.w-25 {
+  width: 25%;
+}
+.w-50 {
+  width: 50%;
+}
+.w-75 {
+  width: 75%;
+}
+.w-100 {
+  width: 100%;
+}
+.w-auto {
+  width: auto;
+}
+
+.h-25 {
+  height: 25%;
+}
+.h-50 {
+  height: 50%;
+}
+.h-75 {
+  height: 75%;
+}
+.h-100 {
+  height: 100%;
+}
+.h-auto {
+  height: auto;
+}
+
+// Overflow Utilities
+.overflow-auto {
+  overflow: auto;
+}
+.overflow-hidden {
+  overflow: hidden;
+}
+.overflow-visible {
+  overflow: visible;
+}
+.overflow-scroll {
+  overflow: scroll;
+}
+
+// =============================================================================
+// 8. RESPONSIVE UTILITIES
+// =============================================================================
+
+// Hide/Show on specific breakpoints
+@each $breakpoint in map.keys($breakpoints) {
+  @if map.get($breakpoints, $breakpoint) > 0 {
+    @include media($breakpoint) {
+      .hidden-#{$breakpoint}-up {
+        display: none !important;
+      }
+    }
+
+    $next-breakpoint: null;
+    $breakpoint-names: map.keys($breakpoints);
+    $current-index: list.index($breakpoint-names, $breakpoint);
+
+    @if $current-index < list.length($breakpoint-names) {
+      $next-breakpoint: list.nth($breakpoint-names, $current-index + 1);
+      $next-value: map.get($breakpoints, $next-breakpoint);
+
+      @media (max-width: ($next-value - 1px)) {
+        .hidden-#{$breakpoint}-down {
+          display: none !important;
+        }
+      }
+    }
+  }
+}
+
+// =============================================================================
+// 9. ANIMATIONS & TRANSITIONS
+// =============================================================================
+
+// Fade animation
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+// Slide animations
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Animation utilities
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.animate-slide-in-up {
+  animation: slideInUp 0.5s ease-out;
+}
+
+.transition {
+  transition: all $transition-duration $transition-timing;
+}
+
+.transition-colors {
+  transition: color $transition-duration $transition-timing,
+    background-color $transition-duration $transition-timing,
+    border-color $transition-duration $transition-timing;
+}
+
+// Hover effects
+.hover\:shadow-lg:hover {
+  box-shadow: map.get($shadows, lg);
+}
+
+.hover\:scale-105:hover {
+  transform: scale(1.05);
+}
+
+// =============================================================================
+// 10. PRINT STYLES
+// =============================================================================
+
+@media print {
+  *,
+  *::before,
+  *::after {
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+
+  a:not(.btn) {
+    text-decoration: underline;
+  }
+
+  .d-print-none {
+    display: none !important;
+  }
+
+  .d-print-block {
+    display: block !important;
+  }
+
+  .d-print-inline {
+    display: inline !important;
+  }
+
+  .d-print-inline-block {
+    display: inline-block !important;
+  }
+}
+
+// =============================================================================
+// 11. ACCESSIBILITY
+// =============================================================================
+
+// Screen reader only
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+// Focus styles
+*:focus {
+  outline: 2px solid color(primary);
+  outline-offset: 2px;
+}
+
+// Reduced motion
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
