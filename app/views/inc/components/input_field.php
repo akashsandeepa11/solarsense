@@ -1,7 +1,4 @@
 <?php
-// =============================================================================
-// INPUT COMPONENT WITH FLOATING LABEL (BEM STYLE)
-// =============================================================================
 
 // Configuration setup
 $cfg = $inputConfig ?? [];
@@ -58,7 +55,7 @@ if (!defined(constant_name: 'INPUT_BEM_ASSETS')):
         padding: 0.7rem 0.75rem; /* Based on your .form-control */
         color: var(--color-text, #212121);
         background: transparent;
-        border-radius: 0.25rem; /* base radius */
+        border-radius: 0.75rem; /* base radius */
     }
 
     /* Focus state: change border to primary color */

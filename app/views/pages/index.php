@@ -14,11 +14,13 @@
                                 'icon'  => 'fas fa-envelope' // Font Awesome icon class
                             ];
                             // Assuming your new component file is named 'styled_input.php'
-                            require APPROOT . '/views/inc/components/inputField.php';
+                            require APPROOT . '/views/inc/components/input_field.php';
                             ?>
                         </div>
 
-                        
+                        <button class="btn btn-primary rounded-xl">
+  Click Me
+</button>
                     </form>
                 </div>  
 </div>

@@ -274,7 +274,6 @@ html {
   scroll-behavior: smooth;
 }
 
-
 body,
 input,
 textarea,
@@ -860,6 +859,24 @@ a {
       #{$prop}-bottom: $size-value;
     }
   }
+}
+
+// Text Decoration
+.text-underline {
+  text-decoration: underline;
+}
+
+.text-line-through {
+  text-decoration: line-through;
+}
+
+.text-decoration-none {
+  text-decoration: none;
+}
+
+// To specifically override hover effects on links
+.hover\:no-underline:hover {
+  text-decoration: none;
 }
 
 // Background Colors

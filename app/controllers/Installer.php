@@ -1,9 +1,9 @@
 <?php
 
-    class HomeOwner extends Controller{
+    class Installer extends Controller{
 
         private $user = [
-            'role' => ROLE_HOMEOWNER,
+            'role' => ROLE_INSTALLER,
         ];
 
         public function __construct(){
@@ -15,33 +15,35 @@
             $data = [
                 'user' => $this->user,
             ];
-            
-            $this->view('pages/homeowner/dashboard', $data, layout: 'dashboard');
+
+            $this->view('pages/installer/dashboard', $data, 'dashboard');
         }
-        
-        public function service(){
-            
-            $data = [
-                'user' => $this->user,
-            ];
-            
-            $this->view('pages/homeowner/service', $data, 'dashboard');
-        }
-        
-        public function shop(){
+
+        public function fleet_dashboard(){
+
             $data = [
                 'user' => $this->user,
             ];
 
-            $this->view('pages/homeowner/shop', $data, 'dashboard');
+            $this->view('pages/installer/fleet_dashboard', $data, 'dashboard');
+        }
+
+        public function maintenance(){
+
+            $data = [
+                'user' => $this->user,
+            ];
+
+            $this->view('pages/installer/maintenance', $data, 'dashboard');
         }
 
         public function profile(){
+
             $data = [
                 'user' => $this->user,
             ];
 
-            $this->view('pages/homeowner/profile', $data, 'dashboard');
+            $this->view('pages/installer/profile', $data, 'dashboard');
         }
     }
 

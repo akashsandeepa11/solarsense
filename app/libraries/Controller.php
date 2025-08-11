@@ -17,23 +17,17 @@
             //     }
             // }
 
-            public function view($view, $data = [], $layout = 'layouts/main') {
-                if (file_exists('../app/views/' . $view . '.php')) {
-                    // Make $data keys available as variables
-                    extract($data);
-                
-                    // Path to actual page content
-                    $viewPath = '../app/views/' . $view . '.php';
-                
-                    // If a layout is specified, load it
-                    if ($layout && file_exists('../app/views/' . $layout . '.php')) {
-                        require_once '../app/views/' . $layout . '.php';
-                    } else {
-                        // No layout, load directly
-                        require_once $viewPath;
-                    }
+            public function view($view, $data = [], $layout = 'main') {
+                // Capture the content of the page view
+                ob_start();
+                require_once "../app/views/{$view}.php";
+                $content = ob_get_clean();
+                    
+                // Include the chosen layout and pass $content to it
+                if (file_exists("../app/views/layouts/{$layout}.php")) {
+                    require_once "../app/views/layouts/{$layout}.php";
                 } else {
-                    die('View "' . $view . '" does not exist!');
+                    die("Layout '{$layout}' not found.");
                 }
             }
         }

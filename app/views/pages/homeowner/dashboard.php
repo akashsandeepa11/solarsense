@@ -1,5 +1,2 @@
-<?php require APPROOT.'/views/inc/header.php'; ?>
 
-
-
-<?php require APPROOT.'/views/inc/footer.php'; ?>
+<h1>Homeowner Dashboard</h1>
