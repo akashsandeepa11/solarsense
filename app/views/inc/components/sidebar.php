@@ -23,6 +23,19 @@
         margin-right: 1rem;
         text-align: center;
     }
+
+    .sidebar-nav-link.active, 
+    .sidebar-dropdown-toggle.active {
+        background-color: var(--color-primary, #fe9630); /* Primary bg */
+        color: var(--color-surface, #fff); /* Text color */
+        font-weight: 600; /* Keep bold */
+    }
+    
+    .sidebar-nav-link.active i,
+    .sidebar-dropdown-toggle.active i {
+        color: var(--color-surface, #fff);
+    }
+
     .sidebar-heading {
         font-size: 0.75rem; /* text-xs */
         font-weight: 600; /* font-semibold */
@@ -70,6 +83,12 @@
         padding-top: 0.5rem;
         padding-bottom: 0.5rem;
     }
+
+    .sidebar-nav-link:focus {
+        outline: none;
+        box-shadow: none;
+        border: none;
+    }
 </style>
 
 <aside class="sidebar d-flex flex-column p-3 " id="sidebar">
@@ -84,43 +103,32 @@
     <!-- Dynamic Navigation -->
     <nav class="flex-grow-1">
         <?php
-        $current_url = $_SERVER['REQUEST_URI'];
+// Get current path without query string
+$current_path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-        foreach ($navigation_links as $section => $items): ?>
-            <div class="sidebar-heading mt-2"><?php echo htmlspecialchars(string: $section); ?></div>
-            
-            <?php foreach ($items as $item): ?>
-                <?php if (empty($item['sub_items'])): ?>
-                    <?php // --- Standard Link --- ?>
-                    <?php $is_active = ($current_url == $item['url']); ?>
-                    <a href="<?php echo URLROOT . $item['url']; ?>" 
-                       class="sidebar-nav-link <?php echo $is_active ? 'active' : ''; ?> text-decoration-none hover:no-underline">
-                        <i class="<?php echo $item['icon']; ?>"></i>
-                        <span><?php echo htmlspecialchars($item['title']); ?></span>
-                    </a>
-                <?php else: ?>
-                    <?php // --- Dropdown Menu --- ?>
-                    <details>
-                        <summary class="sidebar-dropdown-toggle">
-                            <i class="<?php echo htmlspecialchars($item['icon']); ?>"></i>
-                            <span><?php echo htmlspecialchars($item['title']); ?></span>
-                        </summary>
-                        <div class="sidebar-sub-nav">
-                            <?php foreach ($item['sub_items'] as $sub_item): ?>
-                                 <?php $is_sub_active = ($current_url == $sub_item['url']); ?>
-                                 <a href="<?php echo URLROOT . $sub_item['url']; ?>" 
-                               class="sidebar-nav-link <?php echo $is_sub_active ? 'active' : ''; ?> text-decoration-none hover:no-underline">
-                                <i class="<?php echo $sub_item['icon']; ?>"></i>
-                                <span><?php echo htmlspecialchars($sub_item['title']); ?></span>
-                            </a>
+// Remove the base directory (e.g. "/solarsense") so it matches $item['url']
+$base_dir = parse_url(URLROOT, PHP_URL_PATH);
+if ($base_dir && strpos($current_path, $base_dir) === 0) {
+    $current_path = substr($current_path, strlen($base_dir));
+}
 
-                            <?php endforeach; ?>
-                        </div>
-                    </details>
-                <?php endif; ?>
+// Now $current_path is like "/homeowner/profile"
 
-            <?php endforeach; ?>
-        <?php endforeach; ?>
+foreach ($navigation_links as $section => $items): ?>
+    <div class="sidebar-heading mt-2"><?php echo htmlspecialchars($section); ?></div>
+    
+    <?php foreach ($items as $item): ?>
+        <?php
+        $is_active = ($current_path === $item['url'] || rtrim($current_path, '/') === rtrim($item['url'], '/'));
+        ?>
+        <a href="<?php echo URLROOT . $item['url']; ?>"
+           class="sidebar-nav-link <?php echo $is_active ? 'active' : ''; ?> text-decoration-none hover:no-underline">
+            <i class="<?php echo htmlspecialchars($item['icon']); ?>"></i>
+            <span><?php echo htmlspecialchars($item['title']); ?></span>
+        </a>
+    <?php endforeach; ?>
+<?php endforeach; ?>
+
     </nav>
 
     <!-- Footer Links -->

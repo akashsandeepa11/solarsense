@@ -9,68 +9,68 @@
             [
                 'title' => 'Dashboard',
                 'url' => '/homeowner/dashboard',
-                'icon' => 'fa-chart-pie',
+                'icon' => 'fas fa-chart-pie',
                 // 'sub_items' => [
                 //     ['title' => 'Earnings', 'url' => '/homeowner/earnings'],
                 //     ['title' => 'Fault History', 'url' => '/homeowner/faults'],
                 //     ['title' => 'Performance', 'url' => '/homeowner/performance'],
                 // ]
             ],
-            ['title' => 'Service', 'url' => '/homeowner/service', 'icon' => 'fa-wrench'],
-            ['title' => 'Shop', 'url' => '/homeowner/shop', 'icon' => 'fa-store'],
-            ['title' => 'Profile', 'url' => '/homeowner/profile', 'icon' => 'fa-user'],
+            ['title' => 'Service', 'url' => '/homeowner/service', 'icon' => 'fas fa-wrench'],
+            ['title' => 'Shop', 'url' => '/homeowner/shop', 'icon' => 'fas fa-store'],
+            ['title' => 'Profile', 'url' => '/homeowner/profile', 'icon' => 'fas fa-user'],
         ],
         'SETTINGS' => [
-            ['title' => 'Settings', 'url' => '/homeowner/settings', 'icon' => 'fa-cog'],
+            ['title' => 'Settings', 'url' => '/homeowner/settings', 'icon' => 'fas fa-cog'],
         ],
     ];
 
     // --- Navigation Array for Installer ---
     $installer_nav = [
         'MAIN' => [
-            ['title' => 'Fleet Dashboard', 'url' => '/installer/dashboard', 'icon' => 'fa-tachometer-alt'],
-            ['title' => 'Add Customer', 'url' => '/installer/add_customer', 'icon' => 'fa-user-plus'],
-            ['title' => 'Maintenance', 'url' => '/installer/maintenance', 'icon' => 'fa-wrench'],
-            ['title' => 'Service Agents', 'url' => '/installer/agents', 'icon' => 'fa-users-cog'],
+            ['title' => 'Fleet Dashboard', 'url' => '/installer/dashboard', 'icon' => 'fas fa-tachometer-alt'],
+            ['title' => 'Add Customer', 'url' => '/installer/add_customer', 'icon' => 'fas fa-user-plus'],
+            ['title' => 'Maintenance', 'url' => '/installer/maintenance', 'icon' => 'fas fa-wrench'],
+            ['title' => 'Service Agents', 'url' => '/installer/agents', 'icon' => 'fas fa-users-cog'],
         ],
         'SETTINGS' => [
-            ['title' => 'Company Profile', 'url' => '/installer/company_profile', 'icon' => 'fa-building'],
-            ['title' => 'Settings', 'url' => '/installer/settings', 'icon' => 'fa-cog'],
+            ['title' => 'Company Profile', 'url' => '/installer/company_profile', 'icon' => 'fas fa-building'],
+            ['title' => 'Settings', 'url' => '/installer/settings', 'icon' => 'fas fa-cog'],
         ],
     ];
 
     // --- Navigation Array for Service Agent ---
     $service_agent_nav = [
         'MAIN' => [
-            ['title' => 'Assigned Tasks', 'url' => '/service_agent/tasks', 'icon' => 'fa-tasks'],
-            ['title' => 'Completed Work', 'url' => '/service_agent/history', 'icon' => 'fa-history'],
+            ['title' => 'Assigned Tasks', 'url' => '/service_agent/tasks', 'icon' => 'fas fa-tasks'],
+            ['title' => 'Completed Work', 'url' => '/service_agent/history', 'icon' => 'fas fa-history'],
         ],
         'SETTINGS' => [
-            ['title' => 'Profile', 'url' => '/service_agent/profile', 'icon' => 'fa-user-circle'],
+            ['title' => 'Profile', 'url' => '/service_agent/profile', 'icon' => 'fas fa-user-circle'],
         ],
     ];
 
     // --- Navigation Array for CEB Agent ---
     $ceb_agent_nav = [
         'MAIN' => [
-            ['title' => 'Dashboard', 'url' => '/ceb_agent/dashboard', 'icon' => 'fa-bolt'],
-            ['title' => 'Power Cut Schedule', 'url' => '/ceb_agent/powercuts', 'icon' => 'fa-calendar-alt'],
-            ['title' => 'Grid Insights', 'url' => '/ceb_agent/insights', 'icon' => 'fa-chart-line'],
+            ['title' => 'Dashboard', 'url' => '/ceb_agent/dashboard', 'icon' => 'fas fa-bolt'],
+            ['title' => 'Power Cut Schedule', 'url' => '/ceb_agent/powercuts', 'icon' => 'fas fa-calendar-alt'],
+            ['title' => 'Grid Insights', 'url' => '/ceb_agent/insights', 'icon' => 'fas fa-chart-line'],
         ],
         'SETTINGS' => [
-            ['title' => 'Profile', 'url' => '/ceb_agent/profile', 'icon' => 'fa-user-shield'],
+            ['title' => 'Profile', 'url' => '/ceb_agent/profile', 'icon' => 'fas fa-user-shield'],
         ],
     ];
 
     // --- Navigation Array for Admin ---
     $admin_nav = [
         'MAIN' => [
-            ['title' => 'Dashboard', 'url' => '/admin/dashboard', 'icon' => 'fa-tachometer-alt'],
-            ['title' => 'User Management', 'url' => '/admin/users', 'icon' => 'fa-users'],
-            ['title' => 'Platform Reports', 'url' => '/admin/reports', 'icon' => 'fa-file-alt'],
+            ['title' => 'Dashboard', 'url' => '/admin/dashboard', 'icon' => 'fas fa-tachometer-alt'],
+            ['title' => 'User Management', 'url' => '/admin/users', 'icon' => 'fas fa-users'],
+            ['title' => 'Platform Reports', 'url' => '/admin/reports', 'icon' => 'fas fa-file-alt'],
         ],
         'SETTINGS' => [
-            ['title' => 'System Configuration', 'url' => '/admin/settings', 'icon' => 'fa-cogs'],
+            ['title' => 'System Configuration', 'url' => '/admin/settings', 'icon' => 'fas fa-cogs'],
         ],
     ];
     // --- Logic to select the correct navigation array ---
