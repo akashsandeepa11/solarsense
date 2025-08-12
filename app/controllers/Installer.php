@@ -28,6 +28,15 @@
             $this->view('pages/installer/fleet_dashboard', $data, 'dashboard');
         }
 
+        public function add_customer(){
+
+            $data = [
+                'user' => $this->user,
+            ];
+
+            $this->view('pages/installer/add_customer', $data, 'dashboard');
+        }
+
         public function maintenance(){
 
             $data = [
@@ -37,7 +46,7 @@
             $this->view('pages/installer/maintenance', $data, 'dashboard');
         }
 
-        public function profile(){
+        public function company_profile(){
 
             $data = [
                 'user' => $this->user,

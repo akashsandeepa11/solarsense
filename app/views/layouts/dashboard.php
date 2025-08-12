@@ -28,7 +28,8 @@
     // --- Navigation Array for Installer ---
     $installer_nav = [
         'MAIN' => [
-            ['title' => 'Fleet Dashboard', 'url' => '/installer/dashboard', 'icon' => 'fas fa-tachometer-alt'],
+            ['title' => 'Dashboard', 'url' => '/installer/dashboard', 'icon' => 'fas fa-chart-pie'],
+            ['title' => 'Fleet Dashboard', 'url' => '/installer/fleet_dashboard', 'icon' => 'fas fa-tachometer-alt'],
             ['title' => 'Add Customer', 'url' => '/installer/add_customer', 'icon' => 'fas fa-user-plus'],
             ['title' => 'Maintenance', 'url' => '/installer/maintenance', 'icon' => 'fas fa-wrench'],
             ['title' => 'Service Agents', 'url' => '/installer/agents', 'icon' => 'fas fa-users-cog'],
