@@ -8,15 +8,6 @@
                 return new $model();
             }
 
-            // To load the view
-            // public function view($view, $data = []){
-            //     if(file_exists('../app/views/'.$view.'.php')){
-            //         require_once '../app/views/'.$view.'.php';
-            //     }else{
-            //         die('Coresponding view does not exists!');
-            //     }
-            // }
-
             public function view($view, $data = [], $layout = 'main') {
                 // Capture the content of the page view
                 ob_start();

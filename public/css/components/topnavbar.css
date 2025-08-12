@@ -1,0 +1,32 @@
+/* Custom styles for the navbar component */
+.navbar-search-wrapper {
+  position: relative;
+  width: 350px;
+}
+.navbar-search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+}
+.navbar-search-input {
+  background-color: #f5f5f5; /* bg-background */
+  border-color: transparent;
+  border-radius: 0.75rem; /* 12px -> rounded-xl */
+  padding-left: 2.5rem;
+}
+.navbar-search-input:focus {
+  background-color: #ffffff; /* bg-surface */
+  border-color: var(--color-primary, #fe9630);
+  box-shadow: 0 0 0 3px rgba(254, 150, 48, 0.25);
+}
+.navbar-user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px; /* rounded-full */
+}
+.navbar-icon-btn {
+  font-size: 1.25rem; /* text-xl */
+  color: #6c757d;
+}
