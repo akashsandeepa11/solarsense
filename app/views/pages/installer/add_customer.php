@@ -1,115 +1,355 @@
-<?php
-// Step control and data retrieval
-$step = 1; // default step 1
+<div>
+    
+    <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/add_customer.css">
 
-//after very first submit this work
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['previous'])) {
-        // User clicked Previous button
-        $step = 1;
-    } elseif (isset($_POST['step'])) {
-        $step = (int) $_POST['step'];
+    <?php
+    // --- USER'S PHP LOGIC INTEGRATED ---
+    if (!defined('APPROOT')) {
+        define('APPROOT', dirname(__DIR__, 2)); 
     }
-}
+    $fullName = $_POST['fullName'] ?? '';
+    $email = $_POST['email'] ?? '';
+    $contactNumber = $_POST['contactNumber'] ?? '';
+    $physicalAddress = $_POST['physicalAddress'] ?? '';
+    $district = $_POST['district'] ?? '';
+    $systemCapacity = $_POST['systemCapacity'] ?? '';
+    $panelTilt = $_POST['panelTilt'] ?? '';
+    $panelAzimuth = $_POST['panelAzimuth'] ?? '';
+    $installationDate = $_POST['installationDate'] ?? '';
+    $panelBrand = $_POST['panelBrand'] ?? '';
+    $inverterBrand = $_POST['inverterBrand'] ?? '';
+    $cebAccount = $_POST['cebAccount'] ?? '';
 
-// Get all submitted values to preserve on going back/forth
-$name = $_POST['name'] ?? '';
-$NIC = $_POST['NIC'] ?? '';
-$phone = $_POST['phone'] ?? '';
-$tilt = $_POST['tilt'] ?? '';
-$capacity = $_POST['capacity'] ?? '';
-$azimuth = $_POST['azimuth'] ?? '';
+    $all_districts = [
+        "Ampara", "Anuradhapura", "Badulla", "Batticaloa", "Colombo", "Galle", "Gampaha",
+        "Hambantota", "Jaffna", "Kalutara", "Kandy", "Kegalle", "Kilinochchi", "Kurunegala",
+        "Mannar", "Matale", "Matara", "Monaragala", "Mullaitivu", "Nuwara Eliya",
+        "Polonnaruwa", "Puttalam", "Ratnapura", "Trincomalee", "Vavuniya"
+    ];
+    ?>
 
-$email = $_POST['email'] ?? '';
-$district= $_POST['district'] ?? '';
-?>
+    <div class="installer-form-container">
+        <div class="card">
+            <div class="card-body">
+                
+                <!-- New Step Indicator -->
+                <div class="form-header text-center mb-10">
+                    <h2>New Homeowner Registration</h2>
+                    <p class="text-secondary mt-1">Fill all form fields to go to the next step</p>
+                </div>
+                <div class="step-indicator-container mb-10">
+                    <div class="step-indicator-line">
+                        <div id="progress-line"></div>
+                    </div>
+                    <div class="step-indicator active" data-step="1">
+                        <div class="step-indicator-icon"><i class="fas fa-user"></i></div>
+                        <div class="step-indicator-label">Personal</div>
+                    </div>
+                    <div class="step-indicator" data-step="2">
+                        <div class="step-indicator-icon"><i class="fas fa-solar-panel"></i></div>
+                        <div class="step-indicator-label">System</div>
+                    </div>
+                    <div class="step-indicator" data-step="3">
+                        <div class="step-indicator-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                        <div class="step-indicator-label">Utility</div>
+                    </div>
+                    <div class="step-indicator" data-step="4">
+                        <div class="step-indicator-icon"><i class="fas fa-check"></i></div>
+                        <div class="step-indicator-label">Confirm</div>
+                    </div>
+                </div>
 
+                <form id="registration-form" action="save.php" method="post" novalidate>
+                    <!-- Step 1: Personal & Contact Details -->
+                    <div id="step-1" class="form-step active">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <?php $inputConfig = ['id' => 'fullName', 'name' => 'fullName', 'label' => 'Full Name', 'type' => 'text', 'icon' => 'fas fa-user', 'value' => $fullName]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <?php $inputConfig = ['id' => 'email', 'name' => 'email', 'label' => 'Email Address (Username)', 'type' => 'email', 'icon' => 'fas fa-envelope', 'value' => $email]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <?php $inputConfig = ['id' => 'contactNumber', 'name' => 'contactNumber', 'label' => 'Contact Number', 'type' => 'tel', 'icon' => 'fas fa-phone', 'value' => $contactNumber]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <?php $inputConfig = ['id' => 'physicalAddress', 'name' => 'physicalAddress', 'label' => 'Physical Address', 'type' => 'text', 'icon' => 'fas fa-map-marker-alt', 'value' => $physicalAddress]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="district" class="form-label">District</label>
+                                    <select id="district" name="district" class="form-control" required>
+                                        <option value="">Select a District</option>
+                                        <?php foreach($all_districts as $d): ?>
+                                            <option value="<?php echo htmlspecialchars($d); ?>" <?php echo ($district == $d) ? 'selected' : ''; ?>><?php echo htmlspecialchars($d); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
+                    <!-- Step 2: Solar System Specifications -->
+                    <div id="step-2" class="form-step">
 
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <?php $inputConfig = ['id' => 'systemCapacity', 'name' => 'systemCapacity', 'label' => 'System Capacity (kWp)', 'type' => 'number', 'icon' => 'fas fa-bolt', 'value' => $systemCapacity]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <?php $inputConfig = ['id' => 'panelTilt', 'name' => 'panelTilt', 'label' => 'Panel Tilt (Degrees)', 'type' => 'number', 'icon' => 'fas fa-layer-group', 'value' => $panelTilt]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="panelAzimuth" class="form-label">Panel Azimuth (Orientation)</label>
+                                    <select id="panelAzimuth" name="panelAzimuth" class="form-control" required>
+                                        <option value="South" <?php echo ($panelAzimuth == 'South') ? 'selected' : ''; ?>>South</option>
+                                        <option value="South-East" <?php echo ($panelAzimuth == 'South-East') ? 'selected' : ''; ?>>South-East</option>
+                                        <option value="South-West" <?php echo ($panelAzimuth == 'South-West') ? 'selected' : ''; ?>>South-West</option>
+                                        <option value="East" <?php echo ($panelAzimuth == 'East') ? 'selected' : ''; ?>>East</option>
+                                        <option value="West" <?php echo ($panelAzimuth == 'West') ? 'selected' : ''; ?>>West</option>
+                                    </select>
+                                </div>
+                            </div>
 
+                            <div class="col-md-6 mt-3" >
+                                <div class="form-group">
+                                    <?php $inputConfig = ['id' => 'installationDate', 'name' => 'installationDate', 'label' => 'Installation Date', 'type' => 'date', 'icon' => 'fas fa-calendar-alt', 'value' => $installationDate]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                                </div>
+                            </div>
 
-<?php if ($step === 1): ?>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <?php $inputConfig = ['id' => 'panelBrand', 'name' => 'panelBrand', 'label' => 'Panel Brand & Model (Optional)', 'type' => 'text', 'icon' => 'fas fa-tag', 'value' => $panelBrand]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                                </div>
+                            </div>
 
-    <div class="text-center">   
-        <h4>Step 1</h4> 
-        <h2>Customer Details</h2>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <?php $inputConfig = ['id' => 'inverterBrand', 'name' => 'inverterBrand', 'label' => 'Inverter Brand & Model (Optional)', 'type' => 'text', 'icon' => 'fas fa-microchip', 'value' => $inverterBrand]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Utility Account Details -->
+                    <div id="step-3" class="form-step">
+                        
+                    <div style="max-width: 400px; margin: 0 auto;">
+                            
+                                <div class="form-group">
+                                    <?php $inputConfig = ['id' => 'cebAccount', 'name' => 'cebAccount', 'label' => 'CEB Account Number', 'type' => 'text', 'icon' => 'fas fa-file-invoice-dollar', 'value' => $cebAccount]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                                </div>
+                        
+                            
+                                <div class="form-group">
+                                    <label class="form-label">Utility Provider</label>
+                                    <input type="text" class="form-control" value="Ceylon Electricity Board (CEB)" readonly disabled>
+                                </div>
+                            
+                    </div>
+
+                    </div>
+
+                    <!-- Step 4: Review and Confirm -->
+                    <div id="step-4" class="form-step">
+                        <div class="review-section">
+                            <div class="d-flex justify-between align-center mb-2">
+                                <h3>Personal & Contact Details</h3>
+                                <button type="button" class="btn btn-secondary btn-sm edit-btn" data-step="1">Edit</button>
+                            </div>
+                            <div class="review-item"><span class="label">Full Name</span><span class="value" data-review="fullName"></span></div>
+                            <div class="review-item"><span class="label">Email Address</span><span class="value" data-review="email"></span></div>
+                            <div class="review-item"><span class="label">Contact Number</span><span class="value" data-review="contactNumber"></span></div>
+                            <div class="review-item"><span class="label">Physical Address</span><span class="value" data-review="physicalAddress"></span></div>
+                            <div class="review-item"><span class="label">District</span><span class="value" data-review="district"></span></div>
+                        </div>
+
+                        <div class="review-section">
+                            <div class="d-flex justify-between align-center mb-2">
+                                <h3>Solar System Specifications</h3>
+                                <button type="button" class="btn btn-secondary btn-sm edit-btn" data-step="2">Edit</button>
+                            </div>
+                            <div class="review-item"><span class="label">System Capacity</span><span class="value" data-review="systemCapacity"></span></div>
+                            <div class="review-item"><span class="label">Panel Tilt</span><span class="value" data-review="panelTilt"></span></div>
+                            <div class="review-item"><span class="label">Panel Azimuth</span><span class="value" data-review="panelAzimuth"></span></div>
+                            <div class="review-item"><span class="label">Installation Date</span><span class="value" data-review="installationDate"></span></div>
+                            <div class="review-item"><span class="label">Panel Brand</span><span class="value" data-review="panelBrand"></span></div>
+                            <div class="review-item"><span class="label">Inverter Brand</span><span class="value" data-review="inverterBrand"></span></div>
+                        </div>
+
+                        <div class="review-section">
+                            <div class="d-flex justify-between align-center mb-2">
+                                <h3>Utility Account</h3>
+                                <button type="button" class="btn btn-secondary btn-sm edit-btn" data-step="3">Edit</button>
+                            </div>
+                            <div class="review-item"><span class="label">CEB Account Number</span><span class="value" data-review="cebAccount"></span></div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="mt-8 pt-5 border-t d-flex justify-between align-center">
+                        <button type="button" id="prev-btn" class="btn btn-secondary" style="display: none;">Previous</button>
+                        <button type="button" id="next-btn" class="btn btn-primary ml-auto">Next</button>
+                        <button type="submit" id="submit-btn" class="btn btn-success ml-auto" style="display: none;">Create Account & Send Welcome Email</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
 
-    <div  class="p-4 bg-surface w-75" style="display: block; margin: 0 auto;">
+    
+    <script>
+(function() {
+    const formContainer = document.querySelector('.installer-form-container');
+    if (!formContainer) return;
 
-        <form method="post" action="">
-            <input type="hidden" name="step" value="2">
-            Name: <input type="text"   class="form-control" name="name" required value="<?php echo htmlspecialchars($name); ?>"><br>
-            NIC:<input type="NIC" class="form-control" name="NIC" required value="<?php echo htmlspecialchars($NIC); ?>"><br>
-           
+    const form = formContainer.querySelector('#registration-form');
+    if(!form) return;
 
-            District: <select class="form-control" name="district" required>
-                <option value="">--Select District--</option>
+    const steps = formContainer.querySelectorAll('.form-step');
+    const nextBtn = formContainer.querySelector('#next-btn');
+    const prevBtn = formContainer.querySelector('#prev-btn');
+    const submitBtn = formContainer.querySelector('#submit-btn');
+    const indicators = formContainer.querySelectorAll('.step-indicator');
+    const progressLine = formContainer.querySelector('#progress-line');
 
-            
-            <?php
-            
-            $districts = [
-                "Colombo","Gampaha","Kalutara","Kandy","Matale","Nuwara Eliya",
-                "Galle","Matara","Hambantota","Jaffna","Kilinochchi","Mannar",
-                "Vavuniya","Mullaitivu","Batticaloa","Ampara","Trincomalee",
-                "Kurunegala","Puttalam","Anuradhapura","Polonnaruwa",
-                "Badulla","Moneragala","Ratnapura","Kegalle"
-            ];
-            foreach($districts as $d) {
-                $selected = ($district == $d) ? "selected" : "";
-                echo "<option value=\"$d\" $selected>$d</option>";
+    let currentStep = 1;
+    const totalSteps = steps.length;
+
+    function goToStep(stepNumber) {
+        currentStep = stepNumber;
+        steps.forEach(step => {
+            step.style.display = 'none';
+            step.classList.remove('active');
+        });
+
+        const activeStepEl = formContainer.querySelector(`#step-${currentStep}`);
+        if(activeStepEl) {
+            activeStepEl.style.display = 'block';
+            setTimeout(() => activeStepEl.classList.add('active'), 10);
+        }
+
+        if(prevBtn) prevBtn.style.display = currentStep > 1 ? 'inline-flex' : 'none';
+        if(nextBtn) nextBtn.style.display = currentStep < totalSteps ? 'inline-flex' : 'none';
+        if(submitBtn) submitBtn.style.display = currentStep === totalSteps ? 'inline-flex' : 'none';
+
+        updateProgress();
+
+        if (currentStep === totalSteps) {
+            updateReviewData();
+        }
+    }
+
+    function updateProgress() {
+        indicators.forEach((indicator, index) => {
+            const step = index + 1;
+            indicator.classList.remove('active', 'completed');
+            if (step < currentStep) {
+                indicator.classList.add('completed');
+            } else if (step === currentStep) {
+                indicator.classList.add('active');
             }
-            ?>
-        </select><br>
+        });
+        if(progressLine) {
+            const progressPercentage = totalSteps > 1 ? ((currentStep - 1) / (totalSteps - 1)) * 100 : 0;
+            progressLine.style.width = `${progressPercentage}%`;
+        }
+    }
 
+    function validateStep(stepNumber) {
+        const currentStepEl = formContainer.querySelector(`#step-${stepNumber}`);
+        if(!currentStepEl) return false;
 
-            Phone Number: <input type="text" class="form-control"name="phone" required maxlength="10" pattern="0\d{9}" value="<?php echo htmlspecialchars($phone); ?>"><br>
-            
-            Email Address<input type="text" class="form-control"name="email" required value="<?php echo htmlspecialchars($email); ?>"><br>
-          
-            <button class="btn btn-primary rounded-xl"  style="display: block; margin: 5px auto;">Next</button>
-        </form>
+        const currentStepFields = currentStepEl.querySelectorAll('[required]');
+        let isValid = true;
+        currentStepFields.forEach(field => {
+            if (!field.value.trim()) {
+                field.style.borderColor = 'var(--color-error, #ef4444)';
+                isValid = false;
+            } else {
+                field.style.borderColor = '#ced4da';
+            }
+        });
+        return isValid;
+    }
 
-     </div>
+    function updateReviewData() {
+        const formData = new FormData(form);
+        for (let [key, value] of formData.entries()) {
+            const reviewElement = formContainer.querySelector(`[data-review="${key}"]`);
+            if (reviewElement) {
+                reviewElement.textContent = value || 'N/A';
+            }
+        }
 
-<?php elseif ($step === 2): ?>
+        const capacityEl = formContainer.querySelector('[data-review="systemCapacity"]');
+        if(capacityEl) capacityEl.textContent = formData.get('systemCapacity') ? `${formData.get('systemCapacity')} kWp` : 'N/A';
 
-    <div class="text-center">   
-        <h4>Step 2</h4> 
-        <h2>Solar Panel Details</h2>
-    </div>
+        const tiltEl = formContainer.querySelector('[data-review="panelTilt"]');
+        if(tiltEl) tiltEl.textContent = formData.get('panelTilt') ? `${formData.get('panelTilt')}°` : 'N/A';
+    }
 
+    if(nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            if (validateStep(currentStep) && currentStep < totalSteps) {
+                goToStep(currentStep + 1);
+            }
+        });
+    }
 
-    <div  class="p-4 bg-surface w-75" style="display: block; margin: 0 auto;">
+    if(prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                goToStep(currentStep - 1);
+            }
+        });
+    }
 
-        <form method="post" action="save.php">
-            <!-- Pass customer data again as hidden inputs -->
-            <input type="hidden" name="name" value="<?php echo htmlspecialchars($name); ?>">
-            <input type="hidden" name="NIC" value="<?php echo htmlspecialchars($NIC); ?>">
-            <input type="hidden" name="phone" value="<?php echo htmlspecialchars($phone); ?>">
-            <input type="hidden" name="email" value="<?php echo htmlspecialchars($email); ?>">
-            <input type="hidden" name="district" value="<?php echo htmlspecialchars($district); ?>">
+    formContainer.querySelectorAll('.edit-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const stepToEdit = parseInt(this.getAttribute('data-step'));
+            goToStep(stepToEdit);
+        });
+    });
 
+    form.addEventListener('submit', function(e) {
+        if (currentStep !== totalSteps) {
+             e.preventDefault();
+             return;
+        }
+        let isFormValid = true;
+        for(let i = 1; i < totalSteps; i++) {
+            if (!validateStep(i)) {
+                isFormValid = false;
+                goToStep(i);
+                break;
+            }
+        }
+        if(!isFormValid) {
+            e.preventDefault();
+            alert('Please fill out all required fields before submitting.');
+        }
+    });
 
-            <input type="hidden" name="step" value="2">
+    // Initial setup
+    goToStep(1);
 
-            Tilt(degrees):<input type="text" class="form-control" name="Tilt" required value="<?php echo htmlspecialchars($tilt); ?>"><br>
-            Capacity (kW): <input type="number" class="form-control" name="capacity" required value="<?php echo htmlspecialchars($capacity); ?>"><br>
-            Azimuth(degrees): <input type="number" class="form-control" name="Azimuth" required value="<?php echo htmlspecialchars($Azimuth); ?>"><br>
+})();
+</script>
 
-            <!-- Previous button sends POST back here -->
-            <button type="submit" name="previous" value="1" formaction="/solarsense/installer/add_customer" formnovalidate class="btn btn-primary rounded-xl" style="display: block; margin: 0 auto;">Previous</button>
-
-            <!--  <button type="submit" name="previous" value="1" formaction="<?php echo $_SERVER['PHP_SELF']; ?>"> Previous</button>     -->
-
-            <button  name="save" value="1"  class="btn btn-primary rounded-xl" style="display: block; margin: 5px auto;">Save</button>
-        </form>
-    </div>
-
-<?php endif; ?>
-
-
-
-
+</div>
