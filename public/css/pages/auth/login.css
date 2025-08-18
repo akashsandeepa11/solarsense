@@ -1,0 +1,111 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden; /* Prevents scrollbars on the main page */
+}
+
+.login-container {
+  min-height: 100vh;
+}
+
+.login-promo-panel {
+  flex: 1;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 4rem;
+  position: relative;
+  overflow: hidden;
+  /* Updated to the new gradient */
+  background: linear-gradient(to bottom, #fe9630 0%, #d67000 85%, #c26300 100%);
+}
+
+.login-promo-panel h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: white; /* Explicitly set color to white */
+}
+
+.login-promo-panel p {
+  font-size: 1.125rem;
+  max-width: 400px;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+/* New button style to match the image */
+.btn-light-orange {
+  background-color: #ffab6b; /* Lighter shade of primary */
+  border: none;
+  color: white;
+  padding: 0.75rem 2rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+}
+
+.btn-light-orange:hover {
+  background-color: #ffc08a; /* Even lighter on hover */
+}
+
+/* Updated decorative circles to be outlines and crossed */
+.login-promo-panel::before,
+.login-promo-panel::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15); /* Thin white border */
+  z-index: 1;
+}
+
+.login-promo-panel::before {
+  width: 400px;
+  height: 400px;
+  bottom: -200px; /* Adjusted position */
+  left: -150px; /* Adjusted position */
+}
+
+.login-promo-panel::after {
+  width: 400px;
+  height: 400px;
+  bottom: -150px; /* Adjusted position */
+  left: -200px; /* Adjusted position */
+}
+
+.login-form-panel {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.login-form-wrapper {
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-form-wrapper h2 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.forgot-password:hover {
+  color: var(--color-primary, #fe9630);
+  text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .login-promo-panel {
+    display: none;
+  }
+  .login-form-panel {
+    flex-basis: 100%;
+  }
+}
