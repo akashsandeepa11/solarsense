@@ -49,7 +49,7 @@ foreach ($navigation_links as $section => $items): ?>
         </a>
         <a href="<?php echo URLROOT?>/auth/login" class="sidebar-nav-link text-error text-decoration-none hover:no-underline">
             <i class="fa-solid fa-arrow-right-from-bracket"></i>
-            <span>Logout Account</span>
+            <span>Logout</span>
         </a>
     </div>
 </aside>
