@@ -314,7 +314,7 @@ $all_districts = [
         });
 
         // Initial setup
-        goToStep(4);
+        goToStep(1);
 
     })();
 </script>
