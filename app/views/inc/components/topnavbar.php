@@ -7,7 +7,6 @@
         <button class="btn border-0 mr-3" id="sidebar-toggle-btn">
             <i class="fas fa-solid fa-bars"></i>
         </button>
-        <h4 class="font-bold mb-0">Dashboard</h4>
     </div>
 
     <!-- Center Search -->
