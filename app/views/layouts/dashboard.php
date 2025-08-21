@@ -44,10 +44,11 @@
     $service_agent_nav = [
         'MAIN' => [
             ['title' => 'Assigned Tasks', 'url' => '/service_agent/tasks', 'icon' => 'fas fa-tasks'],
-            ['title' => 'Completed Work', 'url' => '/service_agent/history', 'icon' => 'fas fa-history'],
+            ['title' => 'Task History', 'url' => '/service_agent/history', 'icon' => 'fas fa-history'],
+            ['title' => 'Profile', 'url' => '/service_agent/profile', 'icon' => 'fas fa-user'],
         ],
         'SETTINGS' => [
-            ['title' => 'Profile', 'url' => '/service_agent/profile', 'icon' => 'fas fa-user-circle'],
+            ['title' => 'Setting', 'url' => '/service_agent/settings', 'icon' => 'fas fa-user-cog'],
         ],
     ];
 

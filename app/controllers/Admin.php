@@ -21,7 +21,7 @@ class Admin extends Controller{
             'user' => $this->user,
         ];
 
-        $this->view('pages/admin/users', $data, layout: 'users');
+        $this->view('pages/admin/users', $data, 'dashboard');
     }
 
     public function reports(){
@@ -29,7 +29,7 @@ class Admin extends Controller{
             'user' => $this->user,
         ];
 
-        $this->view('pages/admin/reports', $data, layout: 'reports');
+        $this->view('pages/admin/reports', $data, 'dashboard');
     }
 }
 ?>
