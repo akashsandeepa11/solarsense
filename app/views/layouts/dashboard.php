@@ -55,9 +55,9 @@
     // --- Navigation Array for CEB Agent ---
     $ceb_agent_nav = [
         'MAIN' => [
-            ['title' => 'Dashboard', 'url' => '/ceb_agent/dashboard', 'icon' => 'fas fa-bolt'],
-            ['title' => 'Power Cut Schedule', 'url' => '/ceb_agent/powercuts', 'icon' => 'fas fa-calendar-alt'],
-            ['title' => 'Grid Insights', 'url' => '/ceb_agent/insights', 'icon' => 'fas fa-chart-line'],
+            ['title' => 'Dashboard', 'url' => '/cebagent/dashboard', 'icon' => 'fas fa-bolt'],
+            ['title' => 'Power Cut Schedule', 'url' => '/cebagent/powercut_schedule', 'icon' => 'fas fa-calendar-alt'],
+            ['title' => 'Grid Insights', 'url' => '/cebagent/grid_insights', 'icon' => 'fas fa-chart-line'],
         ],
         'SETTINGS' => [
             ['title' => 'Profile', 'url' => '/ceb_agent/profile', 'icon' => 'fas fa-user-shield'],
