@@ -39,24 +39,22 @@ $service_agents = [
     ['name' => 'Fathima Noor', 'status' => 'Available'],
 ];
 
-// Fleet Performance Snapshot
-$fleet_snapshot = [
-    'average_performance' => '96%',
-    'systems_healthy' => 120,
-    'systems_underperforming' => 8,
+// Fleet-Wide Energy Generation Chart Data (in MWh for larger scale)
+$fleet_generation_data = [
+    'labels' => ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+    'data' => [56.4, 62.1, 60.5, 68.2, 65.7, 61.3], // MWh
 ];
 
-// Recently Added Customers
-$new_customers = [
-    ['name' => 'Ravi Fernando', 'date' => '2025-08-19'],
-    ['name' => 'Samanthi De Silva', 'date' => '2025-08-18'],
-    ['name' => 'John Doe', 'date' => '2025-08-15'],
+// Best & Worst Performing Systems
+$best_performers = [
+    ['name' => 'Ravi Fernando', 'performance' => 108, 'status_class' => 'text-success'],
+    ['name' => 'Samanthi De Silva', 'performance' => 105, 'status_class' => 'text-success'],
+    ['name' => 'John Doe', 'performance' => 103, 'status_class' => 'text-success'],
 ];
-
-// Recent Service Reports
-$recent_reports = [
-    ['client' => 'Nimali Silva', 'agent' => 'Anura Kumara', 'date' => '2025-08-20'],
-    ['client' => 'Kamal Perera', 'agent' => 'Dasun Shanaka', 'date' => '2025-08-19'],
+$worst_performers = [
+    ['name' => 'Nimali Silva', 'performance' => 65, 'status_class' => 'text-error'],
+    ['name' => 'Suresh Kumar', 'performance' => 78, 'status_class' => 'text-warning'],
+    ['name' => 'Kamal Perera', 'performance' => 82, 'status_class' => 'text-warning'],
 ];
 
 
@@ -79,7 +77,7 @@ function getAgentStatusClass($status) {
         <div class="d-flex justify-between align-center mb-6">
             <div>
                 <h1 class="text-4xl font-bold">Good Afternoon, Installer!</h1>
-                <p class="text-secondary">Here's your business overview for Wednesday, August 20th.</p>
+                <p class="text-secondary">Here's your business and fleet performance overview.</p>
             </div>
             <div>
                 <a href="#" class="btn btn-primary rounded-lg mr-2">+ Add New Customer</a>
@@ -106,6 +104,16 @@ function getAgentStatusClass($status) {
         <div class="row">
             <!-- Left Column -->
             <div class="col-lg-8">
+                <!-- Fleet-Wide Energy Generation Chart -->
+                <div class="card shadow-lg rounded-xl mb-6">
+                    <div class="card-body">
+                        <h3 class="card-title text-2xl font-semibold mb-4">Fleet-Wide Energy Generation (MWh)</h3>
+                        <div class="chart-container">
+                            <canvas id="fleetGenerationChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- High-Priority Alerts -->
                 <div class="card shadow-lg rounded-xl mb-6">
                     <div class="card-body">
@@ -124,6 +132,7 @@ function getAgentStatusClass($status) {
                         <?php endforeach; ?>
                     </div>
                 </div>
+                
                 <!-- Performance Charts -->
                 <div class="row">
                     <div class="col-md-6 mb-4">
@@ -147,28 +156,38 @@ function getAgentStatusClass($status) {
                         </div>
                     </div>
                 </div>
-                 <!-- Recent Service Reports -->
-                <div class="card shadow-lg rounded-xl mb-6">
-                    <div class="card-body">
-                        <h3 class="card-title text-2xl font-semibold mb-4">Recent Service Reports</h3>
-                        <?php foreach($recent_reports as $report): ?>
-                        <div class="alert-item d-flex justify-between align-center py-3">
-                            <div class="d-flex align-center">
-                                <i class="fas fa-file-alt text-secondary text-xl mr-4"></i>
-                                <div>
-                                    <div class="font-semibold">Report for <?php echo $report['client']; ?></div>
-                                    <div class="text-secondary text-sm">Submitted by <?php echo $report['agent']; ?> on <?php echo $report['date']; ?></div>
-                                </div>
-                            </div>
-                            <a href="#" class="btn btn-sm btn-secondary rounded-lg">View Report</a>
-                        </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
             </div>
             <!-- Right Column -->
             <div class="col-lg-4">
+                <!-- Best & Worst Performers -->
                 <div class="card shadow-lg rounded-xl mb-6">
+                    <div class="card-body">
+                        <h3 class="card-title text-2xl font-semibold mb-4">System Performance Snapshot</h3>
+                        <!-- Best Performers -->
+                        <div class="mb-4">
+                            <h4 class="font-semibold text-success mb-2">Best Performing Systems</h4>
+                            <?php foreach($best_performers as $performer): ?>
+                            <div class="performer-item d-flex justify-between align-center py-2">
+                                <span><i class="fas fa-arrow-up mr-2"></i><?php echo $performer['name']; ?></span>
+                                <span class="font-bold <?php echo $performer['status_class']; ?>"><?php echo $performer['performance']; ?>%</span>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <!-- Worst Performers -->
+                        <div>
+                            <h4 class="font-semibold text-error mb-2">Worst Performing Systems</h4>
+                             <?php foreach($worst_performers as $performer): ?>
+                            <div class="performer-item d-flex justify-between align-center py-2">
+                                <span><i class="fas fa-arrow-down mr-2"></i><?php echo $performer['name']; ?></span>
+                                <span class="font-bold <?php echo $performer['status_class']; ?>"><?php echo $performer['performance']; ?>%</span>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Team Status -->
+                <div class="card shadow-lg rounded-xl">
                     <div class="card-body">
                         <h3 class="card-title text-2xl font-semibold mb-4">Service Team Availability</h3>
                         <?php foreach($service_agents as $agent): ?>
@@ -182,42 +201,40 @@ function getAgentStatusClass($status) {
                         <?php endforeach; ?>
                     </div>
                 </div>
-                 <!-- Fleet Performance Snapshot -->
-                 <div class="card shadow-lg rounded-xl mb-6">
-                    <div class="card-body">
-                        <h3 class="card-title text-2xl font-semibold mb-4">Fleet Performance</h3>
-                        <div class="d-flex justify-between align-center py-2">
-                            <span class="text-secondary">Average Performance</span>
-                            <span class="font-bold text-xl"><?php echo $fleet_snapshot['average_performance']; ?></span>
-                        </div>
-                         <div class="d-flex justify-between align-center py-2">
-                            <span class="text-secondary">Systems Healthy</span>
-                            <span class="font-bold text-xl text-success"><?php echo $fleet_snapshot['systems_healthy']; ?></span>
-                        </div>
-                         <div class="d-flex justify-between align-center py-2">
-                            <span class="text-secondary">Underperforming</span>
-                            <span class="font-bold text-xl text-warning"><?php echo $fleet_snapshot['systems_underperforming']; ?></span>
-                        </div>
-                    </div>
-                </div>
-                 <!-- New Customers (Last 30 Days) -->
-                 <div class="card shadow-lg rounded-xl">
-                    <div class="card-body">
-                        <h3 class="card-title text-2xl font-semibold mb-4">New Customers</h3>
-                        <?php foreach($new_customers as $customer): ?>
-                        <div class="d-flex align-center py-2">
-                            <i class="fas fa-user-check text-success mr-3"></i>
-                            <span><?php echo $customer['name']; ?> - Joined <?php echo $customer['date']; ?></span>
-                        </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Fleet-Wide Energy Generation Chart (Line)
+            const fleetGenerationCtx = document.getElementById('fleetGenerationChart');
+            if (fleetGenerationCtx) {
+                new Chart(fleetGenerationCtx, {
+                    type: 'line',
+                    data: {
+                        labels: <?php echo json_encode($fleet_generation_data['labels']); ?>,
+                        datasets: [{
+                            label: 'Total Generation (MWh)',
+                            data: <?php echo json_encode($fleet_generation_data['data']); ?>,
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            borderColor: 'rgba(34, 197, 94, 1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: false }
+                        },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+
             // New Customers Chart (Bar)
             const newCustomersCtx = document.getElementById('newCustomersChart');
             if (newCustomersCtx) {
