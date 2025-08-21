@@ -2,6 +2,9 @@
 // --- PHP Setup for Dummy Data ---
 // In a real controller, this data would be fetched from the database.
 
+// --- NEW: Define the solar tariff rate ---
+define('SOLAR_TARIFF_RATE_LKR', 37.50); // Example: LKR 37.50 per kWh exported
+
 // User Info
 $user_name = "Akash Sandeepa";
 
@@ -20,11 +23,15 @@ $daily_forecast = [
 ];
 
 // Monthly Performance Summary (from last SMS)
+$grid_export_kwh = 310;
+$monthly_income_lkr = $grid_export_kwh * SOLAR_TARIFF_RATE_LKR;
+
 $summary_cards = [
     ['label' => 'Total Solar Generation', 'value' => '450 kWh', 'icon' => 'fas fa-solar-panel'],
-    ['label' => 'Grid Export', 'value' => '310 kWh', 'icon' => 'fas fa-arrow-up-from-grid-line'],
+    ['label' => 'Grid Export', 'value' => $grid_export_kwh . ' kWh', 'icon' => 'fas fa-arrow-up-from-grid-line'],
     ['label' => 'Grid Import', 'value' => '85 kWh', 'icon' => 'fas fa-arrow-down-to-grid-line'],
-    ['label' => 'Self-Consumption', 'value' => '140 kWh', 'icon' => 'fas fa-home'],
+    // --- NEW CARD ---
+    ['label' => 'Monthly Income', 'value' => 'LKR ' . number_format($monthly_income_lkr), 'icon' => 'fas fa-coins'],
 ];
 
 // System Health & Financials
@@ -36,16 +43,15 @@ $profit_tracker = [
     'yearly_goal_progress' => 78 // Percentage
 ];
 
-// --- UPDATED CHART DATA ---
 // Historical Chart Data for Actual vs. Expected Generation
 $performance_chart_data = [
     'labels' => ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
     'actual_generation' => [420, 480, 460, 510, 490, 450],
     'expected_generation' => [430, 470, 465, 500, 495, 455],
-    'grid_import' => [120, 95, 110, 70, 75, 85], // Added for context
+    'grid_import' => [120, 95, 110, 70, 75, 85],
 ];
 
-// --- NEW: Logic to determine bar colors based on performance ---
+// Logic to determine bar colors based on performance
 $bar_colors = [];
 for ($i = 0; $i < count($performance_chart_data['actual_generation']); $i++) {
     $actual = $performance_chart_data['actual_generation'][$i];
@@ -162,6 +168,8 @@ $recent_alerts = [
                     <h3 class="card-title text-xl font-semibold">Lifetime Profit Tracker</h3>
                     <p class="text-secondary text-sm">Total Accumulated Savings</p>
                     <p class="text-3xl font-bold text-success mb-3"><?php echo $profit_tracker['total_accumulated']; ?></p>
+                    <!-- --- NEW DETAIL --- -->
+                    <p class="text-secondary text-sm mt-n2 mb-2">This month's contribution: <strong>LKR <?php echo number_format($monthly_income_lkr); ?></strong></p>
                     <div class="progress-bar-container">
                         <div class="progress-bar bg-accent" style="width: <?php echo $profit_tracker['yearly_goal_progress']; ?>%;">
                             <span class="progress-bar-label"><?php echo $profit_tracker['yearly_goal_progress']; ?>% of yearly goal</span>
@@ -203,7 +211,7 @@ $recent_alerts = [
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // --- UPDATED --- Performance Comparison Chart
+        // Performance Comparison Chart
         const performanceCtx = document.getElementById('performanceComparisonChart');
         if (performanceCtx) {
             new Chart(performanceCtx, {
