@@ -8,18 +8,15 @@
         ];
 
         public function __construct(){
-            die('ServiceAgent controller loaded');
         }
 
         public function tasks(): void{
-
-            echo "dfghjkl;";
             
             $data = [
                 'user' => $this->user,
             ];
 
-            $this->view('pages/service_agent/tasks', $data, 'dashboard');
+            $this->view('pages/service_agent/tasks', $data, layout:'dashboard');
         }
 
         public function history(){
