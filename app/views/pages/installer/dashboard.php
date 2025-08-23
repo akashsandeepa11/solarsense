@@ -72,7 +72,7 @@ function getAgentStatusClass($status) {
 <!-- Include Chart.js for the charts to render -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<div class="content-area">
+<div class="content-area" >
         <!-- Header Section -->
         <div class="d-flex justify-between align-center mb-6">
             <div>

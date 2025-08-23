@@ -9,7 +9,7 @@
             [
                 'title' => 'Dashboard',
                 'url' => '/homeowner/dashboard',
-                'icon' => 'fas fa-chart-pie',
+                'icon' => 'fas fa-chart-pie'
                 // 'sub_items' => [
                 //     ['title' => 'Earnings', 'url' => '/homeowner/earnings'],
                 //     ['title' => 'Fault History', 'url' => '/homeowner/faults'],
@@ -66,12 +66,16 @@
     // --- Navigation Array for Admin ---
     $admin_nav = [
         'MAIN' => [
-            ['title' => 'Dashboard', 'url' => '/admin/dashboard', 'icon' => 'fas fa-tachometer-alt'],
-            ['title' => 'User Management', 'url' => '/admin/users', 'icon' => 'fas fa-users'],
-            ['title' => 'Platform Reports', 'url' => '/admin/reports', 'icon' => 'fas fa-file-alt'],
+            ['title' => 'Dashboard', 'url' => '/admin/dashboard', 'icon' => 'fas fa-solid fa-chart-pie'],
+            ['title' => 'User Management', 'url' => '/admin/userManagement', 'icon' => 'fas fa-solid fa-users'],
+            ['title' => 'Fleet Management', 'url' => '/admin/fleetManagement', 'icon' => 'fas fa-solid fa-solar-panel'],
+            ['title' => 'Maintenance', 'url' => '/admin/maintenance', 'icon' => 'fas fa-solid fa-wrench'],
+        ],
+        'ANALYTICS' => [
+            ['title' => 'Platform Reports', 'url' => '/admin/reports', 'icon' => 'fas fa-solid fa-file-lines'],
         ],
         'SETTINGS' => [
-            ['title' => 'System Configuration', 'url' => '/admin/settings', 'icon' => 'fas fa-cogs'],
+            ['title' => 'System Settings', 'url' => '/admin/settings', 'icon' => 'fas fa-solid fa-gears'],
         ],
     ];
     // --- Logic to select the correct navigation array ---
@@ -125,8 +129,8 @@
     </div>
 
     <script>
-        // JavaScript to handle the sidebar toggle functionality
-        document.addEventListener('DOMContentLoaded', function() {
+            // JavaScript to handle the sidebar toggle functionality
+            document.addEventListener('DOMContentLoaded', function() {
             const sidebar = document.getElementById('sidebar');
             const toggleBtn = document.getElementById('sidebar-toggle-btn');
 
