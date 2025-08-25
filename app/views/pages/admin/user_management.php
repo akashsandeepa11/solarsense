@@ -69,7 +69,7 @@ function getStatusClass($status) {
 
                         <tr data-role="<?php echo $user['role']; ?>">
                             <td>
-                                <div class="d-flex align-center" style="background-color: green;">
+                                <div class="d-flex align-center">
                                     <div class="avatar"><?php echo $user['avatar']; ?></div>
                                     <div>
                                         <div class="font-semibold"><?php echo $user['name']; ?></div>
