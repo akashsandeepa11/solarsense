@@ -1,0 +1,1 @@
+<h1>Inventory manager Suppliers</h1>

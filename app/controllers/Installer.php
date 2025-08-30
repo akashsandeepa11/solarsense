@@ -25,7 +25,7 @@
                 'user' => $this->user,
             ];
 
-            $this->view('pages/installer/fleet_dashboard', $data, 'dashboard');
+            $this->view('pages/installer_admin/fleet_dashboard', $data, 'dashboard');
         }
 
         public function add_customer(){

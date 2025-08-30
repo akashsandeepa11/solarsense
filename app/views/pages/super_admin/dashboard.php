@@ -1,0 +1,1 @@
+<h1>Super admin dashboard</h1>

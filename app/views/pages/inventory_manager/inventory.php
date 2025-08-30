@@ -1,0 +1,1 @@
+<h1>Inventory manager Inventory</h1>

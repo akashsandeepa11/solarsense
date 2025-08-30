@@ -1,11 +1,11 @@
 <?php
 // --- User Role Constants ---
-// Use these constants throughout the application instead of strings.
 
-define('ROLE_ADMIN', 'Admin');
-define('ROLE_HOMEOWNER', 'Homeowner');
-define('ROLE_INSTALLER', 'Installer');
+define('ROLE_SUPER_ADMIN', 'SuperAdmin');
+define('ROLE_INSTALLER_ADMIN', 'InstallerAdmin');
+define('ROLE_OPERATION_MANAGER', 'OperationManager');
+define('ROLE_INVENTORY_MANAGER', 'InventoryManager');
 define('ROLE_SERVICE_AGENT', 'ServiceAgent');
-define('ROLE_CEB_AGENT', 'CEBAgent');
+define('ROLE_HOMEOWNER', 'Homeowner');
 
 ?>
