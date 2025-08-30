@@ -1,9 +1,9 @@
 <?php
 
-    class Admin extends Controller{
+    class InstallerAdmin extends Controller{
 
         private $user = [
-            'role' => ROLE_ADMIN,
+            'role' => ROLE_INSTALLER_ADMIN,
         ];
 
         public function __construct(){
@@ -19,8 +19,16 @@
             
             $this->view('pages/admin/dashboard', $data, layout: 'dashboard');
         }
+
+        public function add_customer(){
+            $data = [
+                'user' => $this->user,
+            ];
+            
+            $this->view('pages/installer_admin/add_customer', $data, layout: 'dashboard');
+        }
         
-        public function userManagement(){
+        public function user_management(){
             $data = [
                 'user' => $this->user,
             ];
@@ -28,7 +36,7 @@
             $this->view('pages/admin/user_management', $data, layout: 'dashboard');
         }
         
-        public function platformReports(){
+        public function platform_reports(){
             $data = [
                 'user' => $this->user,
             ];
@@ -36,7 +44,7 @@
             $this->view('pages/admin/reports', $data, layout: 'dashboard');
         }
 
-        public function systemSettings(){
+        public function system_settings(){
             $data = [
                 'user' => $this->user,
             ];
@@ -46,7 +54,7 @@
 
         // --- Inherited Installer Pages (for viewing/managing) ---
 
-        public function fleetManagement(){
+        public function fleet_management(){
             $data = [
                 'user' => $this->user,
             ];
