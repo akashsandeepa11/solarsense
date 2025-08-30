@@ -45,9 +45,10 @@
         'MAIN' => [
             ['title' => 'Assigned Tasks', 'url' => '/service_agent/tasks', 'icon' => 'fas fa-tasks'],
             ['title' => 'Completed Work', 'url' => '/service_agent/history', 'icon' => 'fas fa-history'],
+            ['title' => 'Profile', 'url' => '/service_agent/profile', 'icon' => 'fas fa-user-circle']
         ],
         'SETTINGS' => [
-            ['title' => 'Profile', 'url' => '/service_agent/profile', 'icon' => 'fas fa-user-circle'],
+            ['title' => 'Settings', 'url' => '/service_agent/settings', 'icon' => 'fas fa-cog'],
         ],
     ];
 
