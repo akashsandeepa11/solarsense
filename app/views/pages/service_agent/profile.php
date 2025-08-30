@@ -50,9 +50,9 @@
     .form-control {
       flex: 1;
       color:gray;
-      background-color: #01357aff;  /* light background */
-      color: #333;               /* text color */
-      border: 1px solid #ccc;    /* subtle border */
+      background-color: #f6f6f67e !important;  /* light background */
+      color: #0000008f;               /* text color */
+      border: 1px solid #e5e5e594 !important;   
     }
 
     
@@ -145,6 +145,50 @@
 #summary-facebook:hover { color: #1877f2; } /* Facebook blue */
 #summary-x:hover { color: black; }          /* Twitter/X black */
 
+.stats {
+  display: flex;
+  align-items: center;     /* makes divider centered automatically */
+  justify-content: center;
+  gap: 2rem;               /* space between blocks */
+  margin-top: 1rem;
+}
+
+.stat-block {
+  flex: 1;
+  text-align: center;
+}
+
+.stat-block h5 {
+  margin: 0;              /* remove default margin */
+  margin-bottom: 3px;     /* tiny space below number */
+}
+
+.stat-block p {
+  margin: 0;              /* remove default margin */
+  font-size: 0.9rem;      /* optional: make text a bit smaller */
+  color: #666;            /* softer look */
+}
+
+
+.stats-divider {
+  width: 1px; 
+  height: 70px;
+  background-color: rgba(0, 0, 0, 0.1); /* lighter = looks thinner */
+  align-self: baseline;    /* makes line match height of both stat blocks */
+}
+
+
+
+.avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #ddd;
+  background-size: cover;
+  background-position: center;
+}
+
+
 
   </style>
 </head>
@@ -231,7 +275,7 @@
 <div class="form-group">
   <label for="linkedin">LinkedIn</label>
   <div style="display: flex; align-items:center; position: relative;">
-    <input type="url" class="form-control" id="linkedin" value="https://www.linkedin.com/in/johndoe" readonly>
+    <input type="url" class="form-control" id="linkedin" value="https://www.linkedin.com/in/nadith-nemal-profile/" readonly>
     <button class="edit-btn" style="position:absolute; right:15px;">
       <i class="fas fa-pen"></i>
     </button>
@@ -299,16 +343,21 @@
 </div>
 
           <!-- Stats -->
-          <div class="d-flex justify-between">
-            <div>
-              <h5>10 Years</h5>
-              <p class="text-muted">Experience</p>
-            </div>
-            <div>
-              <h5>46</h5>
-              <p class="text-muted">Total Works</p>
-            </div>
-          </div>
+<div class="stats">
+  <div class="stat-block">
+    <h5>10 Years</h5>
+    <p class="text-muted">Experience</p>
+  </div>
+
+  <div class="stats-divider"></div>
+
+  <div class="stat-block">
+    <h5>46</h5>
+    <p class="text-muted">Total Works</p>
+  </div>
+</div>
+
+
         </div>
       </div>
     </div>
@@ -317,27 +366,69 @@
 
 
 <script>
-const buttons = document.querySelectorAll('.edit-btn'); // Select all edit buttons
+// Select all edit buttons
+const buttons = document.querySelectorAll('.edit-btn'); 
 
 buttons.forEach(button => {
   button.addEventListener('click', () => {
-    const inputs = document.querySelectorAll('.form-control'); // All input fields
-    const selectedInput = button.parentElement.querySelector('.form-control'); // Input next to clicked button
+    const inputs = document.querySelectorAll('.form-control'); 
+    const selectedInput = button.parentElement.querySelector('.form-control'); 
 
-    // Make all other inputs readonly
+    // Lock all other inputs
     inputs.forEach(input => {
       if (input !== selectedInput) {
-        input.setAttribute('readonly', true); // Lock input
-        input.style.border = 'none';          // Remove border for read-only inputs
+        input.setAttribute('readonly', true);
+        input.style.border = 'none';
       }
     });
 
-    // Enable the clicked input for editing
-    selectedInput.removeAttribute('readonly');  // Unlock input
-    selectedInput.style.border = '1px solid #000'; // Add border to show editable
-    selectedInput.focus();                       // Focus the input for typing
+    // Enable the clicked input
+    selectedInput.removeAttribute('readonly');  
+    selectedInput.style.border = '1px solid #000'; 
+    selectedInput.focus();                       
+
+    // Update right profile card in real-time
+    selectedInput.addEventListener('input', () => {
+      const value = selectedInput.value;
+
+      switch(selectedInput.id) {
+        case 'full-name':
+          document.getElementById('summary-name').textContent = value;
+          break;
+        case 'phone':
+          document.getElementById('summary-phone').textContent = value;
+          break;
+        case 'facebook':
+          document.getElementById('summary-facebook').href = value;
+          break;
+        case 'linkedin':
+          document.getElementById('summary-linkedin').href = value;
+          break;
+        case 'x':
+          document.getElementById('summary-x').href = value;
+          break;
+        case 'address':
+          document.getElementById('summary-location').textContent = value;
+          break;
+      }
+    });
   });
 });
+
+const avatarUpload = document.getElementById('avatar-upload');
+const profileAvatar = document.getElementById('profile-avatar');
+
+avatarUpload.addEventListener('change', function () {
+  const file = this.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      profileAvatar.style.backgroundImage = `url(${e.target.result})`;
+      profileAvatar.style.backgroundSize = "cover";
+      profileAvatar.style.backgroundPosition = "center";
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
 </script>
-
-

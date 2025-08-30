@@ -1,343 +1,449 @@
-<?php
-// Example PHP variables
-$fullName = "Akash Sandeepa";
-$email = "Akash88@example.com";
-$contactNumber = "0771234567";
-$physicalAddress = "123 Main Street";
-$district = "Colombo";
-$systemCapacity = 5;
-$panelTilt = 30;
-$panelAzimuth = "North";
-$installationDate = "2024-01-15";
-$panelBrand = "SunPower";
-$inverterBrand = "SMA";
-$cebAccount = "1234567890";
-$photo="/solarsense/public/img/logo.png";
-?>
-
-<link rel="stylesheet" href="<?php echo URLROOT?>/public/css/pages/homeowner/profile.css">
 
 
-<div class="customer-profile-container">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .row {
+      display: flex;         /* keeps left + right side by side */
+      gap: 1.5rem;           /* space between left and right */
+    }
+
+    .col-8 {
+      flex: 2;               /* ~2/3 width */
+    }
+
+    .col-4 {
+      flex: 1;               /* ~1/3 width */
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom:20px ;
+    }
+
+    .form-group {
+      display: flex;
+      /* align-items: center; */
+      flex-direction: column;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .A{
+      display: flex;
+    }
+   
 
 
-    <form method="post" action="save.php" enctype="multipart/form-data">
+    .form-control {
+      flex: 1;
+      color:gray;
+      background-color: #f6f6f67e!important;  /* light background */
+      color: #0000008f;               /* text color */
+      border: 1px solid #e5e5e594 !important;   
+    }
 
-    <!-- Profile Header -->
-    <div class="card profile-header">
-        <div class="user-image">
-            <img src=<?php echo htmlspecialchars($photo); ?> id="photo">
-            <input type="file" name="photo" id="file">
-            <label for="file" id="uploadbtn"><i class="fas fa-camera"></i></label>
+    
+    .form-group button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      margin-left: 8px;
+      font-size: 16px;
+    }
 
-        </div>
+    .profile-pic-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: #ddd;
+    }
+
+    .upload-btn {
+      display: inline-block;
+      margin-top: 10px;
+      cursor: pointer;
+      color: #007bff;
+    }
+
+    .d-flex {
+      display: flex;
+    }
+
+    .justify-center {
+      justify-content: center;
+    }
+
+    .justify-between {
+      justify-content: space-between;
+    }
+
+    .gap-2 {
+      gap: 0.5rem;
+    }
+
+    .gap-4 {
+      gap: 1rem;
+    }
+
+    .gap-6 {
+      gap: 1.5rem;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .mb-1 { margin-bottom: 0.25rem; }
+    .mb-3 { margin-bottom: 1rem; }
+    .mb-4 { margin-bottom: 1.5rem; }
+    .mb-6 { margin-bottom: 2rem; }
+
+    .star {
+      width: 20px;
+      height: 20px;
+      background: gold;
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 
+                         79% 91%, 50% 70%, 21% 91%, 32% 57%, 
+                         2% 35%, 39% 35%);
+      display: inline-block;
+    }
+
+    .star.inactive {
+      background: #ccc;
+    }
+
+   .social-icon {
+  font-size: 2rem;         /* make icons larger */
+  color: #1877f2; /* default color */
+  transition: color 0.3s;  /* smooth hover effect */
+   }
+
+.social-icon:hover {
+  color: #1877f2; /* change this per network */
+}
+
+#summary-linkedin:hover { color: #0a66c2; } /* LinkedIn blue */
+#summary-facebook:hover { color: #1877f2; } /* Facebook blue */
+#summary-x:hover { color: black; }          /* Twitter/X black */
+
+.stats {
+  display: flex;
+  align-items: center;     /* makes divider centered automatically */
+  justify-content: center;
+  gap: 2rem;               /* space between blocks */
+  margin-top: 1rem;
+}
+
+.stat-block {
+  flex: 1;
+  text-align: center;
+}
+
+.stat-block h5 {
+  margin: 0;              /* remove default margin */
+  margin-bottom: 3px;     /* tiny space below number */
+}
+
+.stat-block p {
+  margin: 0;              /* remove default margin */
+  font-size: 0.9rem;      /* optional: make text a bit smaller */
+  color: #666;            /* softer look */
+}
 
 
-       <div class="profile-info">
-            <h2><?php echo htmlspecialchars($fullName); ?></h2>
-           
-        </div>
-       
-    </div>
-
-    <!-- Personal & Contact Details -->
-    <div class="card profile-section">
-        <h3>Personal & Contact Details</h3>
-
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'fullName', 
-                    'name' => 'fullName', 
-                    'label' => 'Full Name', 
-                    'type' => 'text', 
-                    'icon' => 'fas fa-user', 
-                    'value' => $fullName, 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-            <span class="edit-icon" onclick="enableEdit('fullName')">&#9998;</span>
-        </div>
-
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'email', 
-                    'name' => 'email', 
-                    'label' => 'Email', 
-                    'type' => 'email', 
-                    'icon' => 'fas fa-envelope', 
-                    'value' => $email, 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-            <span class="edit-icon" onclick="enableEdit('email')">&#9998;</span>
-        </div>
-
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'contactNumber', 
-                    'name' => 'contactNumber', 
-                    'label' => 'Contact Number', 
-                    'type' => 'tel', 
-                    'icon' => 'fas fa-phone', 
-                    'value' => $contactNumber, 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-            <span class="edit-icon" onclick="enableEdit('contactNumber')">&#9998;</span>
-        </div>
-
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'physicalAddress', 
-                    'name' => 'physicalAddress', 
-                    'label' => 'Address', 
-                    'type' => 'text', 
-                    'icon' => 'fas fa-map-marker-alt', 
-                    'value' => $physicalAddress, 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-            <span class="edit-icon" onclick="enableEdit('physicalAddress')">&#9998;</span>
-        </div>
-
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'district', 
-                    'name' => 'district', 
-                    'label' => 'District', 
-                    'type' => 'text', 
-                    'icon' => 'fas fa-city', 
-                    'value' => $district, 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-            <span class="edit-icon" onclick="enableEdit('district')">&#9998;</span>
-        </div>
-
-         <button type="submit" id="saveButtonContainer" class="btn btn-primary"  style="display: none;"><i class="fas fa-save"></i> Save Changes </button>
-        
-    </div>
+.stats-divider {
+  width: 1px; 
+  height: 70px;
+  background-color: rgba(0, 0, 0, 0.1); /* lighter = looks thinner */
+  align-self: baseline;    /* makes line match height of both stat blocks */
+}
 
 
 
-    </form>
+.avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #ddd;
+  background-size: cover;
+  background-position: center;
+}
 
-    <!-- Solar System Details -->
-    <div class="card profile-section">
-        <h3>Solar System Specifications</h3>
+.card-name {
+  margin-bottom: 1px;
+  margin-left: 1rem;  /* same as label width */
+}
 
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'systemCapacity', 
-                    'name' => 'systemCapacity', 
-                    'label' => 'System Capacity', 
-                    'type' => 'text', 
-                    'icon' => 'fas fa-bolt', 
-                    'value' => $systemCapacity.' kWp', 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-            <!-- <span class="edit-icon" onclick="enableEdit('systemCapacity')">&#9998;</span> -->
-        </div>
 
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'panelTilt', 
-                    'name' => 'panelTilt', 
-                    'label' => 'Panel Tilt', 
-                    'type' => 'text', 
-                    'icon' => 'fas fa-angle-up', 
-                    'value' => $panelTilt.'°', 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-           <!-- <span class="edit-icon" onclick="enableEdit('panelTilt')">&#9998;</span> -->
-        </div>
 
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'panelAzimuth', 
-                    'name' => 'panelAzimuth', 
-                    'label' => 'Panel Azimuth', 
-                    'type' => 'text', 
-                    'icon' => 'fas fa-compass', 
-                    'value' => $panelAzimuth, 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-            <!--<span class="edit-icon" onclick="enableEdit('panelAzimuth')">&#9998;</span>-->
-        </div>
+  </style>
+</head>
+<body>
 
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'installationDate', 
-                    'name' => 'installationDate', 
-                    'label' => 'Installation Date', 
-                    'type' => 'date', 
-                    'icon' => 'fas fa-calendar-alt', 
-                    'value' => $installationDate, 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-            <!--<span class="edit-icon" onclick="enableEdit('installationDate')">&#9998;</span>-->
-        </div>
+<div class="container my-6">
+  <div class="row">
+    <!-- Left Column -->
+    <div class="col-8">
 
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'panelBrand', 
-                    'name' => 'panelBrand', 
-                    'label' => 'Panel Brand', 
-                    'type' => 'text', 
-                    'icon' => 'fas fa-solar-panel', 
-                    'value' => $panelBrand ?: "N/A", 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-            <!--<span class="edit-icon" onclick="enableEdit('panelBrand')">&#9998;</span>-->
-        </div>
+      <!-- first column -->
+      <div class="card">
+        <h5 class='card-name'>Personal Details</h5>
+        <div class="card-body">
+            <!-- Full Name -->
+          <div class="form-group">
+            <label for="full-name">Full Name</label>
+            <div style="display: flex; align-items:center; position: relative;">
+              <input type="text" class="form-control" id="full-name" value="Nadith Nemal" readonly>
+              <button class="edit-btn" style="position:absolute; right:15px;">
+                <i class="fas fa-pen"></i>
+              </button>
+            </div>
+          </div>
 
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'inverterBrand', 
-                    'name' => 'inverterBrand', 
-                    'label' => 'Inverter Brand', 
-                    'type' => 'text', 
-                    'icon' => 'fas fa-microchip', 
-                    'value' => $inverterBrand ?: "N/A", 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-            <!--<span class="edit-icon" onclick="enableEdit('inverterBrand')">&#9998;</span>-->
-        </div>
+             <!-- Email -->
+          <div class="form-group">
+            <label for="email">Email</label>
+            <div style="display: flex; align-items:center; position: relative;">
+              <input type="text" class="form-control" id="email" value="nadithnemal2002@gmail.com" readonly>
+              <button class="edit-btn" style="position:absolute; right:15px;">
+                <i class="fas fa-pen"></i>
+              </button>
+            </div>
+          </div>
 
-    </div>
+          <!-- Phone Number -->
+          <div class="form-group">
+            <label for="phone">Phone number</label>
+            <div style="display: flex; align-items:center; position: relative;">
+              <input type="text" class="form-control" id="phone" value="+54 548 654 65" readonly>
+              <button class="edit-btn" style="position:absolute; right:15px;">
+                <i class="fas fa-pen"></i>
+              </button>
+            </div>
+          </div>
 
-    <!-- Utility Account -->
-    <div class="card profile-section">
-        <h3>Utility Account</h3>
+          <!-- Address -->
+          <div class="form-group">
+            <label for="address">Address</label>
+            <div style="display: flex; align-items:center; position: relative;">
+              <input type="text" class="form-control" id="address" value="No. 47, Lakeview Lane, Colombo 07, Sri Lanka" readonly>
+              <button class="edit-btn" style="position:absolute; right:15px;">
+                <i class="fas fa-pen"></i>
+              </button>
+            </div>
+          </div>
 
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'cebAccount', 
-                    'name' => 'cebAccount', 
-                    'label' => 'CEB Account', 
-                    'type' => 'text', 
-                    'icon' => 'fas fa-id-card', 
-                    'value' => $cebAccount, 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-             <!--<span class="edit-icon" onclick="enableEdit('cebAccount')">&#9998;</span>-->
-        </div>
-
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'provider', 
-                    'name' => 'provider', 
-                    'label' => 'Provider', 
-                    'type' => 'text', 
-                    'icon' => 'fas fa-building', 
-                    'value' => 'Ceylon Electricity Board (CEB)', 
-                    'readonly' => true 
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
+          <!-- District (not editable) -->
+          <div class="form-group">
+            <label for="district">District</label>
+            <div style="display: flex; align-items:center; position: relative;">
+              <input type="text" class="form-control" id="district" value="Colombo" disabled>
+            </div>
+          </div> 
 
         </div>
+      </div>
+<!-- second coloum  -->
+      <div class="card">
+        <h5 class='card-name'>System Specification</h5>   
+        <div class="card-body">  
+            <!-- System Capacity -->
+          <div class="form-group">
+            <label for="system capacity">System Capacity</label>
+            <div style="display: flex; align-items:center; position: relative;">
+              <input type="text" class="form-control" id="system capacity" value="5 kWp" disabled>
+            </div>
+          </div>
 
-         
+            <!-- Panel Tilt -->
+          <div class="form-group">
+            <label for="Panel Tilt">Panel Tilt</label>
+            <div style="display: flex; align-items:center; position: relative;">
+              <input type="text" class="form-control" id="Panel Tilt" value="30`" disabled>
+            </div>
+          </div>
+
+          <!-- Panel Azimuth -->
+          <div class="form-group">
+            <label for="Panel Azimuth">Panel Azimuth</label>
+            <div style="display: flex; align-items:center; position: relative;">
+              <input type="text" class="form-control" id="Panel Azimuth" value="North" disabled>
+            </div>
+          </div>
+
+          <!-- Installation Date -->
+          <div class="form-group">
+            <label for="Installation Date">Installation Date</label>
+            <div style="display: flex; align-items:center; position: relative;">
+              <input type="text" class="form-control" id="Installation Date" value="01/05/2017" disabled>
+            </div>
+          </div>
+
+          <!-- Panel Brand -->
+          <div class="form-group">
+            <label for="Panel Brand">Panel Brand</label>
+            <div style="display: flex; align-items:center; position: relative;">
+              <input type="text" class="form-control" id="Panel Brand" value="SunPower" disabled>
+            </div>
+          </div>
+
+          <!-- Inverter Brand -->
+          <div class="form-group">
+            <label for="Inverter Brand">Inverter Brand</label>
+            <div style="display: flex; align-items:center; position: relative;">
+              <input type="text" class="form-control" id="Inverter Brand" value="SMA" disabled>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+
+            <!-- Third Column -->
+      <div class="card">
+        <h5 class='card-name'>Utility Details</h5>
+        <div class="card-body">  
+            <!-- CEB Account -->
+          <div class="form-group">
+            <label for="CEB Account">CEB Account</label>
+            <div style="display: flex; align-items:center; position: relative;">
+              <input type="text" class="form-control" id="CEB Account" value="123456VC" disabled>
+            </div>
+          </div>
+
+            <!-- Provider -->
+          <div class="form-group">
+            <label for="Provider">Provider</label>
+            <div style="display: flex; align-items:center; position: relative;">
+              <input type="text" class="form-control" id="Provider" value="Ceylon Electricity Board" disabled>
+            </div>
+          </div>
+   
+        </div>
+      </div>
+
 
     </div>
 
     
 
+    <!-- Right Column -->
+    <div class="col-4">
+      <div class="card text-center">
+        <div class="card-body">
+          <!-- Avatar Upload -->
+          <div class="profile-pic-wrapper mb-4">
+            <div class="avatar mx-auto" id="profile-avatar"></div>
+            <input type="file" id="avatar-upload" accept="image/*" hidden>
+            <label for="avatar-upload" class="upload-btn">Change</label>
+          </div>
+
+          <!-- Profile Info -->
+          <h4 class="mb-1" id="summary-name">Alexa Rawles</h4>
+          <p class="text-muted mb-1" id="summary-email">alexarawles@gmail.com</p>
+          <p class="text-muted mb-1" id="summary-location">Colombo 07, Sri Lanka</p>
+          <p class="mb-3" id="summary-phone">+54 548 654 65</p>
+
+           <!-- Stats -->
+          <div class="stats">
+            <div class="stat-block">
+              <h5>5 kWp</h5>
+              <p class="text-muted">System Capacity</p>
+            </div>
+
+            <div class="stats-divider"></div>
+
+            <div class="stat-block">
+              <h5>123456VC</h5>
+              <p class="text-muted">CEB Account</p>
+            </div>
+          </div>
+
+
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 
-
 <script>
+// Select all edit buttons
+const buttons = document.querySelectorAll('.edit-btn'); 
 
-// Ensure all inputs are read-only initially
-window.addEventListener('DOMContentLoaded', () => {
-    const inputs = document.querySelectorAll('input');
+buttons.forEach(button => {
+  button.addEventListener('click', () => {
+    const inputs = document.querySelectorAll('.form-control'); 
+    const selectedInput = button.parentElement.querySelector('.form-control'); 
+
+    // Lock all other inputs
     inputs.forEach(input => {
+      if (input !== selectedInput) {
         input.setAttribute('readonly', true);
         input.style.border = 'none';
-        input.dataset.originalValue = input.value; // store original value
+      }
     });
+
+    // Enable the clicked input
+    selectedInput.removeAttribute('readonly');  
+    selectedInput.style.border = '1px solid #000'; 
+    selectedInput.focus();                       
+
+    // Update right profile card in real-time
+    selectedInput.addEventListener('input', () => {
+      const value = selectedInput.value;
+
+      switch(selectedInput.id) {
+        case 'full-name':
+          document.getElementById('summary-name').textContent = value;
+          break;
+        case 'email':
+          document.getElementById('summary-email').textContent = value;
+          break;
+        case 'phone':
+          document.getElementById('summary-phone').textContent = value;
+          break;
+        case 'address':
+          document.getElementById('summary-location').textContent = value;
+          break;
+      }
+    });
+  });
 });
 
-function enableEdit(id) {
-    // First, make all other inputs read-only
-    const inputs = document.querySelectorAll('input');
-    inputs.forEach(input => {
-        if (input.id !== id) {
-            input.setAttribute('readonly', true);
-            input.style.border = 'none';
-        }
-    });
+const avatarUpload = document.getElementById('avatar-upload');
+const profileAvatar = document.getElementById('profile-avatar');
 
-    // Then toggle the selected input
-    const input = document.getElementById(id);
-    input.removeAttribute('readonly'); // Make editable
-    input.focus();
-    input.style.border = "1px solid #007bff";
-
-
-        // Show Save button only if input value changes
-    input.addEventListener('input', function checkChange() {
-        const saveBtn = document.getElementById('saveButtonContainer');
-        if (input.value !== input.dataset.originalValue) {
-            saveBtn.style.display = 'block';
-        } else {
-            saveBtn.style.display = 'none';
-        }
-    });
-
-
-}
-
-//for image upoload
-const photoInput = document.getElementById('file');
-const photoImg = document.getElementById('photo');
-
-photoInput.addEventListener('change', function() {
-    const file = this.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            photoImg.src = e.target.result; // Update the image preview
-        }
-        reader.readAsDataURL(file);
-        // Show Save button
-        document.getElementById('saveButtonContainer').style.display = 'block';
-    }
+avatarUpload.addEventListener('change', function () {
+  const file = this.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      profileAvatar.style.backgroundImage = `url(${e.target.result})`;
+      profileAvatar.style.backgroundSize = "cover";
+      profileAvatar.style.backgroundPosition = "center";
+    };
+    reader.readAsDataURL(file);
+  }
 });
 
 </script>
-
