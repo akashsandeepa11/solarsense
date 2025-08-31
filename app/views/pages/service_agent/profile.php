@@ -1,302 +1,147 @@
-
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f9f9f9;
-      margin: 0;
-      padding: 20px;
-    }
-
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .row {
-      display: flex;         /* keeps left + right side by side */
-      gap: 1.5rem;           /* space between left and right */
-    }
-
-    .col-8 {
-      flex: 2;               /* ~2/3 width */
-    }
-
-    .col-4 {
-      flex: 1;               /* ~1/3 width */
-    }
-
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      padding: 20px;
-    }
-
-    .form-group {
-      display: flex;
-      /* align-items: center; */
-      flex-direction: column;
-      justify-content: space-between;
-      margin-bottom: 16px;
-    }
-
-    .A{
-      display: flex;
-    }
-   
-
-
-    .form-control {
-      flex: 1;
-      color:gray;
-      background-color: #f6f6f67e !important;  /* light background */
-      color: #0000008f;               /* text color */
-      border: 1px solid #e5e5e594 !important;   
-    }
-
-    
-    .form-group button {
-      background: none;
-      border: none;
-      cursor: pointer;
-      margin-left: 8px;
-      font-size: 16px;
-    }
-
-    .profile-pic-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .avatar {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      background: #ddd;
-    }
-
-    .upload-btn {
-      display: inline-block;
-      margin-top: 10px;
-      cursor: pointer;
-      color: #007bff;
-    }
-
-    .d-flex {
-      display: flex;
-    }
-
-    .justify-center {
-      justify-content: center;
-    }
-
-    .justify-between {
-      justify-content: space-between;
-    }
-
-    .gap-2 {
-      gap: 0.5rem;
-    }
-
-    .gap-4 {
-      gap: 1rem;
-    }
-
-    .gap-6 {
-      gap: 1.5rem;
-    }
-
-    .text-center {
-      text-align: center;
-    }
-
-    .mb-1 { margin-bottom: 0.25rem; }
-    .mb-3 { margin-bottom: 1rem; }
-    .mb-4 { margin-bottom: 1.5rem; }
-    .mb-6 { margin-bottom: 2rem; }
-
-    .star {
-      width: 20px;
-      height: 20px;
-      background: gold;
-      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 
-                         79% 91%, 50% 70%, 21% 91%, 32% 57%, 
-                         2% 35%, 39% 35%);
-      display: inline-block;
-    }
-
-    .star.inactive {
-      background: #ccc;
-    }
-
-   .social-icon {
-  font-size: 2rem;         /* make icons larger */
-             color: #1877f2; /* default color */
-  transition: color 0.3s;  /* smooth hover effect */
-   }
-
-.social-icon:hover {
-  color: #1877f2; /* change this per network */
+<style>
+.star {
+  width: 20px;
+  height: 20px;
+  background: gold;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 
+                     79% 91%, 50% 70%, 21% 91%, 32% 57%, 
+                     2% 35%, 39% 35%);
+  display: inline-block;
 }
 
-#summary-linkedin:hover { color: #0a66c2; } /* LinkedIn blue */
-#summary-facebook:hover { color: #1877f2; } /* Facebook blue */
-#summary-x:hover { color: black; }          /* Twitter/X black */
-
-.stats {
-  display: flex;
-  align-items: center;     /* makes divider centered automatically */
-  justify-content: center;
-  gap: 2rem;               /* space between blocks */
-  margin-top: 1rem;
+.star.inactive {
+  background: #ccc;
 }
-
-.stat-block {
-  flex: 1;
-  text-align: center;
-}
-
-.stat-block h5 {
-  margin: 0;              /* remove default margin */
-  margin-bottom: 3px;     /* tiny space below number */
-}
-
-.stat-block p {
-  margin: 0;              /* remove default margin */
-  font-size: 0.9rem;      /* optional: make text a bit smaller */
-  color: #666;            /* softer look */
-}
-
-
-.stats-divider {
-  width: 1px; 
-  height: 70px;
-  background-color: rgba(0, 0, 0, 0.1); /* lighter = looks thinner */
-  align-self: baseline;    /* makes line match height of both stat blocks */
-}
-
-
-
-.avatar {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background: #ddd;
-  background-size: cover;
-  background-position: center;
-}
-
-
-
-  </style>
-</head>
-<body>
+</style>
 
 <div class="container my-6">
   <div class="row">
     <!-- Left Column -->
     <div class="col-8">
-      <div class="card">
+      <?php
+      // One array for all profile fields, grouped by section
+      $profileSections = [
+          [
+              'title' => 'Personal Details',
+              'fields' => [
+                  [
+                      'id' => 'full-name',
+                      'label' => 'Full Name',
+                      'value' => 'Alexa Rawles Rogdrigo',
+                      'editable' => true,
+                      'required' => true,
+                      'summaryTarget' => 'summary-name'
+                  ],
+                  [
+                      'id' => 'email',
+                      'label' => 'Email',
+                      'value' => 'alexarawles@gmail.com',
+                      'type' => 'email',
+                      'editable' => true,
+                      'required' => true,
+                      'summaryTarget' => 'summary-email'
+                  ],
+                  [
+                      'id' => 'phone',
+                      'label' => 'Phone number',
+                      'value' => '+54 548 654 65',
+                      'editable' => true,
+                      'required' => false,
+                      'summaryTarget' => 'summary-phone'
+                  ],
+                  [
+                      'id' => 'address',
+                      'label' => 'Address',
+                      'value' => 'No. 47, Lakeview Lane, Colombo 07, Sri Lanka',
+                      'editable' => true,
+                      'required' => true,
+                      'summaryTarget' => 'summary-location'
+                  ],
+                  [
+                      'id' => 'district',
+                      'label' => 'District',
+                      'value' => 'Colombo',
+                      'editable' => false
+                  ]
+              ]
+          ],
+          [
+              'title' => 'Work Details',
+              'fields' => [
+                  [
+                      'id' => 'agent-id',
+                      'label' => 'Agent ID',
+                      'value' => 'CMB23039D',
+                      'editable' => false
+                  ],
+                  [
+                      'id' => 'work-since',
+                      'label' => 'Work Since',
+                      'value' => '03/04/2020',
+                      'editable' => false
+                  ],
+                  [
+                      'id' => 'experience',
+                      'label' => 'Experience',
+                      'value' => '10 Years',
+                      'editable' => false,
+                      'summaryTarget' => 'summary-experience'
+                  ],
+                  [
+                      'id' => 'total-works',
+                      'label' => 'Total Works',
+                      'value' => '46',
+                      'editable' => false,
+                      'summaryTarget' => 'summary-works'
+                  ]
+              ]
+          ],
+          [
+              'title' => 'Social Media',
+              'fields' => [
+                  [
+                      'id' => 'linkedin',
+                      'label' => 'LinkedIn',
+                      'value' => 'https://www.linkedin.com/in/nadith-nemal-profile/',
+                      'type' => 'url',
+                      'editable' => true,
+                      'summaryTarget' => 'summary-linkedin-url'
+                  ],
+                  [
+                      'id' => 'facebook',
+                      'label' => 'Facebook',
+                      'value' => 'https://www.facebook.com/johndoe',
+                      'type' => 'url',
+                      'editable' => true,
+                      'summaryTarget' => 'summary-facebook-url'
+                  ],
+                  [
+                      'id' => 'x',
+                      'label' => 'X',
+                      'value' => 'https://x.com/johndoe',
+                      'type' => 'url',
+                      'editable' => true,
+                      'summaryTarget' => 'summary-x-url'
+                  ]
+              ]
+          ]
+      ];
+      
+      // Render all profile sections
+      foreach ($profileSections as $section):
+      ?>
+      <div class="card mb-4 p-2">
+        <h5 class="card-title px-4 pt-4"><?php echo htmlspecialchars($section['title']); ?></h5>
         <div class="card-body">
-          
-            <!-- Full Name -->
-<div class="form-group">
-  <label for="full-name">Full Name</label>
-  <div style="display: flex; align-items:center; position: relative;">
-    <input type="text" class="form-control" id="full-name" value="Alexa Rawles Rogdrigo" readonly>
-    <button class="edit-btn" style="position:absolute; right:15px;">
-      <i class="fas fa-pen"></i>
-    </button>
-  </div>
-</div>
-
-<!-- Phone Number -->
-<div class="form-group">
-  <label for="phone">Phone number</label>
-  <div style="display: flex; align-items:center; position: relative;">
-    <input type="text" class="form-control" id="phone" value="+54 548 654 65" readonly>
-    <button class="edit-btn" style="position:absolute; right:15px;">
-      <i class="fas fa-pen"></i>
-    </button>
-  </div>
-</div>
-
-<!-- District (not editable) -->
-<div class="form-group">
-  <label for="district">District</label>
-  <div style="display: flex; align-items:center; position: relative;">
-    <input type="text" class="form-control" id="district" value="Colombo" disabled>
-  </div>
-</div>
-
-<!-- Agent ID -->
-<div class="form-group">
-  <label for="agent-id">Agent-ID</label>
-  <div style="display: flex; align-items:center; position: relative;">
-    <input type="text" class="form-control" id="agent-id" value="CMB23039D" disabled>
-  </div>
-</div>
-
-<!-- Address -->
-<div class="form-group">
-  <label for="address">Address</label>
-  <div style="display: flex; align-items:center; position: relative;">
-    <input type="text" class="form-control" id="address" value="No. 47, Lakeview Lane, Colombo 07, Sri Lanka" readonly>
-    <button class="edit-btn" style="position:absolute; right:15px;">
-      <i class="fas fa-pen"></i>
-    </button>
-  </div>
-</div>
-
-<!-- Work since -->
-<div class="form-group">
-  <label for="work since">Work Since</label>
-  <div style="display: flex; align-items:center; position: relative;">
-    <input type="text" class="form-control" id="work-since" value="03/04/2020" readonly>
-  </div>
-</div>
-
-
-<!-- Facebook -->
-<div class="form-group">
-  <label for="facebook">facebook</label>
-  <div style="display: flex; align-items:center; position: relative;">
-    <input type="url" class="form-control" id="Facebook" value="https://www.facebook.com/johndoe" readonly>
-    <button class="edit-btn" style="position:absolute; right:15px;">
-      <i class="fas fa-pen"></i>
-    </button>
-  </div>
-</div>
-
-
-<!-- Linkedin -->
-<div class="form-group">
-  <label for="linkedin">LinkedIn</label>
-  <div style="display: flex; align-items:center; position: relative;">
-    <input type="url" class="form-control" id="linkedin" value="https://www.linkedin.com/in/nadith-nemal-profile/" readonly>
-    <button class="edit-btn" style="position:absolute; right:15px;">
-      <i class="fas fa-pen"></i>
-    </button>
-  </div>
-</div>
-
-
-<!-- X -->
-<div class="form-group">
-  <label for="X">X</label>
-  <div style="display: flex; align-items:center; position: relative;">
-    <input type="url" class="form-control" id="x" value="https://x.com/johndoe" readonly>
-    <button class="edit-btn" style="position:absolute; right:15px;">
-      <i class="fas fa-pen"></i>
-    </button>
-  </div>
-</div>
-          
-
+            <?php
+            // Render fields for this section
+            foreach ($section['fields'] as $field) {
+                require APPROOT . '/views/inc/components/profile_input_field.php';
+            }
+            ?>
         </div>
       </div>
+      <?php endforeach; ?>
     </div>
 
     <!-- Right Column -->
@@ -304,16 +149,16 @@
       <div class="card text-center">
         <div class="card-body">
           <!-- Avatar Upload -->
-          <div class="profile-pic-wrapper mb-4">
-            <div class="avatar mx-auto" id="profile-avatar"></div>
+          <div class="d-flex flex-column align-center mb-4">
+            <div class="rounded-full bg-secondary mx-auto" style="width:120px;height:120px;background-size:cover;background-position:center" id="profile-avatar"></div>
             <input type="file" id="avatar-upload" accept="image/*" hidden>
-            <label for="avatar-upload" class="upload-btn">Change</label>
+            <label for="avatar-upload" class="text-primary mt-2 cursor-pointer">Change</label>
           </div>
 
           <!-- Profile Info -->
           <h4 class="mb-1" id="summary-name">Alexa Rawles</h4>
-          <p class="text-muted mb-1" id="summary-email">alexarawles@gmail.com</p>
-          <p class="text-muted mb-1" id="summary-location">Colombo 07, Sri Lanka</p>
+          <p class="text-secondary mb-1" id="summary-email">alexarawles@gmail.com</p>
+          <p class="text-secondary mb-1" id="summary-location">Colombo 07, Sri Lanka</p>
           <p class="mb-3" id="summary-phone">+54 548 654 65</p>
 
           <!-- Rating -->
@@ -324,46 +169,39 @@
             <span class="star"></span>
             <span class="star inactive"></span>
           </div>
-
- 
+          
           <!-- Social -->
- <div class="d-flex justify-center gap-4 mb-6">
-  <a href="https://www.linkedin.com" target="_blank" id="summary-linkedin" class="social-icon">
-    <i class="fab fa-linkedin"></i>
-  </a>
-  <a href="https://www.facebook.com" target="_blank" id="summary-facebook" class="social-icon">
-    <i class="fab fa-facebook"></i>
-  </a>
-  <a href="https://twitter.com" target="_blank" id="summary-x" class="social-icon">
-    <i class="fa-brands fa-x-twitter"></i>
-
-
-<!-- new Twitter/X icon -->
-  </a>
-</div>
+          <div class="d-flex justify-center gap-4 mb-4">
+            <a href="https://www.linkedin.com/in/nadith-nemal-profile/" target="_blank" id="summary-linkedin" class="text-secondary">
+              <i class="fab fa-linkedin fa-2x"></i>
+            </a>
+            <a href="https://www.facebook.com/johndoe" target="_blank" id="summary-facebook" class="text-secondary">
+              <i class="fab fa-facebook fa-2x"></i>
+            </a>
+            <a href="https://x.com/johndoe" target="_blank" id="summary-x" class="text-secondary">
+              <i class="fa-brands fa-x-twitter fa-2x"></i>
+            </a>
+          </div>
 
           <!-- Stats -->
-<div class="stats">
-  <div class="stat-block">
-    <h5>10 Years</h5>
-    <p class="text-muted">Experience</p>
-  </div>
+          <div class="d-flex align-center justify-center mt-4">
+            <div class="text-center">
+              <h5 class="mb-1" id="summary-experience">10 Years</h5>
+              <p class="text-secondary m-0">Experience</p>
+            </div>
 
-  <div class="stats-divider"></div>
+            <div class="mx-4" style="width:1px;height:70px;background:rgba(0,0,0,0.1)"></div>
 
-  <div class="stat-block">
-    <h5>46</h5>
-    <p class="text-muted">Total Works</p>
-  </div>
-</div>
-
-
+            <div class="text-center">
+              <h5 class="mb-1" id="summary-works">46</h5>
+              <p class="text-secondary m-0">Total Works</p>
+            </div>
+          </div>  
         </div>
       </div>
     </div>
   </div>
 </div>
-
 
 <script>
 // Select all edit buttons
@@ -384,32 +222,23 @@ buttons.forEach(button => {
 
     // Enable the clicked input
     selectedInput.removeAttribute('readonly');  
-    selectedInput.style.border = '1px solid #000'; 
+    selectedInput.style.border = '1px solid var(--color-primary)'; 
     selectedInput.focus();                       
 
     // Update right profile card in real-time
     selectedInput.addEventListener('input', () => {
       const value = selectedInput.value;
-
-      switch(selectedInput.id) {
-        case 'full-name':
-          document.getElementById('summary-name').textContent = value;
-          break;
-        case 'phone':
-          document.getElementById('summary-phone').textContent = value;
-          break;
-        case 'facebook':
-          document.getElementById('summary-facebook').href = value;
-          break;
-        case 'linkedin':
-          document.getElementById('summary-linkedin').href = value;
-          break;
-        case 'x':
-          document.getElementById('summary-x').href = value;
-          break;
-        case 'address':
-          document.getElementById('summary-location').textContent = value;
-          break;
+      const summaryTarget = selectedInput.getAttribute('data-summary-target');
+      
+      if (summaryTarget) {
+        // For social media URLs, update the href attribute
+        if (summaryTarget.includes('url')) {
+          const socialId = summaryTarget.replace('-url', '');
+          document.getElementById(socialId).href = value;
+        } else {
+          // For regular fields, update the text content
+          document.getElementById(summaryTarget).textContent = value;
+        }
       }
     });
   });
@@ -424,11 +253,8 @@ avatarUpload.addEventListener('change', function () {
     const reader = new FileReader();
     reader.onload = function (e) {
       profileAvatar.style.backgroundImage = `url(${e.target.result})`;
-      profileAvatar.style.backgroundSize = "cover";
-      profileAvatar.style.backgroundPosition = "center";
     };
     reader.readAsDataURL(file);
   }
 });
-
 </script>

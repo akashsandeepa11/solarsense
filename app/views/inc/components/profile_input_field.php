@@ -33,7 +33,7 @@ $btnClass = $editable ? '' : 'd-none';
     <input 
       type="<?php echo htmlspecialchars($type); ?>" 
       class="form-control"
-      style="background-color: #f0efefff;" 
+      style="background-color: #f5f5f5ff;" 
       id="<?php echo htmlspecialchars($id); ?>" 
       name="<?php echo htmlspecialchars($id); ?>" 
       value="<?php echo htmlspecialchars($value); ?>" 
