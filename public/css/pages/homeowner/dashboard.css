@@ -4,15 +4,6 @@
  */
 
 /* Power Cut Alert Banner */
-.power-cut-banner {
-  background-color: var(--color-warning);
-  color: var(--color-text);
-  padding: 1rem;
-  border-radius: 0.75rem; /* rounded-xl */
-  display: flex;
-  align-items: center;
-  font-weight: 500; /* font-medium */
-}
 
 /* Daily Solar Forecast Card */
 .forecast-card {

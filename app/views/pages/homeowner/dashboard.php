@@ -181,7 +181,7 @@ $recent_alerts = [
         </div>
         <div class="col-lg-4">
             <div class="card shadow-lg rounded-xl h-100">
-                <div class="card-body d-flex flex-column justify-around">
+                <div class="card-body d-flex flex-column justify-around gap-2">
                     <a href="#" class="btn btn-secondary btn-lg btn-block">Request Maintenance</a>
                     <a href="#" class="btn btn-secondary btn-lg btn-block">View Accessories Store</a>
                     <a href="#" class="btn btn-secondary btn-lg btn-block">Download Report</a>
