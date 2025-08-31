@@ -22,7 +22,7 @@ $installer_admin_nav = [
         ['title' => 'Team', 'url' => '/installeradmin/team', 'icon' => 'fa-solid fa-users-gear'],
     ],
     'PERSONAL' => [
-        ['title' => 'Profile', 'url' => '//profile', 'icon' => 'fa-solid fa-building'],
+        ['title' => 'Profile', 'url' => '/installeradmin/profile', 'icon' => 'fa-solid fa-building'],
     ],
 ];
 
@@ -74,6 +74,3 @@ $homeowner_nav = [
         ['title' => 'Profile', 'url' => '/homeowner/profile', 'icon' => 'fa-solid fa-user'],
     ],
 ];
-
-?>
-installeradmin

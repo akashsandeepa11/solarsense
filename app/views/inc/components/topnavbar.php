@@ -1,7 +1,12 @@
 <!-- Linked styles -->
 <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/components/topnavbar.css">
+<!-- Ensure no default body margin leaves space above the navbar -->
+<style>
+    html, body { margin: 0; padding: 0; }
+</style>
 
-<header class="navbar d-flex align-items-center justify-between p-3">
+<header id="main-topnav" class="navbar d-flex align-items-center justify-between p-3"
+    style="position:sticky; top:0; left:0; right:0; z-index:1100; background:var(--page-bg, #fff);">
     <!-- Left Side -->
     <div class="d-flex align-center">
         <button class="btn border-0 mr-3" id="sidebar-toggle-btn">
@@ -29,3 +34,15 @@
         </div>
     </div>
 </header>
+<script>
+// Ensure page content isn't hidden behind the sticky navbar
+;(function(){
+    const nav = document.getElementById('main-topnav');
+    if (!nav) return;
+    
+    // Run on load and on resize
+    if (document.readyState === 'complete' || document.readyState === 'interactive') adjustBodyPadding();
+    window.addEventListener('load', adjustBodyPadding);
+    window.addEventListener('resize', adjustBodyPadding);
+})();
+</script>

@@ -84,12 +84,7 @@ $recent_alerts = [
 <div class="content-area">
     <!-- Power Cut Alert Banner -->
     <?php if (isset($power_cut)): ?>
-    <div class="power-cut-banner mb-6">
-        <i class="fas fa-exclamation-triangle mr-3"></i>
-        <span>
-            <strong>Power Cut Alert:</strong> Scheduled outage in <?php echo $power_cut['district']; ?> today from <?php echo $power_cut['start_time']; ?> to <?php echo $power_cut['end_time']; ?>.
-        </span>
-    </div>
+    <?php require APPROOT . '/views/inc/components/homeowner_power_cut_banner.php'; ?>
     <?php endif; ?>
 
     <!-- Header Section -->
@@ -106,15 +101,7 @@ $recent_alerts = [
     <!-- Monthly Performance Summary Cards -->
     <div class="row">
         <?php foreach($summary_cards as $card): ?>
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card shadow-md rounded-xl h-100">
-                <div class="card-body">
-                    <i class="<?php echo $card['icon']; ?> text-3xl text-secondary mb-3"></i>
-                    <div class="text-4xl font-bold"><?php echo $card['value']; ?></div>
-                    <div class="text-secondary"><?php echo $card['label']; ?></div>
-                </div>
-            </div>
-        </div>
+            <?php require APPROOT . '/views/inc/components/summary_card.php'; ?>
         <?php endforeach; ?>
     </div>
 
@@ -187,13 +174,7 @@ $recent_alerts = [
                 <div class="card-body">
                     <h3 class="card-title text-2xl font-semibold mb-4">Recent Faults & Alerts</h3>
                     <?php foreach($recent_alerts as $alert): ?>
-                    <div class="alert-item d-flex align-center py-3">
-                        <i class="fas fa-exclamation-circle text-warning text-xl mr-4"></i>
-                        <div>
-                            <div class="font-semibold"><?php echo $alert['date']; ?></div>
-                            <div class="text-secondary text-sm"><?php echo $alert['description']; ?></div>
-                        </div>
-                    </div>
+                        <?php require APPROOT . '/views/inc/components/alert_item.php'; ?>
                     <?php endforeach; ?>
                 </div>
             </div>

@@ -17,7 +17,7 @@
                 'user' => $this->user,
             ];
             
-            $this->view('pages/admin/dashboard', $data, layout: 'dashboard');
+            $this->view('pages/installer_admin/dashboard', $data, layout: 'dashboard');
         }
 
         public function add_customer(){
@@ -27,50 +27,32 @@
             
             $this->view('pages/installer_admin/add_customer', $data, layout: 'dashboard');
         }
-        
-        public function user_management(){
+
+        public function fleet(){
             $data = [
                 'user' => $this->user,
             ];
             
-            $this->view('pages/admin/user_management', $data, layout: 'dashboard');
+            $this->view('pages/installer_admin/fleet_dashboard', $data, layout: 'dashboard');
+        }
+
+        public function team(){
+            $data = [
+                'user' => $this->user,
+            ];
+            
+            $this->view('pages/installer_admin/team', $data, layout: 'dashboard');
+        }
+
+        public function profile(){
+            $data = [
+                'user' => $this->user,
+            ];
+            
+            $this->view('pages/installer_admin/profile', $data, layout: 'dashboard');
         }
         
-        public function platform_reports(){
-            $data = [
-                'user' => $this->user,
-            ];
-
-            $this->view('pages/admin/reports', $data, layout: 'dashboard');
-        }
-
-        public function system_settings(){
-            $data = [
-                'user' => $this->user,
-            ];
-
-            $this->view('pages/admin/settings', $data, layout: 'dashboard');
-        }
-
-        // --- Inherited Installer Pages (for viewing/managing) ---
-
-        public function fleet_management(){
-            $data = [
-                'user' => $this->user,
-            ];
-
-            // This would load a view showing ALL customers on the platform
-            $this->view('pages/admin/fleet_management', $data, 'dashboard');
-        }
-
-        public function maintenance(){
-            $data = [
-                'user' => $this->user,
-            ];
-
-            // This would load a view showing ALL maintenance tasks
-            $this->view('pages/admin/maintenance', $data, 'dashboard');
-        }
+        
     }
 
 ?>
