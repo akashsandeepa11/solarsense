@@ -1,343 +1,215 @@
-<?php
-// Example PHP variables
-$fullName = "Akash Sandeepa";
-$email = "Akash88@example.com";
-$contactNumber = "0771234567";
-$physicalAddress = "123 Main Street";
-$district = "Colombo";
-$systemCapacity = 5;
-$panelTilt = 30;
-$panelAzimuth = "North";
-$installationDate = "2024-01-15";
-$panelBrand = "SunPower";
-$inverterBrand = "SMA";
-$cebAccount = "1234567890";
-$photo="/solarsense/public/img/logo.png";
-?>
-
-<link rel="stylesheet" href="<?php echo URLROOT?>/public/css/pages/homeowner/profile.css">
 
 
-<div class="customer-profile-container">
-
-
-    <form method="post" action="save.php" enctype="multipart/form-data">
-
-    <!-- Profile Header -->
-    <div class="card profile-header">
-        <div class="user-image">
-            <img src=<?php echo htmlspecialchars($photo); ?> id="photo">
-            <input type="file" name="photo" id="file">
-            <label for="file" id="uploadbtn"><i class="fas fa-camera"></i></label>
-
+<div class="container my-6">
+  <div class="row">
+    <!-- Left Column -->
+    <div class="col-8">
+      <?php
+      // One array for all profile fields, grouped by section
+      $profileSections = [
+          [
+              'title' => 'Personal Details',
+              'fields' => [
+                  [
+                      'id' => 'full-name',
+                      'label' => 'Full Name',
+                      'value' => 'Nadith Nemal',
+                      'editable' => true,
+                      'required' => true,
+                      'summaryTarget' => 'summary-name'
+                  ],
+                  [
+                      'id' => 'email',
+                      'label' => 'Email',
+                      'value' => 'nadithnemal2002@gmail.com',
+                      'type' => 'email',
+                      'editable' => true,
+                      'required' => true,
+                      'summaryTarget' => 'summary-email'
+                  ],
+                  [
+                      'id' => 'phone',
+                      'label' => 'Phone number',
+                      'value' => '+54 548 654 65',
+                      'editable' => true,
+                      'required' => false,
+                      'summaryTarget' => 'summary-phone'
+                  ],
+                  [
+                      'id' => 'address',
+                      'label' => 'Address',
+                      'value' => 'No. 47, Lakeview Lane, Colombo 07, Sri Lanka',
+                      'editable' => true,
+                      'required' => true,
+                      'summaryTarget' => 'summary-location'
+                  ],
+                  [
+                      'id' => 'district',
+                      'label' => 'District',
+                      'value' => 'Colombo',
+                      'editable' => false
+                  ]
+              ]
+          ],
+          [
+              'title' => 'System Specification',
+              'fields' => [
+                  [
+                      'id' => 'system-capacity',
+                      'label' => 'System Capacity',
+                      'value' => '5 kWp',
+                      'editable' => false
+                  ],
+                  [
+                      'id' => 'panel-tilt',
+                      'label' => 'Panel Tilt',
+                      'value' => '30°',
+                      'editable' => false
+                  ],
+                  [
+                      'id' => 'panel-azimuth',
+                      'label' => 'Panel Azimuth',
+                      'value' => 'North',
+                      'editable' => false
+                  ],
+                  [
+                      'id' => 'installation-date',
+                      'label' => 'Installation Date',
+                      'value' => '01/05/2017',
+                      'editable' => false
+                  ],
+                  [
+                      'id' => 'panel-brand',
+                      'label' => 'Panel Brand',
+                      'value' => 'SunPower',
+                      'editable' => false
+                  ],
+                  [
+                      'id' => 'inverter-brand',
+                      'label' => 'Inverter Brand',
+                      'value' => 'SMA',
+                      'editable' => false
+                  ]
+              ]
+          ],
+          [
+              'title' => 'Utility Details',
+              'fields' => [
+                  [
+                      'id' => 'ceb-account',
+                      'label' => 'CEB Account',
+                      'value' => '123456VC',
+                      'editable' => false
+                  ],
+                  [
+                      'id' => 'provider',
+                      'label' => 'Provider',
+                      'value' => 'Ceylon Electricity Board',
+                      'editable' => false
+                  ]
+              ]
+          ]
+      ];
+      
+      // Render all profile sections
+      foreach ($profileSections as $section):
+      ?>
+      <div class="card mb-4 p-2" >
+        <h5 class="card-title px-4 pt-4"><?php echo htmlspecialchars($section['title']); ?></h5>
+        <div class="card-body">
+            <?php
+            // Render fields for this section
+            foreach ($section['fields'] as $field) {
+                require APPROOT . '/views/inc/components/profile_input_field.php';
+            }
+            ?>
         </div>
-
-
-       <div class="profile-info">
-            <h2><?php echo htmlspecialchars($fullName); ?></h2>
-           
-        </div>
-       
+      </div>
+      <?php endforeach; ?>
     </div>
 
-    <!-- Personal & Contact Details -->
-    <div class="card profile-section">
-        <h3>Personal & Contact Details</h3>
+    <!-- Right Column -->
+    <div class="col-4">
+      <div class="card text-center">
+        <div class="card-body">
+          <!-- Avatar Upload -->
+          <div class="d-flex flex-column align-center mb-4">
+            <div class="rounded-full bg-secondary mx-auto" style="width:120px;height:120px;background-size:cover;background-position:center" id="profile-avatar"></div>
+            <input type="file" id="avatar-upload" accept="image/*" hidden>
+            <label for="avatar-upload" class="text-primary mt-2 cursor-pointer">Change</label>
+          </div>
 
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'fullName', 
-                    'name' => 'fullName', 
-                    'label' => 'Full Name', 
-                    'type' => 'text', 
-                    'icon' => 'fas fa-user', 
-                    'value' => $fullName, 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-            <span class="edit-icon" onclick="enableEdit('fullName')">&#9998;</span>
+          <!-- Profile Info -->
+          <h4 class="mb-1" id="summary-name">Nadith Nemal</h4>
+          <p class="text-secondary mb-1" id="summary-email">nadithnemal2002@gmail.com</p>
+          <p class="text-secondary mb-1" id="summary-location">No. 47, Lakeview Lane, Colombo 07, Sri Lanka</p>
+          <p class="mb-3" id="summary-phone">+54 548 654 65</p>
+
+           <!-- Stats -->
+          <div class="d-flex align-center justify-center mt-4">
+            <div class="text-center">
+              <h5 class="mb-1">5 kWp</h5>
+              <p class="text-secondary m-0">System Capacity</p>
+            </div>
+
+            <div class="mx-4" style="width:1px;height:70px;background:rgba(0,0,0,0.1)"></div>
+
+            <div class="text-center">
+              <h5 class="mb-1">123456VC</h5>
+              <p class="text-secondary m-0">CEB Account</p>
+            </div>
+          </div>
         </div>
-
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'email', 
-                    'name' => 'email', 
-                    'label' => 'Email', 
-                    'type' => 'email', 
-                    'icon' => 'fas fa-envelope', 
-                    'value' => $email, 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-            <span class="edit-icon" onclick="enableEdit('email')">&#9998;</span>
-        </div>
-
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'contactNumber', 
-                    'name' => 'contactNumber', 
-                    'label' => 'Contact Number', 
-                    'type' => 'tel', 
-                    'icon' => 'fas fa-phone', 
-                    'value' => $contactNumber, 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-            <span class="edit-icon" onclick="enableEdit('contactNumber')">&#9998;</span>
-        </div>
-
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'physicalAddress', 
-                    'name' => 'physicalAddress', 
-                    'label' => 'Address', 
-                    'type' => 'text', 
-                    'icon' => 'fas fa-map-marker-alt', 
-                    'value' => $physicalAddress, 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-            <span class="edit-icon" onclick="enableEdit('physicalAddress')">&#9998;</span>
-        </div>
-
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'district', 
-                    'name' => 'district', 
-                    'label' => 'District', 
-                    'type' => 'text', 
-                    'icon' => 'fas fa-city', 
-                    'value' => $district, 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-            <span class="edit-icon" onclick="enableEdit('district')">&#9998;</span>
-        </div>
-
-         <button type="submit" id="saveButtonContainer" class="btn btn-primary"  style="display: none;"><i class="fas fa-save"></i> Save Changes </button>
-        
+      </div>
     </div>
-
-
-
-    </form>
-
-    <!-- Solar System Details -->
-    <div class="card profile-section">
-        <h3>Solar System Specifications</h3>
-
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'systemCapacity', 
-                    'name' => 'systemCapacity', 
-                    'label' => 'System Capacity', 
-                    'type' => 'text', 
-                    'icon' => 'fas fa-bolt', 
-                    'value' => $systemCapacity.' kWp', 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-            <!-- <span class="edit-icon" onclick="enableEdit('systemCapacity')">&#9998;</span> -->
-        </div>
-
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'panelTilt', 
-                    'name' => 'panelTilt', 
-                    'label' => 'Panel Tilt', 
-                    'type' => 'text', 
-                    'icon' => 'fas fa-angle-up', 
-                    'value' => $panelTilt.'°', 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-           <!-- <span class="edit-icon" onclick="enableEdit('panelTilt')">&#9998;</span> -->
-        </div>
-
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'panelAzimuth', 
-                    'name' => 'panelAzimuth', 
-                    'label' => 'Panel Azimuth', 
-                    'type' => 'text', 
-                    'icon' => 'fas fa-compass', 
-                    'value' => $panelAzimuth, 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-            <!--<span class="edit-icon" onclick="enableEdit('panelAzimuth')">&#9998;</span>-->
-        </div>
-
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'installationDate', 
-                    'name' => 'installationDate', 
-                    'label' => 'Installation Date', 
-                    'type' => 'date', 
-                    'icon' => 'fas fa-calendar-alt', 
-                    'value' => $installationDate, 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-            <!--<span class="edit-icon" onclick="enableEdit('installationDate')">&#9998;</span>-->
-        </div>
-
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'panelBrand', 
-                    'name' => 'panelBrand', 
-                    'label' => 'Panel Brand', 
-                    'type' => 'text', 
-                    'icon' => 'fas fa-solar-panel', 
-                    'value' => $panelBrand ?: "N/A", 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-            <!--<span class="edit-icon" onclick="enableEdit('panelBrand')">&#9998;</span>-->
-        </div>
-
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'inverterBrand', 
-                    'name' => 'inverterBrand', 
-                    'label' => 'Inverter Brand', 
-                    'type' => 'text', 
-                    'icon' => 'fas fa-microchip', 
-                    'value' => $inverterBrand ?: "N/A", 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-            <!--<span class="edit-icon" onclick="enableEdit('inverterBrand')">&#9998;</span>-->
-        </div>
-
-    </div>
-
-    <!-- Utility Account -->
-    <div class="card profile-section">
-        <h3>Utility Account</h3>
-
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'cebAccount', 
-                    'name' => 'cebAccount', 
-                    'label' => 'CEB Account', 
-                    'type' => 'text', 
-                    'icon' => 'fas fa-id-card', 
-                    'value' => $cebAccount, 
-                    'readonly' => true
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-             <!--<span class="edit-icon" onclick="enableEdit('cebAccount')">&#9998;</span>-->
-        </div>
-
-        <div class="profile-item">
-            <?php 
-                $inputConfig = [
-                    'id' => 'provider', 
-                    'name' => 'provider', 
-                    'label' => 'Provider', 
-                    'type' => 'text', 
-                    'icon' => 'fas fa-building', 
-                    'value' => 'Ceylon Electricity Board (CEB)', 
-                    'readonly' => true 
-                ]; 
-                require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-
-        </div>
-
-         
-
-    </div>
-
-    
-
+  </div>
 </div>
 
-
-
 <script>
+// Select all edit buttons
+const buttons = document.querySelectorAll('.edit-btn'); 
 
-// Ensure all inputs are read-only initially
-window.addEventListener('DOMContentLoaded', () => {
-    const inputs = document.querySelectorAll('input');
+buttons.forEach(button => {
+  button.addEventListener('click', () => {
+    const inputs = document.querySelectorAll('.form-control'); 
+    const selectedInput = button.parentElement.querySelector('.form-control'); 
+
+    // Lock all other inputs
     inputs.forEach(input => {
+      if (input !== selectedInput) {
         input.setAttribute('readonly', true);
         input.style.border = 'none';
-        input.dataset.originalValue = input.value; // store original value
+      }
     });
+
+    // Enable the clicked input
+    selectedInput.removeAttribute('readonly');  
+    selectedInput.style.border = '1px solid var(--color-primary)'; 
+    selectedInput.focus();                       
+
+    // Update right profile card in real-time
+    selectedInput.addEventListener('input', () => {
+      const value = selectedInput.value;
+      const summaryTarget = selectedInput.getAttribute('data-summary-target');
+      
+      if (summaryTarget) {
+        document.getElementById(summaryTarget).textContent = value;
+      }
+    });
+  });
 });
 
-function enableEdit(id) {
-    // First, make all other inputs read-only
-    const inputs = document.querySelectorAll('input');
-    inputs.forEach(input => {
-        if (input.id !== id) {
-            input.setAttribute('readonly', true);
-            input.style.border = 'none';
-        }
-    });
+const avatarUpload = document.getElementById('avatar-upload');
+const profileAvatar = document.getElementById('profile-avatar');
 
-    // Then toggle the selected input
-    const input = document.getElementById(id);
-    input.removeAttribute('readonly'); // Make editable
-    input.focus();
-    input.style.border = "1px solid #007bff";
-
-
-        // Show Save button only if input value changes
-    input.addEventListener('input', function checkChange() {
-        const saveBtn = document.getElementById('saveButtonContainer');
-        if (input.value !== input.dataset.originalValue) {
-            saveBtn.style.display = 'block';
-        } else {
-            saveBtn.style.display = 'none';
-        }
-    });
-
-
-}
-
-//for image upoload
-const photoInput = document.getElementById('file');
-const photoImg = document.getElementById('photo');
-
-photoInput.addEventListener('change', function() {
-    const file = this.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            photoImg.src = e.target.result; // Update the image preview
-        }
-        reader.readAsDataURL(file);
-        // Show Save button
-        document.getElementById('saveButtonContainer').style.display = 'block';
-    }
+avatarUpload.addEventListener('change', function () {
+  const file = this.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      profileAvatar.style.backgroundImage = `url(${e.target.result})`;
+    };
+    reader.readAsDataURL(file);
+  }
 });
-
 </script>
-
