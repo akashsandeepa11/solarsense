@@ -192,30 +192,42 @@ let selectedTask = null;
 function renderTasks() {
     taskList.innerHTML = "";
 
+    // Filter tasks
     let filteredTasks = tasks.filter(task => {
         const matchesSearch = task.title.toLowerCase().includes(searchBar.value.toLowerCase()) ||
                               task.customer.toLowerCase().includes(searchBar.value.toLowerCase());
-        const matchesPriority = (priorityFilter.value === "all" || task.priority === priorityFilter.value);
-        const matchesStatus = (statusFilter.value === "all" || task.status === statusFilter.value);
+        const matchesPriority = priorityFilter.value === "all" || task.priority === priorityFilter.value;
+        const matchesStatus = statusFilter.value === "all" || task.status === statusFilter.value;
         return matchesSearch && matchesPriority && matchesStatus;
     });
 
+    // Sort tasks
     if (sortOption.value === "date") {
-        filteredTasks.sort((a,b) => new Date(b.date) - new Date(a.date));
+        filteredTasks.sort((a, b) => new Date(b.date) - new Date(a.date));
     } else if (sortOption.value === "customer") {
-        filteredTasks.sort((a,b) => a.customer.localeCompare(b.customer));
+        filteredTasks.sort((a, b) => a.customer.localeCompare(b.customer));
     } else if (sortOption.value === "priority") {
         const priorityOrder = { high: 1, medium: 2, low: 3 };
-        filteredTasks.sort((a,b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+        filteredTasks.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
     }
 
+    // Update counters
     document.getElementById("pendingCount").textContent = tasks.filter(t => t.status === "pending").length;
     document.getElementById("inProgressCount").textContent = tasks.filter(t => t.status === "in-progress").length;
     document.getElementById("doneCount").textContent = tasks.filter(t => t.status === "done").length;
 
+    // Render each task
     filteredTasks.forEach(task => {
         const card = document.createElement("div");
         card.className = `task-card ${task.priority}`;
+
+        // Determine buttons
+        let actionButtons = "";
+        if (task.status === "pending") {
+            actionButtons = `<button class="start-btn">Start</button>`;
+        } else if (task.status === "in-progress") {
+            actionButtons = `<button class="done-btn">Done</button>`;
+        }
 
         card.innerHTML = `
             <div class="task-info">
@@ -228,7 +240,7 @@ function renderTasks() {
                 <span class="priority ${task.priority}">${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</span>
                 <span class="status ${task.status}">${task.status.charAt(0).toUpperCase() + task.status.slice(1)}</span>
                 <button class="view-btn">View</button>
-                <button class="done-btn">Done</button>
+                ${actionButtons}
             </div>
         `;
 
@@ -243,11 +255,23 @@ function renderTasks() {
             taskModal.classList.add("show");
         });
 
+        // Start button
+        const startBtn = card.querySelector(".start-btn");
+        if (startBtn) {
+            startBtn.addEventListener("click", () => {
+                task.status = "in-progress";
+                renderTasks();
+            });
+        }
+
         // Done button
-        card.querySelector(".done-btn").addEventListener("click", () => {
-            selectedTask = task;
-            doneModal.classList.add("show");
-        });
+        const doneBtn = card.querySelector(".done-btn");
+        if (doneBtn) {
+            doneBtn.addEventListener("click", () => {
+                selectedTask = task;
+                doneModal.classList.add("show");
+            });
+        }
 
         taskList.appendChild(card);
     });
@@ -270,12 +294,13 @@ confirmDoneBtn.addEventListener("click", () => {
     }
 });
 
-// Filter & sort events
+// Filters & sorting
 searchBar.addEventListener("input", renderTasks);
 priorityFilter.addEventListener("change", renderTasks);
 statusFilter.addEventListener("change", renderTasks);
 sortOption.addEventListener("change", renderTasks);
 
+// Initial render
 renderTasks();
 </script>
 
