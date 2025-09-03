@@ -10,35 +10,34 @@
 
             $url = $this->getURL();
 
+            // Check if controller exists
             if($url && isset($url[0]) && file_exists('../app/controllers/'.ucwords($url[0]).'.php')){
                 // If the Controller exists, then load it
                 $this->currentController = ucwords($url[0]);
 
                 // Unset the Controller in the URL
                 unset($url[0]);
-
-                // Call the Controller
-                require_once '../app/controllers/'.$this->currentController.'.php';
-
-                // Instantiate the controller
-                $this->currentController = new $this->currentController;
-
-                // Check whether the method exits in the controller or not
-                if(isset($url[1])){
-                    if(method_exists($this->currentController, $url[1])){
-                        $this->currentMethod = $url[1];
-
-                        unset($url[1]);
-                    }
-                }
-
-                // get param list
-                $this->params = $url? array_values($url) : [];
-
-                // Call the method and param list
-                call_user_func_array([$this->currentController, $this->currentMethod], $this->params);
-
             }
+
+            // Require the controller
+            require_once '../app/controllers/'.$this->currentController.'.php';
+
+            // Instantiate the controller
+            $this->currentController = new $this->currentController;
+
+            // Check whether the method exists in the controller or not
+            if(isset($url[1])){
+                if(method_exists($this->currentController, $url[1])){
+                    $this->currentMethod = $url[1];
+                    unset($url[1]);
+                }
+            }
+
+            // get param list
+            $this->params = $url ? array_values($url) : [];
+
+            // Call the method and param list
+            call_user_func_array([$this->currentController, $this->currentMethod], $this->params);
 
         }
 
