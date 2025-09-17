@@ -43,14 +43,6 @@
 
             $this->view('pages/homeowner/profile', $data, 'dashboard');
         }
-
-        public function profile_2(){
-            $data = [
-                'user' => $this->user,
-            ];
-
-            $this->view('pages/homeowner/profile_2', $data, 'dashboard');
-        }
     }
 
 ?>
