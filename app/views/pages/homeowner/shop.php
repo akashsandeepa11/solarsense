@@ -2,7 +2,7 @@
 <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/homeowner/shop.css">
 
 <?php
-$products = [
+$products = $data['products'] ?? [
     [
         'id' => 1,
         'title' => 'Premium Solar Battery',
@@ -163,7 +163,7 @@ $products = [
                 <p class="product-description"><?php echo htmlspecialchars($product['description']); ?></p>
                 <div class="product-actions">
                     <button class="btn btn-primary">Add to Cart</button>
-                    <button class="btn btn-secondary" onclick="showProductDetails(this)">Details</button>
+                    <a href="<?php echo URLROOT; ?>/homeowner/productDetails/<?php echo $product['id']; ?>" class="btn btn-secondary">Details</a>
                 </div>
             </div>
         </div>
