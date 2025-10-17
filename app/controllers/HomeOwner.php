@@ -37,6 +37,14 @@
             $this->view('pages/homeowner/shop', $data, 'dashboard');
         }
 
+        public function profile(){
+            $data = [
+                'user' => $this->user,
+            ];
+
+            $this->view('pages/homeowner/profile', $data, 'dashboard');
+        }
+
         public function productDetails($id = null) {
             if ($id === null) {
                 header('Location: ' . URLROOT . '/homeowner/shop');
