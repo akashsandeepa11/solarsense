@@ -150,7 +150,7 @@ $tasks = [
 </div>
 
 <!-- Done Confirmation Modal -->
-<div id="doneModal" class="modal">
+<!-- <div id="doneModal" class="modal">
     <div class="modal-content">
         <span class="close-btn" id="closeDoneModal">&times;</span>
         <h3>Confirm Task Completion</h3>
@@ -160,7 +160,7 @@ $tasks = [
             <button class="btn btn-primary rounded-lg" id="confirmDoneBtn">Yes</button>
         </div>
     </div>
-</div>
+</div> -->
 
 <script>
 const tasks = <?php echo json_encode($tasks); ?>;
@@ -181,12 +181,12 @@ const modalDate = document.getElementById("modalDate");
 const modalPanel = document.getElementById("modalPanel");
 const modalNotes = document.getElementById("modalNotes");
 
-// Done Modal elements
-const doneModal = document.getElementById("doneModal");
-const closeDoneModal = document.getElementById("closeDoneModal");
-const cancelDoneBtn = document.getElementById("cancelDoneBtn");
-const confirmDoneBtn = document.getElementById("confirmDoneBtn");
-let selectedTask = null;
+// // Done Modal elements
+// const doneModal = document.getElementById("doneModal");
+// const closeDoneModal = document.getElementById("closeDoneModal");
+// const cancelDoneBtn = document.getElementById("cancelDoneBtn");
+// const confirmDoneBtn = document.getElementById("confirmDoneBtn");
+// let selectedTask = null;
 
 // Render tasks
 function renderTasks() {
@@ -269,7 +269,10 @@ function renderTasks() {
         if (doneBtn) {
             doneBtn.addEventListener("click", () => {
                 selectedTask = task;
-                doneModal.classList.add("show");
+                // doneModal.classList.add("show");
+                window.location.href = "<?php echo URLROOT?>/serviceagent/report/"+task.panelId;
+
+
             });
         }
 
@@ -281,18 +284,18 @@ function renderTasks() {
 closeModal.addEventListener("click", () => taskModal.classList.remove("show"));
 window.addEventListener("click", e => { if (e.target === taskModal) taskModal.classList.remove("show"); });
 
-closeDoneModal.addEventListener("click", () => doneModal.classList.remove("show"));
-cancelDoneBtn.addEventListener("click", () => doneModal.classList.remove("show"));
-window.addEventListener("click", e => { if (e.target === doneModal) doneModal.classList.remove("show"); });
+// closeDoneModal.addEventListener("click", () => doneModal.classList.remove("show"));
+// cancelDoneBtn.addEventListener("click", () => doneModal.classList.remove("show"));
+// window.addEventListener("click", e => { if (e.target === doneModal) doneModal.classList.remove("show"); });
 
-// Confirm Done
-confirmDoneBtn.addEventListener("click", () => {
-    if (selectedTask) {
-        selectedTask.status = "done";
-        renderTasks();
-        doneModal.classList.remove("show");
-    }
-});
+// // Confirm Done
+// confirmDoneBtn.addEventListener("click", () => {
+//     if (selectedTask) {
+//         selectedTask.status = "done";
+//         renderTasks();
+//         doneModal.classList.remove("show");
+//     }
+// });
 
 // Filters & sorting
 searchBar.addEventListener("input", renderTasks);
