@@ -96,7 +96,7 @@
                   ]
               ]
           ],
-          [
+         /* [
               'title' => 'Social Media',
               'fields' => [
                   [
@@ -124,7 +124,7 @@
                       'summaryTarget' => 'summary-x-url'
                   ]
               ]
-          ]
+          ]*/
       ];
       
       // Render all profile sections
@@ -171,7 +171,7 @@
           </div>
           
           <!-- Social -->
-          <div class="d-flex justify-center gap-4 mb-4">
+          <!-- <div class="d-flex justify-center gap-4 mb-4">
             <a href="https://www.linkedin.com/in/nadith-nemal-profile/" target="_blank" id="summary-linkedin" class="text-secondary">
               <i class="fab fa-linkedin fa-2x"></i>
             </a>
@@ -181,7 +181,7 @@
             <a href="https://x.com/johndoe" target="_blank" id="summary-x" class="text-secondary">
               <i class="fa-brands fa-x-twitter fa-2x"></i>
             </a>
-          </div>
+          </div> -->
 
           <!-- Stats -->
           <div class="d-flex align-center justify-center mt-4">
