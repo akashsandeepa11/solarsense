@@ -1,7 +1,8 @@
 <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/auth/login.css">
 
 <?php
-$email = $_POST['email'] ?? '';
+$username = $_POST['username'] ?? '';
+$password = $_POST['password'] ?? '';
 ?>
 
 <div class="login-container d-flex">
@@ -27,12 +28,12 @@ $email = $_POST['email'] ?? '';
                 <div class="form-group">
                     <?php 
                     $inputConfig = [
-                        'id'    => 'email', 
-                        'name'  => 'email', 
-                        'label' => 'Email Address', 
-                        'type'  => 'email', 
-                        'icon'  => 'fas fa-envelope', 
-                        'value' => $email
+                        'id'    => 'username', 
+                        'name'  => 'username', 
+                        'label' => 'Username', 
+                        'type'  => 'username', 
+                        'icon'  => 'fas fa-person', 
+                        'value' => $username
                     ]; 
                     // This require points to your reusable input field component
                     require APPROOT . '/views/inc/components/input_field.php'; 
@@ -45,7 +46,8 @@ $email = $_POST['email'] ?? '';
                         'name'  => 'password', 
                         'label' => 'Password', 
                         'type'  => 'password', 
-                        'icon'  => 'fas fa-lock'
+                        'icon'  => 'fas fa-lock',
+                        'value' => $password
                     ]; 
                     // This require points to your reusable input field component
                     require APPROOT . '/views/inc/components/input_field.php'; 
