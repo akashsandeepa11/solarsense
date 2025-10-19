@@ -10,6 +10,7 @@ $type = $cfg['type'] ?? 'text';
 $value = $cfg['value'] ?? '';
 $icon = $cfg['icon'] ?? ''; // Expects Font Awesome classes e.g., "fas fa-envelope"
 $required = !empty($cfg['required']); // This boolean is the key
+$error = $cfg['error'] ?? ''; // Error message
 $wrapperClass = $cfg['wrapperClass'] ?? '';
 $inputClass = $cfg['inputClass'] ?? '';
 
@@ -74,31 +75,49 @@ if (!defined('INPUT_BEM_ASSETS')):
     .input:focus-within .input__icon {
         color: var(--color-primary, #fe9630);
     }
+    .input__error {
+        display: block;
+        margin-top: 0.25rem;
+        font-size: 0.875rem;
+        color: #dc2626;
+    }
+    .input.input--error .input__field {
+        border-color: #dc2626;
+    }
+    .input.input--error .input__field:focus {
+        border-color: #dc2626;
+    }
 </style>
 <?php endif; ?>
 
+<div>
 <!-- Component HTML -->
-<label class="input <?= htmlspecialchars($wrapperClass) ?><?= $icon ? ' input--has-icon' : '' ?>">
-    <?php if (!empty($icon)): ?>
-        <i class="input__icon <?= htmlspecialchars($icon) ?>" aria-hidden="true"></i>
+<label class="input <?= htmlspecialchars($wrapperClass) ?><?= $icon ? ' input--has-icon' : '' ?><?= $error ? ' input--error' : '' ?>">
+
+        <?php if (!empty($icon)): ?>
+                <i class="input__icon <?= htmlspecialchars($icon) ?>" aria-hidden="true"></i>
+        <?php endif; ?>
+        <input
+            class="input__field <?= htmlspecialchars($inputClass) ?>"
+            id="<?= htmlspecialchars($id) ?>"
+            name="<?= htmlspecialchars($name) ?>"
+            type="<?= htmlspecialchars($type) ?>"
+            placeholder=" "
+            value="<?= htmlspecialchars($value) ?>"
+            <?= $required ? 'required' : '' ?>
+            />
+            <span class="input__label">
+            <?php 
+                // Output the label text safely
+                echo htmlspecialchars($label);
+                // If the field is required, add the asterisk
+                if ($required) {
+                    echo ' <span class="text-error">*</span>';
+                }
+                ?>
+        </span>
+    </label>
+    <?php if (!empty($error)): ?>
+        <span class="input__error"><?= htmlspecialchars($error) ?></span>
     <?php endif; ?>
-    <input
-        class="input__field <?= htmlspecialchars($inputClass) ?>"
-        id="<?= htmlspecialchars($id) ?>"
-        name="<?= htmlspecialchars($name) ?>"
-        type="<?= htmlspecialchars($type) ?>"
-        placeholder=" "
-        value="<?= htmlspecialchars($value) ?>"
-        <?= $required ? 'required' : '' ?>
-    />
-    <span class="input__label">
-        <?php 
-            // Output the label text safely
-            echo htmlspecialchars($label);
-            // If the field is required, add the asterisk
-            if ($required) {
-                echo ' <span class="text-error">*</span>';
-            }
-        ?>
-    </span>
-</label>
+</div>

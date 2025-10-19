@@ -45,7 +45,7 @@
                 <h1 class="text-4xl font-bold">Fleet Dashboard</h1>
                 <p class="text-secondary">Overview of your client systems.</p>
             </div>
-            <a href="<?php URLROOT?>/solarsense/installer/add_customer" class="btn btn-primary btn-lg rounded-lg text-decoration-none">
+            <a href="<?php echo URLROOT?>/installeradmin/fleet/add_customer" class="btn btn-primary btn-lg rounded-lg text-decoration-none">
                 <i class="fas fa-plus mr-2"></i> Add Customer
             </a>
         </div>

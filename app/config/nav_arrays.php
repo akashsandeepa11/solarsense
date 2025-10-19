@@ -18,7 +18,6 @@ $installer_admin_nav = [
     'MAIN' => [
         ['title' => 'Dashboard', 'url' => '/installeradmin/dashboard', 'icon' => 'fa-solid fa-gauge-high'],
         ['title' => 'Fleet', 'url' => '/installeradmin/fleet', 'icon' => 'fa-solid fa-solar-panel'],
-        ['title' => 'Add Customer', 'url' => '/installeradmin/add_customer', 'icon' => 'fa-solid fa-user-plus'],
         ['title' => 'Team', 'url' => '/installeradmin/team', 'icon' => 'fa-solid fa-users-gear'],
     ],
     'PERSONAL' => [
@@ -31,7 +30,6 @@ $operation_manager_nav = [
     'MAIN' => [
         ['title' => 'Dashboard', 'url' => '/operationmanager/dashboard', 'icon' => 'fa-solid fa-list-check'],
         ['title' => 'Fleet', 'url' => '/operationmanager/fleet', 'icon' => 'fa-solid fa-solar-panel'],
-        ['title' => 'Add Customer', 'url' => '/operationmanager/add_customer', 'icon' => 'fa-solid fa-user-plus'],
         ['title' => 'Quotation', 'url' => '/operationmanager/quotation', 'icon' => 'fa-solid fa-file-invoice-dollar'],
         ['title' => 'Maintenance', 'url' => '/operationmanager/maintenance', 'icon' => 'fa-solid fa-wrench'],
         ['title' => 'Team', 'url' => '/operationmanager/team', 'icon' => 'fa-solid fa-users'],
