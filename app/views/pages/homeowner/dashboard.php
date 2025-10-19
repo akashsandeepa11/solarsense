@@ -94,7 +94,7 @@ $recent_alerts = [
             <p class="text-secondary">Here's your solar performance overview.</p>
         </div>
         <div>
-            <a href="#" class="btn btn-primary rounded-lg">+ Upload New SMS</a>
+            <a href="<?php echo URLROOT; ?>/homeowner/dashboard/uploadsms" class="btn btn-primary rounded-lg">+ Upload New SMS</a>
         </div>
     </div>
 

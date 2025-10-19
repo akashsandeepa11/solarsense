@@ -10,15 +10,23 @@
 
         }
 
-        public function dashboard(){
+        public function dashboard($page='sudu'){
 
-            $data = [
+            if($page=='sudu'){
+                $data = [
                 'user' => $this->user,
             ];
             
             $this->view('pages/homeowner/dashboard', $data, layout: 'dashboard');
+            }
+            else if($page='uploadsms'){
+                $data = [
+                            'user' => $this->user,
+                        ];
+                        
+                        $this->view('pages/homeowner/uploadsms', $data, 'dashboard');
+            }
         }
-        
         public function service(){
             
             $data = [
@@ -43,6 +51,13 @@
             ];
 
             $this->view('pages/homeowner/profile', $data, 'dashboard');
+        }
+
+        public function saveSMS() {
+            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                // Just return success for UI demo
+                echo json_encode(['success' => true]);
+            }
         }
 
         public function productDetails($id = null) {
