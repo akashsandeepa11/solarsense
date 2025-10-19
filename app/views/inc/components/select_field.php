@@ -95,6 +95,7 @@ if (!defined('SELECT_BEM_ASSETS')):
 <?php endif; ?>
 
 <!-- Component HTML -->
+<div>
 <label class="select <?= htmlspecialchars($wrapperClass) ?><?= $icon ? ' select--has-icon' : '' ?><?= $error ? ' select--error' : '' ?>">
     <?php if (!empty($icon)): ?>
         <i class="select__icon <?= htmlspecialchars($icon) ?>" aria-hidden="true"></i>
@@ -124,7 +125,8 @@ if (!defined('SELECT_BEM_ASSETS')):
             }
         ?>
     </span>
-    <?php if (!empty($error)): ?>
-        <span class="select__error"><?= htmlspecialchars($error) ?></span>
-    <?php endif; ?>
 </label>
+<?php if (!empty($error)): ?>
+    <span class="select__error"><?= htmlspecialchars($error) ?></span>
+<?php endif; ?>
+</div>

@@ -11,6 +11,10 @@
     
     <!-- Your Custom CSS (loads last to override Tailwind if needed) -->
     <link rel="stylesheet" href="<?php echo URLROOT; ?>/public/css/main.css">
+    <link rel="stylesheet" href="<?php echo URLROOT; ?>/public/css/components/toast_styles.css">
+
     
 </head>
 <body>
+    <!-- Display Toast Messages -->
+    <?php displayToast(); ?>

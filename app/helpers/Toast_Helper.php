@@ -59,7 +59,11 @@ function displayToast(){
                 $textColor = '#0c5460';
                 break;
         }
+
+        
+
         ?>
+
         <div class="toast toast-<?php echo $toast['type']; ?>" id="toast" style="background-color: <?php echo $bgColor; ?>; color: <?php echo $textColor; ?>;">
             <span class="toast-message"><?php echo htmlspecialchars($toast['message']); ?></span>
             <button class="toast-close" onclick="closeToast()">×</button>

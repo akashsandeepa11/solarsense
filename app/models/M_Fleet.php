@@ -13,8 +13,8 @@ class M_Fleet{
             // Start transaction
             $this->db->beginTransaction();
 
-            // 1. Insert into `users` table
-            $this->db->query('INSERT INTO users (email, password) VALUES (:email, :password)');
+            // 1. Insert into `user` table
+            $this->db->query('INSERT INTO user (email, password) VALUES (:email, :password)');
             $this->db->bind(':email', $userData['email']);
             $this->db->bind(':password', $userData['password']);
             $this->db->execute();
@@ -22,21 +22,28 @@ class M_Fleet{
             // Get the inserted user ID
             $userId = $this->db->lastInsertId();
 
-            // 2. Insert into `homeowner` table with all solar system fields
-            $this->db->query('INSERT INTO homeowner (user_id, full_name, email, address, contact, nic, capacity, tilt, azimuth, panel_brand, inverter_brand, installation_date, register_date) VALUES (:user_id, :full_name, :email, :address, :contact, :nic, :capacity, :tilt, :azimuth, :panel_brand, :inverter_brand, :installation_date, :register_date)');
+            // 2. Insert into `homeowner` table
+            // Columns: user_id, company_id, full_name, address, contact, register_date, email
+            $this->db->query('INSERT INTO homeowner (user_id, company_id, full_name, address, contact, register_date, email) VALUES (:user_id, :company_id, :full_name, :address, :contact, :register_date, :email)');
             $this->db->bind(':user_id', $userId);
+            $this->db->bind(':company_id', 1); // Default company_id - adjust as needed
             $this->db->bind(':full_name', $customerData['full_name']);
-            $this->db->bind(':email', $userData['email']);
             $this->db->bind(':address', $customerData['address']);
             $this->db->bind(':contact', $customerData['contact']);
-            $this->db->bind(':nic', $customerData['nic']);
-            $this->db->bind(':capacity', $panelData['capacity']);
-            $this->db->bind(':tilt', $panelData['tilt']);
-            $this->db->bind(':azimuth', $panelData['azimuth']);
+            $this->db->bind(':register_date', date('Y-m-d'));
+            $this->db->bind(':email', $userData['email']);
+            $this->db->execute();
+
+            // 3. Insert into `solar_system` table
+            // Columns: user_id, capacity, tilt, azimuth, panel_brand, inverter_brand, installation_date
+            $this->db->query('INSERT INTO solar_system (user_id, capacity, tilt, azimuth, panel_brand, inverter_brand, installation_date) VALUES (:user_id, :capacity, :tilt, :azimuth, :panel_brand, :inverter_brand, :installation_date)');
+            $this->db->bind(':user_id', $userId);
+            $this->db->bind(':capacity', $panelData['system_capacity']);
+            $this->db->bind(':tilt', $panelData['panel_tilt']);
+            $this->db->bind(':azimuth', $panelData['panel_azimuth']);
             $this->db->bind(':panel_brand', $panelData['panel_brand']);
             $this->db->bind(':inverter_brand', $panelData['inverter_brand']);
             $this->db->bind(':installation_date', $panelData['installation_date']);
-            $this->db->bind(':register_date', date('Y-m-d'));
             $this->db->execute();
 
             // Commit the transaction
@@ -46,7 +53,19 @@ class M_Fleet{
 
         } catch (Exception $e) {
             $this->db->rollBack();
-            error_log('Add customer failed: ' . $e->getMessage());
+            $errorMsg = 'Add customer failed: ' . $e->getMessage();
+            error_log($errorMsg);
+            
+            // Write to a file we can read easily
+            if (!is_dir(dirname(__DIR__) . '/logs')) {
+                mkdir(dirname(__DIR__) . '/logs', 0755, true);
+            }
+            file_put_contents(
+                dirname(__DIR__) . '/logs/add_customer_error.log', 
+                date('Y-m-d H:i:s') . ' - ' . $errorMsg . "\n",
+                FILE_APPEND
+            );
+            
             return false;
         }
     }
