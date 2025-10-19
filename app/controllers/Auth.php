@@ -16,12 +16,20 @@
         }
 
         public function logout() {
+            // Store the toast message before destroying session
+            $toastMessage = [
+                'message' => 'You have been logged out successfully.',
+                'type' => 'success'
+            ];
+            
+            // Unset only specific user session variables, not the entire session
             unset($_SESSION['user_id']);
             unset($_SESSION['user_email']);
             
-            session_destroy();
-        
-            redirect('/auth/login');
+            // Set the toast after unsetting user data
+            $_SESSION['toast'] = $toastMessage;
+            
+            redirect('auth/login');
         }
         
         public function login(){

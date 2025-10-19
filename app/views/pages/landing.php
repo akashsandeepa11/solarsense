@@ -35,7 +35,7 @@
 
             <div class="nav__buttons d-flex gap-2">
                 <a href="installer-registration.php" class="btn btn-secondary btn-sm">Installer Registration</a>
-                <a href="<?php echo URLROOT; ?>/users/login" class="btn btn-primary btn-sm">Login</a>
+                <a href="<?php echo URLROOT; ?>/auth/login" class="btn btn-primary btn-sm">Login</a>
             </div>
 
             <div class="nav__toggle" id="nav-toggle">
