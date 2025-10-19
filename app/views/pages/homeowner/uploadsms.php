@@ -10,19 +10,30 @@
         <div class="card-body">
             <form id="smsUploadForm" method="POST">
                 <div class="form-group">
-                    <label for="smsContent">CEB SMS Message</label>
-                    <textarea 
-                        id="smsContent" 
-                        name="smsContent" 
-                        class="form-control" 
-                        rows="5" 
-                        required></textarea>
-                    <small class="text-secondary">Copy and paste the entire SMS message exactly as received</small>
+                    <?php 
+                    $textareaConfig = [
+                        'id' => 'smsContent',
+                        'name' => 'smsContent',
+                        'label' => 'CEB SMS Message',
+                        'value' => $data['smsContent'] ?? '',
+                        'error' => $data['smsContent_err'] ?? '',
+                        'icon' => 'fas fa-message',
+                        'rows' => 5,
+                        'placeholder' => 'Copy and paste the entire SMS message exactly as received',
+                        'required' => true
+                    ];
+                    require APPROOT . '/views/inc/components/textarea_field.php';
+                    ?>
+                    <small class="text-secondary d-block mt-2">Copy and paste the entire SMS message exactly as received</small>
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Upload Message</button>
-                    <button type="reset" class="btn btn-secondary">Clear</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-upload mr-2"></i>Upload Message
+                    </button>
+                    <button type="reset" class="btn btn-secondary">
+                        <i class="fas fa-redo mr-2"></i>Clear
+                    </button>
                 </div>
             </form>
         </div>

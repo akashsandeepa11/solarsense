@@ -10,14 +10,14 @@
 
         }
 
-        public function dashboard($page='sudu'){
+        public function dashboard($page='index'){
 
-            if($page=='sudu'){
+            if($page=='index'){
                 $data = [
-                'user' => $this->user,
-            ];
+                    'user' => $this->user,
+                ];
             
-            $this->view('pages/homeowner/dashboard', $data, layout: 'dashboard');
+                $this->view('pages/homeowner/dashboard', $data, layout: 'dashboard');
             }
             else if($page='uploadsms'){
                 $data = [
@@ -27,6 +27,7 @@
                         $this->view('pages/homeowner/uploadsms', $data, 'dashboard');
             }
         }
+
         public function service(){
             
             $data = [
