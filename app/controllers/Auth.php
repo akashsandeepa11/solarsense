@@ -11,8 +11,32 @@
         public function createUserSession($user) {
             $_SESSION['user_id'] = $user->id;
             $_SESSION['user_email'] = $user->email;
+            $_SESSION['user_type'] = $user->type;
 
-            redirect('homeowner/dashboard');
+            //create switch case for redirecting based on user type
+            switch($user->type) {
+                case ROLE_HOMEOWNER:
+                    redirect('homeowner/dashboard');
+                    break;
+                case ROLE_INSTALLER_ADMIN:
+                    redirect('installeradmin/dashboard');
+                    break;
+                case ROLE_OPERATION_MANAGER:
+                    redirect('operationmanager/dashboard');
+                    break;
+                case ROLE_INVENTORY_MANAGER:
+                    redirect('inventorymanager/inventory');
+                    break;
+                case ROLE_SERVICE_AGENT:
+                    redirect('serviceagent/tasks');
+                    break;
+                case ROLE_SUPER_ADMIN:
+                    redirect('superadmin/dashboard');
+                    break;
+                default:
+                    redirect('auth/login');
+                    break;
+            }
         }
 
         public function logout() {
@@ -25,7 +49,8 @@
             // Unset only specific user session variables, not the entire session
             unset($_SESSION['user_id']);
             unset($_SESSION['user_email']);
-            
+            unset($_SESSION['user_type']);
+
             // Set the toast after unsetting user data
             $_SESSION['toast'] = $toastMessage;
             

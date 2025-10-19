@@ -14,9 +14,10 @@ class M_Fleet{
             $this->db->beginTransaction();
 
             // 1. Insert into `user` table
-            $this->db->query('INSERT INTO user (email, password) VALUES (:email, :password)');
+            $this->db->query('INSERT INTO user (email, password, type) VALUES (:email, :password, :type)');
             $this->db->bind(':email', $userData['email']);
             $this->db->bind(':password', $userData['password']);
+            $this->db->bind(':type', ROLE_HOMEOWNER);
             $this->db->execute();
 
             // Get the inserted user ID
