@@ -6,7 +6,7 @@
     define("DB_NAME", 'solarsense_db');
 
     // APPROOT
-    define("APPROOT", dirname(dirname(_FILE_)));
+    define("APPROOT", dirname(dirname(__FILE__)));
     // URLROOT
     define("URLROOT", "http://localhost/solarsense");
     // WEBSITE NAME
