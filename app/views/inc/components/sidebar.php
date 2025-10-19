@@ -24,7 +24,10 @@ foreach ($navigation_links as $section => $items): ?>
     
     <?php foreach ($items as $item): ?>
         <?php
-        $is_active = ($current_path === $item['url'] || rtrim($current_path, '/') === rtrim($item['url'], '/'));
+        // Check if current path starts with the item URL (this handles sub-pages)
+        $item_url = rtrim($item['url'], '/');
+        $current_url = rtrim($current_path, '/');
+        $is_active = ($current_url === $item_url || strpos($current_url, $item_url . '/') === 0);
         ?>
         <a href="<?php echo URLROOT . $item['url']; ?>"
            class="sidebar-nav-link <?php echo $is_active ? 'active' : ''; ?> text-decoration-none hover:no-underline">

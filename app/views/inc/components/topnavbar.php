@@ -14,15 +14,8 @@
         </button>
     </div>
 
-    <!-- Center Search -->
-    <div class="navbar-search-wrapper">
-        <i class="fa fa-search navbar-search-icon"></i>
-        <input type="text" class="form-control navbar-search-input" placeholder="Search...">
-    </div>
-
     <!-- Right Side -->
     <div class="d-flex align-items-center mr-8">
-        <a href="#" class="btn border-0 navbar-icon-btn mr-2"><i class="fa fa-regular fa-moon"></i></a>
         <a href="#" class="btn border-0 navbar-icon-btn mr-3"><i class="fas fa-regular fa-bell"></i></a>
 
         <div class="d-flex align-items-center">
