@@ -1,0 +1,32 @@
+# Environment variables - DO NOT COMMIT
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Dependencies
+vendor/
+node_modules/
+
+# Logs
+*.log
+logs/
+
+# OS files
+Thumbs.db
+
+# Cache
+.cache/
+tmp/
+temp/
+
+# Build
+dist/
+build/

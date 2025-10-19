@@ -1,4 +1,6 @@
 <?php
+    // Load Helpers
+    require_once "helpers/EnvLoader_Helper.php";
 
     // Load Configarations
     require_once "config/config.php";

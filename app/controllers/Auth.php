@@ -1,8 +1,11 @@
 <?php
 
     class Auth extends Controller{
-        public function __construct(){
 
+        private $userModel;
+
+        public function __construct(){
+            $this->userModel = $this->model('m_auth');
         }
         
         public function login(){
