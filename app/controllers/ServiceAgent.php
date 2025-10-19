@@ -35,6 +35,16 @@
 
             $this->view('pages/service_agent/profile', $data, 'dashboard');
         }
+
+         public function report(){
+            $data = [
+                'user' => $this->user,
+            ];
+
+            $this->view('pages/service_agent/report', $data, 'dashboard');
+        }
+
     }
 
+       
 ?>
