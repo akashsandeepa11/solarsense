@@ -1,0 +1,58 @@
+/*
+ * Custom CSS for the Homeowner Dashboard
+ * This file should be located at: public/css/pages/homeowner/dashboard.css
+ */
+
+/* Power Cut Alert Banner */
+
+/* Daily Solar Forecast Card */
+.forecast-card {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    #fca5a5
+  ); /* Orange to light red gradient */
+}
+
+/* Progress Bar Styles */
+.progress-bar-container {
+  width: 100%;
+  background-color: #e9ecef; /* A light gray background */
+  border-radius: 9999px; /* rounded-full */
+  height: 1.5rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: var(--color-success);
+  border-radius: 9999px;
+  transition: width 0.5s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-bar-label {
+  color: white;
+  font-weight: 600; /* font-semibold */
+  font-size: 0.875rem; /* text-sm */
+  padding: 0 0.5rem;
+  white-space: nowrap;
+}
+
+/* Style for list items in cards (like alerts) */
+.alert-item {
+  border-bottom: 1px solid #eee; /* A light gray border */
+}
+
+.alert-item:last-child {
+  border-bottom: none; /* Remove border from the last item */
+}
+
+/* Set a fixed height for the chart containers */
+.chart-container {
+  height: 400px;
+  position: relative;
+}

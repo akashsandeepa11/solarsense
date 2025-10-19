@@ -1,0 +1,114 @@
+.container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1rem 2rem;
+}
+
+/* Card style for request form and history items */
+.card {
+  background: #fff;
+  border: 1px solid #ff7a00;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+  transform: translateY(-3px);
+}
+
+/* Form styling */
+.card form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.card form input,
+.card form select,
+.card form textarea {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.card form textarea {
+  resize: vertical;
+}
+
+.card form .btn {
+  background-color: #ff7a00;
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.3s;
+}
+
+.card form .btn:hover {
+  background-color: #e56a00;
+}
+
+/* Service history layout */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.history-item {
+  background: #fff;
+  border: 1px solid #ff7a00;
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.history-item .info {
+  flex: 1;
+  min-width: 200px;
+}
+
+.history-item .info p {
+  margin: 4px 0;
+}
+
+.history-item .status {
+  font-weight: 600;
+  color: #fff;
+  background-color: #ff7a00;
+  padding: 4px 12px;
+  border-radius: 12px;
+  text-align: center;
+  min-width: 90px;
+}
+
+.history-item.completed .status {
+  background-color: #28a745; /* green for completed */
+}
+
+.history-item.pending .status {
+  background-color: #ffc107; /* yellow for pending */
+}
+
+@media (max-width: 600px) {
+  .history-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .history-item .status {
+    margin-top: 10px;
+  }
+}

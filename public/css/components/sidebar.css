@@ -1,0 +1,95 @@
+/* Custom styles for the sidebar component */
+.sidebar-nav-link,
+.sidebar-dropdown-toggle {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem; /* 12px 24px */
+  color: var(--color-text, #212121);
+  text-decoration: none;
+  border-radius: 0.75rem; /* 12px -> rounded-xl */
+  margin: 0.25rem;
+  transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+  position: relative;
+}
+.sidebar-nav-link:hover,
+.sidebar-dropdown-toggle:hover {
+  background-color: #f5f5f5; /* bg-background */
+}
+.sidebar-nav-link.active,
+.sidebar-dropdown-toggle.active {
+  background-color: #f5f5f5; /* bg-background */
+  font-weight: 600; /* font-semibold */
+}
+.sidebar-nav-link i,
+.sidebar-dropdown-toggle i {
+  width: 24px;
+  margin-right: 1rem;
+  text-align: center;
+}
+
+.sidebar-nav-link.active,
+.sidebar-dropdown-toggle.active {
+  background-color: var(--color-primary, #fe9630); /* Primary bg */
+  color: var(--color-surface, #fff); /* Text color */
+  font-weight: 600; /* Keep bold */
+}
+
+.sidebar-nav-link.active i,
+.sidebar-dropdown-toggle.active i {
+  color: var(--color-surface, #fff);
+}
+
+.sidebar-heading {
+  font-size: 0.75rem; /* text-xs */
+  font-weight: 600; /* font-semibold */
+  text-transform: uppercase;
+  color: #6c757d; /* A neutral gray */
+  padding: 1rem 1.5rem 0.5rem;
+}
+.sidebar-logo {
+  color: var(--color-primary, #fe9630);
+  font-weight: 700; /* font-bold */
+  font-size: 1.5rem; /* text-2xl */
+}
+.sidebar-sub-nav {
+  padding-left: 1rem; /* Indent sub-links */
+}
+/* Dropdown styles */
+.sidebar-dropdown-toggle {
+  cursor: pointer;
+}
+.sidebar-dropdown-toggle::-webkit-details-marker {
+  display: none; /* Hide default arrow */
+}
+.sidebar-dropdown-toggle::after {
+  content: "\f078"; /* Font Awesome down arrow */
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  position: absolute;
+  right: 1.5rem;
+  transition: transform 0.2s ease;
+}
+details[open] > .sidebar-dropdown-toggle::after {
+  transform: rotate(180deg);
+}
+
+/* Sidebar dropdown smooth transition */
+.sidebar-sub-nav {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding-top: 0;
+  padding-bottom: 0;
+}
+details[open] > .sidebar-sub-nav {
+  max-height: 500px; /* Large enough for your content */
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.sidebar-nav-link:focus {
+  outline: none;
+  box-shadow: none;
+  border: none;
+}
