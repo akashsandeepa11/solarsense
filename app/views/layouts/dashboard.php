@@ -43,20 +43,21 @@
     // --- Navigation Array for Service Agent ---
     $service_agent_nav = [
         'MAIN' => [
-            ['title' => 'Assigned Tasks', 'url' => '/service_agent/tasks', 'icon' => 'fas fa-tasks'],
-            ['title' => 'Completed Work', 'url' => '/service_agent/history', 'icon' => 'fas fa-history'],
+            ['title' => 'Assigned Tasks', 'url' => '/serviceagent/tasks', 'icon' => 'fas fa-tasks'],
+            ['title' => 'Task History', 'url' => '/serviceagent/history', 'icon' => 'fas fa-history'],
+            ['title' => 'Profile', 'url' => '/serviceagent/profile', 'icon' => 'fas fa-user'],
         ],
         'SETTINGS' => [
-            ['title' => 'Profile', 'url' => '/service_agent/profile', 'icon' => 'fas fa-user-circle'],
+            ['title' => 'Setting', 'url' => '/service_agent/settings', 'icon' => 'fas fa-user-cog'],
         ],
     ];
 
     // --- Navigation Array for CEB Agent ---
     $ceb_agent_nav = [
         'MAIN' => [
-            ['title' => 'Dashboard', 'url' => '/ceb_agent/dashboard', 'icon' => 'fas fa-bolt'],
-            ['title' => 'Power Cut Schedule', 'url' => '/ceb_agent/powercuts', 'icon' => 'fas fa-calendar-alt'],
-            ['title' => 'Grid Insights', 'url' => '/ceb_agent/insights', 'icon' => 'fas fa-chart-line'],
+            ['title' => 'Dashboard', 'url' => '/cebagent/dashboard', 'icon' => 'fas fa-bolt'],
+            ['title' => 'Power Cut Schedule', 'url' => '/cebagent/powercut_schedule', 'icon' => 'fas fa-calendar-alt'],
+            ['title' => 'Grid Insights', 'url' => '/cebagent/grid_insights', 'icon' => 'fas fa-chart-line'],
         ],
         'SETTINGS' => [
             ['title' => 'Profile', 'url' => '/ceb_agent/profile', 'icon' => 'fas fa-user-shield'],
