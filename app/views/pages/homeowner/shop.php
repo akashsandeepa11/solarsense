@@ -148,6 +148,14 @@ $products = $data['products'] ?? [
         <button class="filter-button" onclick="applyFilters()">
             Apply Filters
         </button>
+
+        <a href="<?php echo URLROOT; ?>/homeowner/shop/cart" class="cart-wrapper">
+    <i class="fa-solid fa-cart-shopping cart-icon"></i>
+    <span id="cartCount" class="cart-count">0</span>
+</a>
+
+
+     
     </div>
 
     <div class="products-grid">
@@ -235,7 +243,54 @@ $products = $data['products'] ?? [
 
         // Add event listeners for filters
         document.getElementById('categoryFilter').addEventListener('change', applyFilters);
-        document.getElementById('priceFilter').addEventListener('change', applyFilters);
-    
-</script>
+        document.getElementById('priceFilter').addEventListener('change', applyFilters);  
 
+
+        let cartCount = 0;
+
+//number of add to cart items  update in cart icon
+document.querySelectorAll('.btn.btn-primary').forEach(btn => {
+    btn.addEventListener('click', function() {
+        cartCount++;
+        const countBubble = document.getElementById('cartCount');
+        countBubble.textContent = cartCount;
+        if (cartCount > 0) {
+    countBubble.style.display = 'inline-block';
+    countBubble.textContent = cartCount;
+}
+
+    });
+});
+    
+</script>  
+
+<style>
+.cart-wrapper {
+  position: relative;
+  margin-left: 15px;
+  cursor: pointer;
+}
+
+.cart-icon {
+  font-size: 28px; 
+  color: gray;/* bigger modern icon */
+  
+}
+
+.cart-icon:hover {
+  color: orange;
+}
+
+.cart-count {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: orange;
+  color: white;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 50%;
+  font-weight: bold;
+  display: none; /* hidden initially */
+}
+</style>
