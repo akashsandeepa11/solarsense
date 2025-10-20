@@ -37,14 +37,27 @@
             $this->view('pages/homeowner/service', $data, 'dashboard');
         }
         
-        public function shop(){
-            $data = [
-                'user' => $this->user,
-                'products' => $this->getProducts()
-            ];
+        public function shop($page='sudu'){
 
-            $this->view('pages/homeowner/shop', $data, 'dashboard');
-        }
+                    if($page=='sudu'){
+
+                        $data = [
+                            'user' => $this->user,
+                            'products' => $this->getProducts()
+                        ];
+                        
+                        
+                        $this->view('pages/homeowner/shop', $data, 'dashboard');
+                        
+                    }else if($page='cart'){
+                        $data = [
+                            'user' => $this->user,
+                        ];
+                        
+                        $this->view('pages/homeowner/cart', $data, 'dashboard');
+                    }
+
+                }
 
         public function profile(){
             $data = [
