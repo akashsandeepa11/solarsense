@@ -7,31 +7,133 @@ $items = [
     [ "id" => "I-1004", "name" => "Wiring Kit", "category" => "Accessories", "qty" => 40, "price" => 2500 ],
 ];
 ?>
-
 <style>
-.main { display: flex; flex-direction: column; align-items: center; }
-.table-container { width: 900px; max-width: 100%; background: whitesmoke; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-.table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.table-header h2 { font-size: 20px; }
+.main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
-table { width: 100%; border-collapse: collapse; }
-th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 14px; }
-th { color: white; font-weight: 600; }
-tr:hover { background: #f5f5f5; }
+.table-container {
+    width: 900px;
+    max-width: 100%;
+    background: whitesmoke;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
 
-.status { font-weight: 600; font-size: 13px; padding: 4px 8px; border-radius: 10px; }
-.in-stock { color: #166534; background: #dcfce7; }
-.low-stock { color: #92400e; background: #fef3c7; }
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
 
-.modal { display:none; position: fixed; z-index: 5000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; }
-.modal.show { display: flex; }
-.modal-content { background: #fff; width: 400px; max-width: 90%; margin: auto; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-.modal-content h3 { margin-top: 0; }
-.modal-buttons{ display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top:20px; }
+.table-header h2 {
+    font-size: 20px;
+}
 
-.toolbar { display: flex; flex-wrap: wrap; width: 950px; max-width: 100%; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px; }
-.toolbar input, .toolbar select { padding: 8px; border: 1px solid #ccc; border-radius: 5px; flex: 1; min-width: 150px; }
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+th {
+    color: white;
+    font-weight: 600;
+}
+
+tr:hover {
+    background: #f5f5f5;
+}
+
+.status {
+    font-weight: 600;
+    font-size: 13px;
+    padding: 4px 8px;
+    border-radius: 10px;
+}
+
+.in-stock {
+    color: #166534;
+    background: #dcfce7;
+}
+
+.low-stock {
+    color: #92400e;
+    background: #fef3c7;
+}
+
+/* Modals */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 5000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    align-items: center;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    background: #fff;
+    width: 400px;
+    max-width: 90%;
+    margin: auto;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-top: 20px;
+}
+
+/* Toolbar Inputs */
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    width: 950px;
+    max-width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 10px;
+}
+
+.toolbar input,
+.toolbar select {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    flex: 1;
+    min-width: 150px;
+}
 </style>
+
 
 <div class="main">
   <div class="table-container">
@@ -69,18 +171,57 @@ tr:hover { background: #f5f5f5; }
   </div>
 </div>
 
-<!-- Add Modal -->
+<!-- ✅ Add Modal (using your component loop structure) -->
+<?php
+$addModalSections = [
+    [
+        'title' => 'Add New Item',
+        'fields' => [
+            [
+                'id'       => 'itemName',
+                'label'    => 'Item Name',
+                'value'    => '',
+                'editable' => true,
+                'required' => true
+            ],
+            [
+                'id'       => 'itemCategory',
+                'label'    => 'Category',
+                'value'    => '',
+                'editable' => true,
+                'required' => true
+            ],
+            [
+                'id'       => 'itemQty',
+                'label'    => 'Quantity',
+                'value'    => '',
+                'editable' => true,
+                'required' => true
+            ],
+            [
+                'id'       => 'itemPrice',
+                'label'    => 'Unit Price (Rs.)',
+                'value'    => '',
+                'editable' => true,
+                'required' => true
+            ],
+        ]
+    ]
+];
+
+
+?>
+
 <div id="addModal" class="modal">
   <div class="modal-content add">
-    <h3>Add New Item</h3>
-    <label>Name:</label><br>
-    <input type="text" id="itemName" style="width:100%; padding:6px;"><br><br>
-    <label>Category:</label><br>
-    <input type="text" id="itemCategory" style="width:100%; padding:6px;"><br><br>
-    <label>Quantity:</label><br>
-    <input type="number" id="itemQty" style="width:100%; padding:6px;"><br><br>
-    <label>Unit Price (Rs.):</label><br>
-    <input type="number" id="itemPrice" style="width:100%; padding:6px;"><br>
+    <?php foreach ($addModalSections as $section): ?>
+      <h3><?php echo htmlspecialchars($section['title']); ?></h3>
+      <div class="card-body">
+        <?php foreach ($section['fields'] as $field) {
+          require APPROOT . '/views/inc/components/profile_input_field.php';
+        } ?>
+      </div>
+    <?php endforeach; ?>
     <div class="modal-buttons">
       <button class="add-btn btn btn-primary btn-sm" onclick="addItem()">Add</button>
       <button class="delete-btn btn btn-primary btn-sm bg-secondary" onclick="closeAddModal()">Cancel</button>
@@ -88,18 +229,55 @@ tr:hover { background: #f5f5f5; }
   </div>
 </div>
 
-<!-- Edit Modal -->
+<!-- ✅ Edit Modal (using your component loop structure) -->
+ <?php
+$editModalSections = [
+    [
+        'title' => 'Edit Item',
+        'fields' => [
+            [
+                'id'       => 'editName',
+                'label'    => 'Item Name',
+                'value'    => '',
+                'editable' => true,
+                'required' => true
+            ],
+            [
+                'id'       => 'editCategory',
+                'label'    => 'Category',
+                'value'    => '',
+                'editable' => true,
+                'required' => true
+            ],
+            [
+                'id'       => 'editQty',
+                'label'    => 'Quantity',
+                'value'    => '',
+                'editable' => true,
+                'required' => true
+            ],
+            [
+                'id'       => 'editPrice',
+                'label'    => 'Unit Price (Rs.)',
+                'value'    => '',
+                'editable' => true,
+                'required' => true
+            ],
+        ]
+    ]
+];
+?>
+
 <div id="editModal" class="modal">
   <div class="modal-content edit">
-    <h3>Edit Item</h3>
-    <label>Name:</label><br>
-    <input type="text" id="editName" style="width:100%; padding:6px;"><br><br>
-    <label>Category:</label><br>
-    <input type="text" id="editCategory" style="width:100%; padding:6px;"><br><br>
-    <label>Quantity:</label><br>
-    <input type="number" id="editQty" style="width:100%; padding:6px;"><br><br>
-    <label>Unit Price (Rs.):</label><br>
-    <input type="number" id="editPrice" style="width:100%; padding:6px;"><br>
+    <?php foreach ($editModalSections as $section): ?>
+      <h3><?php echo htmlspecialchars($section['title']); ?></h3>
+      <div class="card-body">
+        <?php foreach ($section['fields'] as $field) {
+          require APPROOT . '/views/inc/components/profile_input_field.php';
+        } ?>
+      </div>
+    <?php endforeach; ?>
     <div class="modal-buttons">
       <button class="add-btn btn btn-primary btn-sm" id="saveEditBtn">Save</button>
       <button class="delete-btn btn btn-primary btn-sm bg-secondary" onclick="closeEditModal()">Cancel</button>
@@ -107,7 +285,7 @@ tr:hover { background: #f5f5f5; }
   </div>
 </div>
 
-<!-- Delete Modal -->
+<!-- Delete Modal (unchanged) -->
 <div id="deleteModal" class="modal">
   <div class="modal-content delete">
     <h3>Delete Item</h3>
@@ -260,5 +438,5 @@ window.addEventListener("click", e=>{
 
 populateFilters();
 renderTable(items);
-</script>
+</script>     
 
