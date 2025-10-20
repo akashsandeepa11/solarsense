@@ -61,7 +61,7 @@
                 <p class="text-secondary mt-1"><?php echo $pageDescription; ?></p>
             </div>
 
-            <form id="add-agent-form" action="<?php echo URLROOT?>/installeradmin/team/add_service_agent" method="post" novalidate>
+            <form id="add-agent-form" action="<?php echo URLROOT?>/installeradmin/team/<?php echo $isEditMode ? 'edit_agent/' . $agentId : 'add_service_agent'; ?>" method="post" novalidate>
                 
                 <!-- Hidden fields for form mode and agent ID -->
                 <input type="hidden" name="mode" value="<?php echo $mode; ?>">
