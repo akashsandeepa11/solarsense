@@ -115,5 +115,98 @@ class M_Fleet{
         }
     }
 
+    public function delete_customer($userId)
+{
+    try {
+        // Start transaction
+        $this->db->beginTransaction();
+
+        // 1. Delete from dependent tables first (if exist)
+        $this->db->query('DELETE FROM homeowner WHERE user_id = :user_id');
+        $this->db->bind(':user_id', $userId);
+        $this->db->execute();
+
+        $this->db->query('DELETE FROM solar_system WHERE user_id = :user_id');
+        $this->db->bind(':user_id', $userId);
+        $this->db->execute();
+
+        $this->db->query('DELETE FROM sms WHERE user_id = :user_id');
+        $this->db->bind(':user_id', $userId);
+        $this->db->execute();
+
+        // 2. Finally, delete from user table
+        $this->db->query('DELETE FROM user WHERE user_id = :user_id');
+        $this->db->bind(':user_id', $userId);
+        $this->db->execute();
+
+        // Commit the transaction
+        $this->db->commit();
+
+        return true;
+
+    } catch (Exception $e) {
+        // Roll back if something goes wrong
+        $this->db->rollBack();
+
+        $errorMsg = 'Delete customer failed: ' . $e->getMessage();
+        error_log($errorMsg);
+
+        // Log into a readable file
+        $logDir = dirname(__DIR__) . '/logs';
+        if (!is_dir($logDir)) {
+            mkdir($logDir, 0755, true);
+        }
+
+        file_put_contents(
+            $logDir . '/delete_customer_error.log',
+            date('Y-m-d H:i:s') . ' - ' . $errorMsg . "\n",
+            FILE_APPEND
+        );
+
+        return false;
+    }
+}
+
+
+
+    // public function delete_customer($userId) {
+    //     try {
+    //         // Start transaction
+    //         $this->db->beginTransaction();
+
+    //         // 1. Delete from service_agent table (child table first)
+    //         $this->db->query('DELETE FROM customer WHERE user_id = :user_id');
+    //         $this->db->bind(':user_id', $userId);
+    //         $this->db->execute();
+
+    //         // 2. Delete from user table
+    //         $this->db->query('DELETE FROM user WHERE user_id = :user_id'); 
+    //         $this->db->bind(':user_id', $userId);
+    //         $this->db->execute();
+
+    //         // Commit the transaction
+    //         $this->db->commit();
+
+    //         return true;
+
+    //     } catch (Exception $e) {
+    //         $this->db->rollBack();
+    //         $errorMsg = 'Delete customer failed: ' . $e->getMessage();
+    //         error_log($errorMsg);
+
+    //         // Write to a file we can read easily
+    //         if (!is_dir(dirname(__DIR__) . '/logs')) {
+    //             mkdir(dirname(__DIR__) . '/logs', 0755, true);
+    //         }
+    //         file_put_contents(
+    //             dirname(__DIR__) . '/logs/delete_customer_error.log', 
+    //             date('Y-m-d H:i:s') . ' - ' . $errorMsg . "\n",
+    //             FILE_APPEND
+    //         );
+
+    //         return false;
+    //     }
+    // }
+
 
 }

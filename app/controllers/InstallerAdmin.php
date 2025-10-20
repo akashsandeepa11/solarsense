@@ -48,7 +48,7 @@
             }
 
             if($page === 'delete_customer'){
-                return $this->delete_customer();
+                return $this->delete_customer($customerId);
             }
 
             $data = [
@@ -305,12 +305,36 @@
             $this->view('pages/installer_admin/edit_customer', $data, layout: 'dashboard');
         }
 
-        public function delete_customer(): void{
-            $data = [
-                'user' => $this->user,
-            ];
+        // public function delete_customer(): void{
+        //     $data = [
+        //         'user' => $this->user,
+        //     ];
 
-            $this->view('pages/installer_admin/delete_customer', $data, layout: 'dashboard');
+        //     $this->view('pages/installer_admin/delete_customer', $data, layout: 'dashboard');
+        // }
+
+        public function delete_customer($customerId = null){
+            // Only process POST requests for deletion
+            if($_SERVER['REQUEST_METHOD'] !== 'POST'){
+                redirect('installeradmin/fleet');
+                return;
+            }
+
+            if(empty($customerId)){
+                setToast('Invalid customer ID', 'error');
+                redirect('installeradmin/fleet');
+                return;
+            }
+
+            // Call model to delete customer
+            if($this->fleetModel->delete_customer($customerId)){
+                redirect('installeradmin/fleet');
+                setToast('Customer Deleted Successfully', 'success');
+            } else {
+                setToast('Failed to delete customer. Please try again.', 'error');
+            }
+
+            redirect('installeradmin/fleet');
         }
 
 
