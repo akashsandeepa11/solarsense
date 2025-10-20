@@ -121,9 +121,17 @@
         }
 
         public function installer_registration(){
-            $data = ['name'=>'akash'];
-            $this->view('pages/auth/register_installer', $data, layout: "main");
+            $data = [];
+            $this->view('pages/auth/installer_registration', $data, layout: "main");
         }
+
+        public function installerRegistrationHandler(){
+            
+            $data = [];
+            $this->view('pages/auth/installerRegistrationHandler', $data, layout: "main");
+        }
+
+        
     }
 
 ?>
