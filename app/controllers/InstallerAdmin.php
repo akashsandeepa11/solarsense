@@ -333,6 +333,7 @@
             
             $data = [
                 'user' => $this->user,
+                'agents' => $this->teamModel->get_service_agents_by_company(1)
             ];
            
             $this->view('pages/installer_admin/team', $data, layout: 'dashboard');

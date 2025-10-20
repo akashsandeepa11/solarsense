@@ -2,6 +2,7 @@
 <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/components.css">
 
 <div class="team-container container-fluid p-8">
+    
     <!-- Page Header -->
     <?php
     $config = [
@@ -78,61 +79,47 @@
 
     <!-- Service Agents List -->
     <?php
-    // Sample agent data
-    $agents = [
-        [
-            'id' => 1,
-            'name' => 'John Doe',
-            'role' => 'Service Agent',
-            'email' => 'john@example.com',
-            'phone' => '+94 77 123 4567',
-            'assigned' => '5',
-            'completed' => '3',
-            'pending' => '2',
-            'status' => 'Active',
-            'last_active' => 'Today, 2:30 PM',
-            'avatar' => 'https://ui-avatars.com/api/?name=John+Doe&background=fe9630&color=fff'
-        ],
-        [
-            'id' => 2,
-            'name' => 'Sarah Smith',
-            'role' => 'Senior Agent',
-            'email' => 'sarah@example.com',
-            'phone' => '+94 77 234 5678',
-            'assigned' => '8',
-            'completed' => '6',
-            'pending' => '2',
-            'status' => 'Active',
-            'last_active' => '2 hours ago',
-            'avatar' => 'https://ui-avatars.com/api/?name=Sarah+Smith&background=22c55e&color=fff'
-        ],
-        [
-            'id' => 3,
-            'name' => 'Mike Johnson',
-            'role' => 'Service Agent',
-            'email' => 'mike@example.com',
-            'phone' => '+94 77 345 6789',
-            'assigned' => '3',
-            'completed' => '1',
-            'pending' => '2',
-            'status' => 'On Leave',
-            'last_active' => 'Yesterday',
-            'avatar' => 'https://ui-avatars.com/api/?name=Mike+Johnson&background=f59e0b&color=fff'
-        ],
-        [
-            'id' => 4,
-            'name' => 'Lisa Brown',
-            'role' => 'Service Agent',
-            'email' => 'lisa@example.com',
-            'phone' => '+94 77 456 7890',
-            'assigned' => '6',
-            'completed' => '3',
-            'pending' => '3',
-            'status' => 'Active',
-            'last_active' => '30 min ago',
-            'avatar' => 'https://ui-avatars.com/api/?name=Lisa+Brown&background=00bcd4&color=fff'
-        ]
-    ];
+    // Transform retrieved agent data into the format needed for display
+    // Retrieved data columns: user_id, email, type, full_name, contact, status
+    $agents = isset($data['agents']) ? $data['agents'] : [];
+    $processedAgents = [];
+    
+    // Convert stdClass object to array if needed
+    if (is_object($agents)) {
+        $agents = json_decode(json_encode($agents), true);
+    }
+    
+    // Handle single object result - convert to array of objects
+    if (is_object($agents)) {
+        $agents = [$agents];
+    } elseif (!is_array($agents)) {
+        $agents = [];
+    }
+    
+    if (!empty($agents)) {
+        foreach ($agents as $agent) {
+            // Support both array and object access
+            $id = is_object($agent) ? ($agent->user_id ?? 0) : ($agent['user_id'] ?? 0);
+            $fullName = is_object($agent) ? ($agent->full_name ?? 'Unknown Agent') : ($agent['full_name'] ?? 'Unknown Agent');
+            $email = is_object($agent) ? ($agent->email ?? 'N/A') : ($agent['email'] ?? 'N/A');
+            $contact = is_object($agent) ? ($agent->contact ?? 'N/A') : ($agent['contact'] ?? 'N/A');
+            $status = is_object($agent) ? ($agent->status ?? 'Inactive') : ($agent['status'] ?? 'Inactive');
+            
+            $processedAgents[] = [
+                'id' => $id,
+                'name' => $fullName,
+                'role' => 'Service Agent', // constant value
+                'email' => $email,
+                'phone' => $contact,
+                'assigned' => rand(3, 8), // constant/simulated value
+                'completed' => rand(1, 6), // constant/simulated value
+                'pending' => rand(1, 3), // constant/simulated value
+                'status' => ucfirst($status), // use status from db
+                'last_active' => 'Today, 2:30 PM', // constant value
+                'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode($fullName) . '&background=fe9630&color=fff'
+            ];
+        }
+    }
 
     $config = [
         'headers' => [
@@ -144,7 +131,7 @@
             ['key' => 'status', 'label' => 'Status'],
             ['key' => 'last_active', 'label' => 'Last Active']
         ],
-        'rows' => $agents,
+        'rows' => $processedAgents,
         'columns' => [
             [
                 'key' => 'name',

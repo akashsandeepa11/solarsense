@@ -84,6 +84,7 @@ class M_Team{
         }
     }
 
+
     /**
      * Update an existing service agent
      * Updates both user and service_agent tables within a transaction
@@ -244,6 +245,31 @@ class M_Team{
         }
     }
 
+    // create function for get_service_agents_by_company
+    public function get_service_agents_by_company($companyId) {
+        try { 
+        $this->db->query('SELECT 
+                                u.user_id,
+                                u.email,
+                                u.type,
+                                u.full_name,
+                                sa.contact,
+                                sa.status
+                            FROM user u
+                            INNER JOIN service_agent sa ON u.user_id = sa.user_id
+                            WHERE sa.company_id = :company_id
+                            ');
+        $this->db->bind(':company_id', $companyId);
+        $results = $this->db->resultSet();
+        return $results;
+        } catch (Exception $e) {
+            error_log('Get service agents by company failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+                           
+
     /**
      * Get all service agents
      * 
@@ -298,6 +324,8 @@ class M_Team{
             return [];
         }
     }
+
+    
 
     /**
      * Check if email already exists
