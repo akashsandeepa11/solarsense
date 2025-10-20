@@ -1,0 +1,156 @@
+/* --- Animation --- */
+.form-step {
+  display: none;
+}
+.form-step.active {
+  display: block;
+  animation: fadeIn 0.5s ease-in-out;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+#progress-line {
+  transition: width 0.4s ease;
+}
+
+/* --- Step Indicator Styles --- */
+.form-header h2 {
+  font-size: 1.5rem; /* text-2xl */
+  font-weight: 700; /* font-bold */
+  color: var(--color-text);
+}
+
+.step-indicator-container {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.step-indicator-line {
+  position: absolute;
+  height: 2px;
+  top: 24px;
+  left: 12%;
+  right: 12%;
+  background-color: #e0e0e0;
+  z-index: 1;
+}
+
+#progress-line {
+  background-color: var(--color-primary);
+  height: 100%;
+  width: 0%;
+  z-index: 2;
+}
+
+.step-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  z-index: 3;
+  width: 80px;
+}
+
+.step-indicator-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  color: #bdbdbd;
+  font-size: 1.25rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: 2px solid #e0e0e0;
+}
+
+.step-indicator-label {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: #9e9e9e;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.step-indicator.active .step-indicator-icon,
+.step-indicator.completed .step-indicator-icon {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+
+.step-indicator.active .step-indicator-label,
+.step-indicator.completed .step-indicator-label {
+  color: var(--color-primary);
+}
+
+/* --- Review Step Styles --- */
+.review-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.75rem; /* rounded-xl */
+  background-color: #fafafa;
+}
+
+.review-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  font-size: 1rem;
+  border-bottom: 1px solid #eee;
+}
+.review-section .review-item:last-child {
+  border-bottom: none;
+}
+
+.review-item .label {
+  font-weight: 600; /* font-semibold */
+  color: #6c757d; /* text-secondary */
+}
+
+.review-item .value {
+  color: var(--color-text);
+  font-weight: 500; /* font-medium */
+}
+
+/* --- Responsive Styles --- */
+@media (max-width: 768px) {
+  .content-area {
+    padding: 1rem;
+  }
+  .card-body {
+    padding: 1.5rem;
+  }
+  .step-indicator-label {
+    display: none; /* Hide labels on small screens to save space */
+  }
+  .step-indicator-line {
+    left: 15%;
+    right: 15%;
+  }
+  .review-item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0.5rem 0;
+  }
+  .review-item .label {
+    margin-bottom: 0.25rem;
+  }
+}
