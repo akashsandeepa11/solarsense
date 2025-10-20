@@ -1,396 +1,227 @@
 <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/installer_admin/team.css">
+<link rel="stylesheet" href="<?php echo URLROOT; ?>/css/components.css">
 
-<div class="team-container">
-    <!-- Header Section -->
-    <div class="team-header mb-6">
-        <div class="d-flex align-center justify-between">
-            <div>
-                <h1 class="text-3xl font-bold mb-2">Service Agents</h1>
-                <p class="text-secondary">Manage your team of service agents and track their tasks</p>
-            </div>
-            <a href="<?php echo URLROOT; ?>/installeradmin/team/add_service_agent" class="btn btn-success" style="text-decoration: none;">
-                <i class="fas fa-plus mr-2"></i>Add New Agent
-            </a>
-        </div>
-    </div>
+<div class="team-container container-fluid p-8">
+    <!-- Page Header -->
+    <?php
+    $config = [
+        'title' => 'Service Agents',
+        'description' => 'Manage your team of service agents and track their tasks',
+        'buttons' => [
+            [
+                'label' => 'Add New Agent',
+                'url' => URLROOT . '/installeradmin/team/add_service_agent',
+                'icon' => 'fas fa-plus',
+                'class' => 'btn-success'
+            ]
+        ]
+    ];
+    include __DIR__ . '/../../inc/components/page_header.php';
+    ?>
 
     <!-- Filter & Search Section -->
-    <div class="team-filters mb-6 card p-4">
-        <div class="row gap-4">
-            <div class="col-md-4">
-                <div class="form-group mb-0">
-                    <label class="form-label">Search Agents</label>
-                    <div class="position-relative">
-                        <i class="fas fa-search position-absolute" style="left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; z-index: 1;"></i>
-                        <input 
-                            type="text" 
-                            class="form-control pl-5" 
-                            placeholder="Search by name or email..."
-                            id="searchAgents"
-                        >
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="form-group mb-0">
-                    <label class="form-label">Status</label>
-                    <select class="form-control">
-                        <option value="">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                        <option value="on_leave">On Leave</option>
-                    </select>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="form-group mb-0">
-                    <label class="form-label">Workload</label>
-                    <select class="form-control">
-                        <option value="">All Workloads</option>
-                        <option value="high">High (5+ tasks)</option>
-                        <option value="medium">Medium (2-4 tasks)</option>
-                        <option value="low">Low (0-1 tasks)</option>
-                    </select>
-                </div>
-            </div>
-            <div class="col-md-2 d-flex align-end">
-                <button class="btn btn-secondary w-100">
-                    <i class="fas fa-filter mr-2"></i>Filter
-                </button>
-            </div>
-        </div>
-    </div>
+    <?php
+    $config = [
+        'search' => [
+            'id' => 'searchAgents',
+            'label' => 'Search Agents',
+            'placeholder' => 'Search by name or email...'
+        ],
+        'filters' => [
+            [
+                'id' => 'filterStatus',
+                'label' => 'Status',
+                'options' => [
+                    ['value' => '', 'label' => 'All Status'],
+                    ['value' => 'active', 'label' => 'Active'],
+                    ['value' => 'inactive', 'label' => 'Inactive'],
+                    ['value' => 'on_leave', 'label' => 'On Leave']
+                ]
+            ],
+            [
+                'id' => 'filterWorkload',
+                'label' => 'Workload',
+                'options' => [
+                    ['value' => '', 'label' => 'All Workloads'],
+                    ['value' => 'high', 'label' => 'High (5+ tasks)'],
+                    ['value' => 'medium', 'label' => 'Medium (2-4 tasks)'],
+                    ['value' => 'low', 'label' => 'Low (0-1 tasks)']
+                ]
+            ]
+        ],
+        'buttons' => [
+            [
+                'id' => 'filterBtn',
+                'label' => 'Filter',
+                'icon' => 'fas fa-filter'
+            ]
+        ]
+    ];
+    include __DIR__ . '/../../inc/components/filter_bar.php';
+    ?>
 
     <!-- Teams Stats Section -->
-    <div class="team-stats mb-6 row">
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-icon bg-primary">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-label">Total Agents</div>
-                    <div class="stat-value">12</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-icon bg-success">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-label">Active</div>
-                    <div class="stat-value">10</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-icon bg-warning">
-                    <i class="fas fa-tasks"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-label">Total Tasks</div>
-                    <div class="stat-value">48</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-icon bg-accent">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-label">Pending Tasks</div>
-                    <div class="stat-value">15</div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <?php
+    $stats_data = [
+        ['label' => 'Total Agents', 'value' => '12', 'icon' => 'fas fa-users', 'color' => 'primary'],
+        ['label' => 'Active', 'value' => '10', 'icon' => 'fas fa-check-circle', 'color' => 'success'],
+        ['label' => 'Total Tasks', 'value' => '48', 'icon' => 'fas fa-tasks', 'color' => 'warning'],
+        ['label' => 'Pending Tasks', 'value' => '15', 'icon' => 'fas fa-clock', 'color' => 'accent']
+    ];
+    
+    $config = [
+        'stats' => $stats_data,
+        'columns' => 4
+    ];
+    include __DIR__ . '/../../inc/components/stats_grid.php';
+    ?>
 
     <!-- Service Agents List -->
-    <div class="team-list card">
-        <div class="card-header border-bottom">
-            <h3 class="card-title">Team Members</h3>
-        </div>
+    <?php
+    // Sample agent data
+    $agents = [
+        [
+            'id' => 1,
+            'name' => 'John Doe',
+            'role' => 'Service Agent',
+            'email' => 'john@example.com',
+            'phone' => '+94 77 123 4567',
+            'assigned' => '5',
+            'completed' => '3',
+            'pending' => '2',
+            'status' => 'Active',
+            'last_active' => 'Today, 2:30 PM',
+            'avatar' => 'https://ui-avatars.com/api/?name=John+Doe&background=fe9630&color=fff'
+        ],
+        [
+            'id' => 2,
+            'name' => 'Sarah Smith',
+            'role' => 'Senior Agent',
+            'email' => 'sarah@example.com',
+            'phone' => '+94 77 234 5678',
+            'assigned' => '8',
+            'completed' => '6',
+            'pending' => '2',
+            'status' => 'Active',
+            'last_active' => '2 hours ago',
+            'avatar' => 'https://ui-avatars.com/api/?name=Sarah+Smith&background=22c55e&color=fff'
+        ],
+        [
+            'id' => 3,
+            'name' => 'Mike Johnson',
+            'role' => 'Service Agent',
+            'email' => 'mike@example.com',
+            'phone' => '+94 77 345 6789',
+            'assigned' => '3',
+            'completed' => '1',
+            'pending' => '2',
+            'status' => 'On Leave',
+            'last_active' => 'Yesterday',
+            'avatar' => 'https://ui-avatars.com/api/?name=Mike+Johnson&background=f59e0b&color=fff'
+        ],
+        [
+            'id' => 4,
+            'name' => 'Lisa Brown',
+            'role' => 'Service Agent',
+            'email' => 'lisa@example.com',
+            'phone' => '+94 77 456 7890',
+            'assigned' => '6',
+            'completed' => '3',
+            'pending' => '3',
+            'status' => 'Active',
+            'last_active' => '30 min ago',
+            'avatar' => 'https://ui-avatars.com/api/?name=Lisa+Brown&background=00bcd4&color=fff'
+        ]
+    ];
 
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="team-table">
-                    <thead>
-                        <tr>
-                            <th>Agent</th>
-                            <th>Contact</th>
-                            <th>Assigned Tasks</th>
-                            <th>Completed</th>
-                            <th>Pending</th>
-                            <th>Status</th>
-                            <th>Last Active</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Agent 1 -->
-                        <tr class="team-table-row">
-                            <td>
-                                <div class="agent-info d-flex align-center gap-3">
-                                    <div class="agent-avatar">
-                                        <img src="https://ui-avatars.com/api/?name=John+Doe&background=fe9630&color=fff" alt="John Doe">
-                                    </div>
-                                    <div class="agent-details">
-                                        <div class="agent-name font-semibold">John Doe</div>
-                                        <div class="agent-role text-secondary text-sm">Service Agent</div>
-                                    </div>
+    $config = [
+        'headers' => [
+            ['key' => 'name', 'label' => 'Agent'],
+            ['key' => 'email', 'label' => 'Contact'],
+            ['key' => 'assigned', 'label' => 'Assigned Tasks'],
+            ['key' => 'completed', 'label' => 'Completed'],
+            ['key' => 'pending', 'label' => 'Pending'],
+            ['key' => 'status', 'label' => 'Status'],
+            ['key' => 'last_active', 'label' => 'Last Active']
+        ],
+        'rows' => $agents,
+        'columns' => [
+            [
+                'key' => 'name',
+                'render' => function($row) {
+                    return '<div class="d-flex align-center gap-3">
+                                <div class="agent-avatar">
+                                    <img src="' . htmlspecialchars($row['avatar']) . '" alt="' . htmlspecialchars($row['name']) . '">
                                 </div>
-                            </td>
-                            <td>
-                                <div class="contact-info">
-                                    <div class="email text-sm">john@example.com</div>
-                                    <div class="phone text-secondary text-sm">+94 77 123 4567</div>
+                                <div class="agent-details">
+                                    <div class="agent-name font-semibold">' . htmlspecialchars($row['name']) . '</div>
+                                    <div class="agent-role text-secondary text-sm">' . htmlspecialchars($row['role']) . '</div>
                                 </div>
-                            </td>
-                            <td>
-                                <div class="task-count">
-                                    <span class="badge bg-primary">5</span>
+                            </div>';
+                }
+            ],
+            [
+                'key' => 'email',
+                'render' => function($row) {
+                    return '<div class="contact-info">
+                                <div class="email text-sm">' . htmlspecialchars($row['email']) . '</div>
+                                <div class="phone text-secondary text-sm">' . htmlspecialchars($row['phone']) . '</div>
+                            </div>';
+                }
+            ],
+            [
+                'key' => 'assigned',
+                'render' => function($row) {
+                    return '<span class="badge bg-primary">' . htmlspecialchars($row['assigned']) . '</span>';
+                }
+            ],
+            [
+                'key' => 'completed',
+                'render' => function($row) {
+                    $percentage = $row['assigned'] > 0 ? intval(($row['completed'] / $row['assigned']) * 100) : 0;
+                    return '<div class="task-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ' . $percentage . '%"></div>
                                 </div>
-                            </td>
-                            <td>
-                                <div class="task-progress">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" style="width: 60%"></div>
-                                    </div>
-                                    <div class="progress-text text-sm">3</div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="pending-tasks">
-                                    <span class="badge bg-warning">2</span>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="status-badge status-active">
-                                    <i class="fas fa-circle text-success mr-1"></i>Active
-                                </span>
-                            </td>
-                            <td>
-                                <div class="last-active text-secondary text-sm">Today, 2:30 PM</div>
-                            </td>
-                            <td>
-                                <div class="actions-menu d-flex gap-2 justify-center">
-                                    <a href="<?php echo URLROOT; ?>/installeradmin/team/agent_details/1" class="btn-icon" title="View Details">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <button class="btn-icon" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn-icon btn-icon-danger" title="Remove">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- Agent 2 -->
-                        <tr class="team-table-row">
-                            <td>
-                                <div class="agent-info d-flex align-center gap-3">
-                                    <div class="agent-avatar">
-                                        <img src="https://ui-avatars.com/api/?name=Sarah+Smith&background=22c55e&color=fff" alt="Sarah Smith">
-                                    </div>
-                                    <div class="agent-details">
-                                        <div class="agent-name font-semibold">Sarah Smith</div>
-                                        <div class="agent-role text-secondary text-sm">Senior Agent</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="contact-info">
-                                    <div class="email text-sm">sarah@example.com</div>
-                                    <div class="phone text-secondary text-sm">+94 77 234 5678</div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="task-count">
-                                    <span class="badge bg-primary">8</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="task-progress">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" style="width: 75%"></div>
-                                    </div>
-                                    <div class="progress-text text-sm">6</div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="pending-tasks">
-                                    <span class="badge bg-warning">2</span>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="status-badge status-active">
-                                    <i class="fas fa-circle text-success mr-1"></i>Active
-                                </span>
-                            </td>
-                            <td>
-                                <div class="last-active text-secondary text-sm">2 hours ago</div>
-                            </td>
-                            <td>
-                                <div class="actions-menu d-flex gap-2 justify-center">
-                                    <a href="<?php echo URLROOT; ?>/installeradmin/team/agent_details/2" class="btn-icon" title="View Details">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <button class="btn-icon" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn-icon btn-icon-danger" title="Remove">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- Agent 3 -->
-                        <tr class="team-table-row">
-                            <td>
-                                <div class="agent-info d-flex align-center gap-3">
-                                    <div class="agent-avatar">
-                                        <img src="https://ui-avatars.com/api/?name=Mike+Johnson&background=f59e0b&color=fff" alt="Mike Johnson">
-                                    </div>
-                                    <div class="agent-details">
-                                        <div class="agent-name font-semibold">Mike Johnson</div>
-                                        <div class="agent-role text-secondary text-sm">Service Agent</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="contact-info">
-                                    <div class="email text-sm">mike@example.com</div>
-                                    <div class="phone text-secondary text-sm">+94 77 345 6789</div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="task-count">
-                                    <span class="badge bg-primary">3</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="task-progress">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" style="width: 33%"></div>
-                                    </div>
-                                    <div class="progress-text text-sm">1</div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="pending-tasks">
-                                    <span class="badge bg-warning">2</span>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="status-badge status-on-leave">
-                                    <i class="fas fa-circle text-warning mr-1"></i>On Leave
-                                </span>
-                            </td>
-                            <td>
-                                <div class="last-active text-secondary text-sm">Yesterday</div>
-                            </td>
-                            <td>
-                                <div class="actions-menu d-flex gap-2 justify-center">
-                                    <a href="<?php echo URLROOT; ?>/installeradmin/team/agent_details/3" class="btn-icon" title="View Details">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <button class="btn-icon" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn-icon btn-icon-danger" title="Remove">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- Agent 4 -->
-                        <tr class="team-table-row">
-                            <td>
-                                <div class="agent-info d-flex align-center gap-3">
-                                    <div class="agent-avatar">
-                                        <img src="https://ui-avatars.com/api/?name=Lisa+Brown&background=00bcd4&color=fff" alt="Lisa Brown">
-                                    </div>
-                                    <div class="agent-details">
-                                        <div class="agent-name font-semibold">Lisa Brown</div>
-                                        <div class="agent-role text-secondary text-sm">Service Agent</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="contact-info">
-                                    <div class="email text-sm">lisa@example.com</div>
-                                    <div class="phone text-secondary text-sm">+94 77 456 7890</div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="task-count">
-                                    <span class="badge bg-primary">6</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="task-progress">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" style="width: 50%"></div>
-                                    </div>
-                                    <div class="progress-text text-sm">3</div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="pending-tasks">
-                                    <span class="badge bg-warning">3</span>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="status-badge status-active">
-                                    <i class="fas fa-circle text-success mr-1"></i>Active
-                                </span>
-                            </td>
-                            <td>
-                                <div class="last-active text-secondary text-sm">30 min ago</div>
-                            </td>
-                            <td>
-                                <div class="actions-menu d-flex gap-2 justify-center">
-                                    <a href="<?php echo URLROOT; ?>/installeradmin/team/agent_details/4" class="btn-icon" title="View Details">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <button class="btn-icon" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn-icon btn-icon-danger" title="Remove">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Pagination -->
-        <div class="card-footer d-flex align-center justify-between">
-            <div class="pagination-info text-secondary text-sm">
-                Showing 1 to 4 of 12 results
-            </div>
-            <div class="pagination d-flex gap-2">
-                <button class="btn btn-sm btn-secondary">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <button class="btn btn-sm btn-primary">1</button>
-                <button class="btn btn-sm btn-secondary">2</button>
-                <button class="btn btn-sm btn-secondary">3</button>
-                <button class="btn btn-sm btn-secondary">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-            </div>
-        </div>
-    </div>
+                                <div class="progress-text text-sm">' . htmlspecialchars($row['completed']) . '</div>
+                            </div>';
+                }
+            ],
+            [
+                'key' => 'pending',
+                'render' => function($row) {
+                    return '<span class="badge bg-warning">' . htmlspecialchars($row['pending']) . '</span>';
+                }
+            ],
+            [
+                'key' => 'status',
+                'render' => function($row) {
+                    $statusColor = $row['status'] === 'Active' ? 'text-success' : 'text-warning';
+                    return '<span class="status-badge status-' . strtolower(str_replace(' ', '-', $row['status'])) . '">
+                                <i class="fas fa-circle ' . $statusColor . ' mr-1"></i>' . htmlspecialchars($row['status']) . '
+                            </span>';
+                }
+            ]
+        ],
+        'actions' => [
+            [
+                'label' => 'View Details',
+                'icon' => 'fas fa-eye',
+                'url' => URLROOT . '/installeradmin/team/agent_details/{id}'
+            ],
+            [
+                'label' => 'Edit',
+                'icon' => 'fas fa-edit',
+                'url' => URLROOT . '/installeradmin/team/edit/{id}'
+            ],
+            [
+                'label' => 'Remove',
+                'icon' => 'fas fa-trash',
+                'class' => 'btn-icon-danger',
+                'onclick' => 'onclick="deleteAgent(' . 'this' . ')"'
+            ]
+        ]
+    ];
+    include __DIR__ . '/../../inc/components/data_table.php';
+    ?>
 </div>
