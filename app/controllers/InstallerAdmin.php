@@ -638,7 +638,7 @@
             }
             
             // Call model to delete service agent
-            if($this->teamModel->delete_service_agent($agentId, $agentId, true)){
+            if($this->teamModel->delete_service_agent($agentId)){
                 redirect('installeradmin/team');
                 setToast('Service Agent Deleted Successfully', 'success');
             } else {

@@ -205,10 +205,44 @@
                 'label' => 'Remove',
                 'icon' => 'fas fa-trash',
                 'class' => 'btn-icon-danger',
-                'onclick' => 'onclick="deleteAgent(' . 'this' . ')"'
+                'onclick' => 'onclick="openDeleteModal(' . '{id}' . ')"'
             ]
         ]
     ];
     include __DIR__ . '/../../inc/components/data_table.php';
     ?>
+
+    <!-- Delete Confirmation Modal -->
+    <?php
+    $config = [
+        'modal_id' => 'deleteTeamModal',
+        'title' => 'Confirm Delete',
+        'icon' => 'fas fa-exclamation-triangle',
+        'icon_color' => 'text-warning',
+        'heading' => 'Delete Service Agent?',
+        'message' => 'Are you sure you want to delete this agent? This action cannot be undone. All associated task data will be archived.',
+        'confirm_text' => 'Delete Agent',
+        'confirm_icon' => 'fas fa-check',
+        'cancel_text' => 'Cancel',
+        'cancel_icon' => 'fas fa-times',
+        'confirm_action' => URLROOT . '/installeradmin/team/delete_agent/',
+        'confirm_method' => 'POST',
+        'confirm_class' => 'btn-danger'
+    ];
+    include __DIR__ . '/../../inc/models/confirmation_modal.php';
+    ?>
+
+    <!-- Dynamic Delete Modal Handler -->
+    <script>
+    function openDeleteModal(agentId) {
+        // Get the form inside the modal and update its action
+        const modal = document.getElementById('deleteTeamModal');
+        const form = modal.querySelector('form');
+        if (form) {
+            form.action = '<?php echo URLROOT; ?>/installeradmin/team/delete_agent/' + agentId;
+        }
+        // Show the modal
+        showConfirmationModal('deleteTeamModal');
+    }
+    </script>
 </div>

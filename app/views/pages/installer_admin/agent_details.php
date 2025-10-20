@@ -96,7 +96,7 @@
                         <a href="<?php echo URLROOT; ?>/installeradmin/team/edit_agent/1" class="btn btn-sm btn-primary flex-1">
                             <i class="fas fa-edit mr-2"></i> Edit
                         </a>
-                        <button type="button" class="btn btn-sm btn-danger flex-1" onclick="showDeleteModal()">
+                        <button type="button" class="btn btn-sm btn-danger flex-1" onclick="showConfirmationModal('deleteAgentModal')">
                             <i class="fas fa-trash mr-2"></i> Delete
                         </button>
                     </div>
@@ -253,187 +253,25 @@
     </div>
 </div>
 
-<!-- Delete Confirmation Modal (Custom) -->
-<div id="deleteConfirmModal" class="custom-modal" style="display: none;">
-    <div class="modal-overlay" onclick="closeDeleteModal()"></div>
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-exclamation-triangle text-warning mr-2"></i>Confirm Delete
-                </h5>
-                <button type="button" class="btn-close" onclick="closeDeleteModal()" aria-label="Close">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p class="text-center mb-4">
-                    <i class="fas fa-trash-alt text-danger" style="font-size: 3rem;"></i>
-                </p>
-                <h4 class="text-center mb-2">Delete Service Agent?</h4>
-                <p class="text-center text-secondary mb-4">
-                    Are you sure you want to delete <strong>John Doe</strong>? This action cannot be undone. All associated task data will be archived.
-                </p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-sm btn-secondary" onclick="closeDeleteModal()">
-                    <i class="fas fa-times mr-2"></i>Cancel
-                </button>
-                <form action="<?php echo URLROOT; ?>/installeradmin/team/delete_agent/1" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-sm btn-danger">
-                        <i class="fas fa-check mr-2"></i>Delete Agent
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Delete Confirmation Modal -->
+<?php
+$config = [
+    'modal_id' => 'deleteAgentModal',
+    'title' => 'Confirm Delete',
+    'icon' => 'fas fa-exclamation-triangle',
+    'icon_color' => 'text-warning',
+    'heading' => 'Delete Service Agent?',
+    'message' => 'Are you sure you want to delete ',
+    'subject' => 'John Doe',
+    'message_suffix' => '? This action cannot be undone. All associated task data will be archived.',
+    'confirm_text' => 'Delete Agent',
+    'confirm_icon' => 'fas fa-check',
+    'cancel_text' => 'Cancel',
+    'cancel_icon' => 'fas fa-times',
+    'confirm_action' => URLROOT . '/installeradmin/team/delete_agent/1',
+    'confirm_method' => 'POST',
+    'confirm_class' => 'btn-danger'
+];
+include __DIR__ . '/../../inc/models/confirmation_modal.php';
+?>
 
-<!-- Custom Modal Styles & JavaScript -->
-<style>
-.custom-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1050;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.custom-modal.show {
-    display: flex;
-}
-
-.modal-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-.modal-dialog {
-    position: relative;
-    z-index: 1051;
-    width: 90%;
-    max-width: 500px;
-    animation: slideUp 0.3s ease-out;
-}
-
-.modal-content {
-    background-color: #ffffff;
-    border-radius: 0.75rem;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-}
-
-.modal-header {
-    padding: 1.5rem;
-    background-color: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.modal-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #212121;
-    margin: 0;
-}
-
-.modal-body {
-    padding: 2rem 1.5rem;
-}
-
-.modal-footer {
-    padding: 1.5rem;
-    background-color: #f9fafb;
-    border-top: 1px solid #e5e7eb;
-    display: flex;
-    gap: 0.75rem;
-    justify-content: flex-end;
-}
-
-.btn-close {
-    width: 1.5rem;
-    height: 1.5rem;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    opacity: 0.5;
-    transition: opacity 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-}
-
-.btn-close:hover {
-    opacity: 1;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes slideUp {
-    from {
-        transform: translateY(50px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-</style>
-
-<script>
-function showDeleteModal() {
-    const modal = document.getElementById('deleteConfirmModal');
-    modal.classList.add('show');
-    modal.style.display = 'flex';
-    // Prevent body scroll when modal is open
-    document.body.style.overflow = 'hidden';
-}
-
-function closeDeleteModal() {
-    const modal = document.getElementById('deleteConfirmModal');
-    modal.classList.remove('show');
-    modal.style.display = 'none';
-    // Restore body scroll
-    document.body.style.overflow = 'auto';
-}
-
-// Close modal when clicking overlay
-document.addEventListener('DOMContentLoaded', function() {
-    const modal = document.getElementById('deleteConfirmModal');
-    const overlay = modal.querySelector('.modal-overlay');
-    
-    overlay.addEventListener('click', function(e) {
-        if (e.target === overlay) {
-            closeDeleteModal();
-        }
-    });
-    
-    // Close modal on Escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && modal.classList.contains('show')) {
-            closeDeleteModal();
-        }
-    });
-});
-</script>

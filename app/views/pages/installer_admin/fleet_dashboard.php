@@ -58,6 +58,48 @@
         include __DIR__ . '/../../inc/components/page_header.php';
         ?>
 
+        
+        <!-- Filter & Search Section -->
+        <?php
+        $config = [
+            'search' => [
+                'id' => 'searchAgents',
+                'label' => 'Search Agents',
+                'placeholder' => 'Search by name or email...'
+            ],
+            'filters' => [
+                [
+                    'id' => 'filterStatus',
+                    'label' => 'Status',
+                    'options' => [
+                        ['value' => '', 'label' => 'All Status'],
+                        ['value' => 'active', 'label' => 'Active'],
+                        ['value' => 'inactive', 'label' => 'Inactive'],
+                        ['value' => 'on_leave', 'label' => 'On Leave']
+                    ]
+                ],
+                [
+                    'id' => 'filterWorkload',
+                    'label' => 'Workload',
+                    'options' => [
+                        ['value' => '', 'label' => 'All Workloads'],
+                        ['value' => 'high', 'label' => 'High (5+ tasks)'],
+                        ['value' => 'medium', 'label' => 'Medium (2-4 tasks)'],
+                        ['value' => 'low', 'label' => 'Low (0-1 tasks)']
+                    ]
+                ]
+            ],
+            'buttons' => [
+                [
+                    'id' => 'filterBtn',
+                    'label' => 'Filter',
+                    'icon' => 'fas fa-filter'
+                ]
+            ]
+        ];
+        include __DIR__ . '/../../inc/components/filter_bar.php';
+        ?>
+
         <!-- Summary Cards -->
         <?php
         $config = [

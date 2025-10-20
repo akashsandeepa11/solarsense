@@ -85,6 +85,11 @@ foreach ($customColumns as $col) {
                                                 }
                                                 $actionClass = isset($action['class']) ? $action['class'] : '';
                                                 $actionOnclick = isset($action['onclick']) ? $action['onclick'] : '';
+                                                
+                                                // Replace {id} placeholder in onclick handlers
+                                                if (isset($row['id']) && strpos($actionOnclick, '{id}') !== false) {
+                                                    $actionOnclick = str_replace('{id}', $row['id'], $actionOnclick);
+                                                }
                                                 ?>
                                                 <?php if ($actionUrl): ?>
                                                     <a href="<?php echo htmlspecialchars($actionUrl); ?>" 

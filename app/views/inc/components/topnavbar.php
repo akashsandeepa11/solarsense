@@ -6,7 +6,7 @@
 </style>
 
 <header id="main-topnav" class="navbar d-flex align-items-center justify-between p-3"
-    style="position:sticky; top:0; left:0; right:0; z-index:1100; background:var(--page-bg, #fff);">
+    style="position:sticky; top:0; left:0; right:0; z-index:100; background:var(--page-bg, #fff);">
     <!-- Left Side -->
     <div class="d-flex align-center">
         <button class="btn border-0 mr-3" id="sidebar-toggle-btn">

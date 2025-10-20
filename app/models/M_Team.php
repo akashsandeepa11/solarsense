@@ -180,22 +180,20 @@ class M_Team{
      * @param bool $deleteUser - Whether to also delete from user table (default: true)
      * @return bool - true on success, false on failure
      */
-    public function delete_service_agent($userId, $agentId, $deleteUser = true) {
+    public function delete_service_agent($userId) {
         try {
             // Start transaction
             $this->db->beginTransaction();
 
-            // 1. Delete from service_agent table
+            // 1. Delete from service_agent table (child table first)
             $this->db->query('DELETE FROM service_agent WHERE user_id = :user_id');
             $this->db->bind(':user_id', $userId);
             $this->db->execute();
 
-            // 2. Delete from user table if requested
-            if ($deleteUser) {
-                $this->db->query('DELETE FROM user WHERE user_id = :user_id');
-                $this->db->bind(':user_id', $userId);
-                $this->db->execute();
-            }
+            // 2. Delete from user table
+            $this->db->query('DELETE FROM user WHERE user_id = :user_id'); 
+            $this->db->bind(':user_id', $userId);
+            $this->db->execute();
 
             // Commit the transaction
             $this->db->commit();
@@ -206,7 +204,7 @@ class M_Team{
             $this->db->rollBack();
             $errorMsg = 'Delete service agent failed: ' . $e->getMessage();
             error_log($errorMsg);
-            
+
             // Write to a file we can read easily
             if (!is_dir(dirname(__DIR__) . '/logs')) {
                 mkdir(dirname(__DIR__) . '/logs', 0755, true);
@@ -216,10 +214,11 @@ class M_Team{
                 date('Y-m-d H:i:s') . ' - ' . $errorMsg . "\n",
                 FILE_APPEND
             );
-            
+
             return false;
         }
     }
+
 
     /**
      * Get service agent by ID
