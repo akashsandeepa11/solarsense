@@ -120,13 +120,13 @@
                 [
                     'label' => 'View Details',
                     'icon' => 'fas fa-eye',
-                    'url' => URLROOT . '/installeradmin/fleet/{id}',
+                    'url' => URLROOT . '/installeradmin/fleet/customer_details/{id}',
                     'class' => 'btn-sm btn-info'
                 ],
                 [
                     'label' => 'Edit',
                     'icon' => 'fas fa-edit',
-                    'url' => URLROOT . '/installeradmin/fleet/edit/{id}',
+                    'url' => URLROOT . '/installeradmin/fleet/edit_customer/{id}',
                     'class' => 'btn-sm btn-primary'
                 ],
                 [

@@ -12,25 +12,19 @@
   width: 100%;
 }
 
-.page-header .d-flex {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 1rem !important;
-  width: 100% !important;
-  flex-wrap: nowrap !important;
-}
-
-.page-header .d-flex > div:first-child {
-  flex: 1 1 auto;
-  min-width: 0;
+.page-header-inner {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  width: 100%;
+  flex-wrap: nowrap;
 }
 
 .page-header-content {
   flex: 1 1 auto;
   min-width: 0;
-  display: block;
 }
 
 .page-header h1 {
@@ -50,22 +44,18 @@
 }
 
 .header-actions {
-  display: flex !important;
-  gap: 0.5rem !important;
-  flex-shrink: 0 !important;
-  flex-wrap: nowrap !important;
-  align-items: flex-end;
+  display: flex;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
   white-space: nowrap;
-  margin-left: auto;
-}
-
-.header-actions.d-flex.gap-2 {
-  gap: 0.5rem !important;
 }
 
 .header-actions .btn {
   white-space: nowrap;
-  flex-shrink: 1;
+  flex-shrink: 0;
 }
 
 /* Stat Card Component */
@@ -539,15 +529,16 @@
     padding: 1rem;
   }
 
-  .page-header .d-flex {
-    flex-direction: column !important;
-    align-items: flex-start !important;
+  .page-header-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
   }
 
   .header-actions {
     width: 100%;
     flex-direction: column;
-    margin-top: 1rem;
+    margin-top: 0.5rem;
     align-items: stretch;
   }
 

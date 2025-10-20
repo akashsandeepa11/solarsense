@@ -29,20 +29,46 @@
         }
 
         // --- Fleet Management ---
-        public function fleet($page = 'dashboard'){
+        public function fleet($page = 'dashboard', $customerId = null){
             $data = [
                 'user' => $this->user,
             ];
             
-            if($page === 'add_customer'){
-                
+            if($page === 'add_customer'){               
                 return $this->add_customer();
             }
+
+            if($page === 'customer_details'){
+                return $this->customerdetails($customerId);
+            }
+
+            if($page === 'view'){
+                return $this->view_customer();
+            }
+
+            if($page === 'edit_customer'){
+                return $this->edit_customer();
+            }
+
+            if($page === 'delete_customer'){
+                return $this->delete_customer();
+            }
+
+
             
             $this->view('pages/installer_admin/fleet_dashboard', $data, layout: 'dashboard');
         }
+
+        public function customerdetails($customerId = null){
+            $data = [
+                'user' => $this->user,
+                'customerId' => $customerId
+            ];
+            
+            $this->view('pages/installer_admin/customer_details', $data, layout: 'dashboard');
+        }
         
-        public function add_customer(){
+        public function add_customer(): void{
             
             
             if($_SERVER['REQUEST_METHOD'] == 'POST'){
@@ -260,6 +286,31 @@
                 $this->view('pages/installer_admin/add_customer', $data, layout: 'dashboard');
             }
         }
+
+        public function view_customer(): void{
+            $data = [
+                'user' => $this->user,
+            ];
+
+            $this->view('pages/installer_admin/view_customer', $data, layout: 'dashboard');
+        }
+
+        public function edit_customer(): void{
+            $data = [
+                'user' => $this->user,
+            ];
+
+            $this->view('pages/installer_admin/edit_customer', $data, layout: 'dashboard');
+        }
+
+        public function delete_customer(): void{
+            $data = [
+                'user' => $this->user,
+            ];
+
+            $this->view('pages/installer_admin/delete_customer', $data, layout: 'dashboard');
+        }
+
 
         // --- Team Management ---
         public function team($page = 'dashboard', $agentId = null){

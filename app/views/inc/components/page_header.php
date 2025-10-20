@@ -24,7 +24,7 @@ $buttons = $config['buttons'] ?? [];
 ?>
 
 <div class="page-header mb-6">
-    <div class="d-flex align-center justify-between">
+    <div class="page-header-inner">
         <div class="page-header-content">
             <h1 class="text-3xl font-bold mb-2"><?php echo htmlspecialchars($title); ?></h1>
             <?php if ($description): ?>
@@ -32,7 +32,7 @@ $buttons = $config['buttons'] ?? [];
             <?php endif; ?>
         </div>
         <?php if (!empty($buttons)): ?>
-            <div class="header-actions d-flex gap-2">
+            <div class="header-actions">
                 <?php foreach ($buttons as $button): ?>
                     <a href="<?php echo $button['url']; ?>" 
                        class="btn <?php echo $button['class'] ?? 'btn-primary'; ?>" 
