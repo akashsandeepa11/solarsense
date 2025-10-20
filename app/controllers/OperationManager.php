@@ -2,12 +2,14 @@
 
     class OperationManager extends Controller{
 
+        private $teamModel;
         private $user = [
             'role' => ROLE_OPERATION_MANAGER,
         ];
 
         public function __construct(){
             // Here you would add logic to ensure only an admin can access these methods.
+            $this->teamModel = $this->model('M_Team');
         }
 
         // --- Admin-Specific Pages ---
@@ -55,6 +57,7 @@
         public function team(){
             $data = [
                 'user' => $this->user,
+                'agents' => $this->teamModel->get_service_agents_by_company(1)
             ];
             
             $this->view('pages/operation_manager/team', $data, layout: 'dashboard');
