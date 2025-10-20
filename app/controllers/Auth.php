@@ -144,7 +144,7 @@
             'success' => false
         ];
 
-        //Validate inputs
+        // Validate inputs
         if (empty($data['companyName'])) {
             $data['companyName_err'] = 'Please enter your full name.';
         }
