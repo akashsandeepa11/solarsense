@@ -24,10 +24,7 @@ foreach ($navigation_links as $section => $items): ?>
     
     <?php foreach ($items as $item): ?>
         <?php
-        // Check if current path starts with the item URL (this handles sub-pages)
-        $item_url = rtrim($item['url'], '/');
-        $current_url = rtrim($current_path, '/');
-        $is_active = ($current_url === $item_url || strpos($current_url, $item_url . '/') === 0);
+        $is_active = ($current_path === $item['url'] || rtrim($current_path, '/') === rtrim($item['url'], '/'));
         ?>
         <a href="<?php echo URLROOT . $item['url']; ?>"
            class="sidebar-nav-link <?php echo $is_active ? 'active' : ''; ?> text-decoration-none hover:no-underline">
@@ -41,11 +38,11 @@ foreach ($navigation_links as $section => $items): ?>
 
     <!-- Footer Links -->
     <div>
-        <a href="#" class="sidebar-nav-link text-decoration-none hover:no-underline">
+        <!-- <a href="#" class="sidebar-nav-link text-decoration-none hover:no-underline">
             <i class="fa-solid fa-circle-question"></i>
             <span>Help</span>
-        </a>
-        <a href="<?php echo URLROOT?>/auth/logout" class="sidebar-nav-link text-error text-decoration-none hover:no-underline">
+        </a> -->
+        <a href="<?php echo URLROOT?>/auth/login" class="sidebar-nav-link text-error text-decoration-none hover:no-underline">
             <i class="fa-solid fa-arrow-right-from-bracket"></i>
             <span>Logout</span>
         </a>

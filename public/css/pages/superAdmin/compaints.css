@@ -1,0 +1,115 @@
+:root {
+      --color-primary: #f97316; /* orange */
+      --color-success: #22c55e; /* green */
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f9fafb;
+      color: #1f2937;
+      margin: 0;
+      padding: 2rem;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 1rem;
+      border-bottom: 2px solid #e5e7eb;
+      margin-bottom: 1.5rem;
+    }
+
+    .tab {
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+    }
+
+    .tab.active {
+      border-color: var(--color-primary);
+      font-weight: 600;
+    }
+
+    .content {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .left-section {
+      flex: 2;
+    }
+
+    .right-section {
+      flex: 1;
+    }
+
+    .card {
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card h3 {
+      margin-top: 0;
+      font-size: 1.125rem;
+    }
+
+    .issue-list {
+      margin-top: 1rem;
+    }
+
+    .issue-item {
+      margin-bottom: 1rem;
+    }
+
+    .issue-item strong {
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    .comment {
+      padding: 1rem;
+      border-bottom: 1px solid #eee;
+    }
+
+    .comment:last-child {
+      border-bottom: none;
+    }
+
+    .comment .meta {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin-bottom: 0.25rem;
+    }
+
+    .chart-box {
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      padding: 1.5rem;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .assign-btn {
+      background: var(--color-primary);
+      color: white;
+      padding: 0.5rem 1.25rem;
+      border: none;
+      border-radius: 9999px;
+      cursor: pointer;
+      font-weight: 500;
+    }
