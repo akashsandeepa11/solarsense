@@ -67,6 +67,14 @@
             $this->view('pages/homeowner/profile', $data, 'dashboard');
         }
 
+        public function help(){
+            $data = [
+                'user' => $this->user,
+            ];
+
+            $this->view('pages/homeowner/help', $data, 'dashboard');
+        }
+
         public function saveSMS() {
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // Just return success for UI demo

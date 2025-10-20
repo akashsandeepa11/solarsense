@@ -22,6 +22,7 @@ $installer_admin_nav = [
     ],
     'PERSONAL' => [
         ['title' => 'Profile', 'url' => '/installeradmin/profile', 'icon' => 'fa-solid fa-building'],
+        ['title' => 'Help', 'url' => '/installeradmin/help', 'icon' => 'fa-solid fa-circle-question']
     ],
 ];
 
@@ -36,6 +37,7 @@ $operation_manager_nav = [
     ],
     'PERSONAL' => [
         ['title' => 'Profile', 'url' => '/operationmanager/profile', 'icon' => 'fa-solid fa-user-tie'],
+        ['title' => 'Help', 'url' => '/operationmanager/help', 'icon' => 'fa-solid fa-circle-question']
     ],
 ];
 
@@ -47,6 +49,7 @@ $inventory_manager_nav = [
     ],
     'PERSONAL' => [
         ['title' => 'Profile', 'url' => '/inventorymanager/profile', 'icon' => 'fa-solid fa-user-cog'],
+        ['title' => 'Help', 'url' => '/inventorymanager/help', 'icon' => 'fa-solid fa-circle-question']
     ],
 ];
 
@@ -58,6 +61,7 @@ $service_agent_nav = [
     ],
     'PERSONAL' => [
         ['title' => 'Profile', 'url' => '/serviceagent/profile', 'icon' => 'fa-solid fa-user-gear'],
+        ['title' => 'Help', 'url' => '/serviceagent/help', 'icon' => 'fa-solid fa-circle-question']
     ],
 ];
 
@@ -70,5 +74,6 @@ $homeowner_nav = [
     ],
     'PERSONAL' => [
         ['title' => 'Profile', 'url' => '/homeowner/profile', 'icon' => 'fa-solid fa-user'],
+        ['title' => 'Help', 'url' => '/homeowner/help', 'icon' => 'fa-solid fa-circle-question']
     ],
 ];

@@ -35,6 +35,14 @@
             
             $this->view('pages/inventory_manager/profile', $data, layout: 'dashboard');
         }
+
+        public function help(){
+            $data = [
+                'user' => $this->user,
+            ];
+
+            $this->view('pages/inventory_manager/help', $data, 'dashboard');
+        }
         
         
     }

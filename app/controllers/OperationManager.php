@@ -67,6 +67,14 @@
             
             $this->view('pages/operation_manager/profile', $data, layout: 'dashboard');
         }
+
+        public function help(){
+            $data = [
+                'user' => $this->user,
+            ];
+
+            $this->view('pages/operation_manager/help', $data, 'dashboard');
+        }
         
         
     }
