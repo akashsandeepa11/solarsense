@@ -14,10 +14,11 @@ class M_Fleet{
             $this->db->beginTransaction();
 
             // 1. Insert into `user` table
-            $this->db->query('INSERT INTO user (email, password, type) VALUES (:email, :password, :type)');
+            $this->db->query('INSERT INTO user (email, password, type, full_name) VALUES (:email, :password, :type, :full_name)');
             $this->db->bind(':email', $userData['email']);
             $this->db->bind(':password', $userData['password']);
             $this->db->bind(':type', ROLE_HOMEOWNER);
+            $this->db->bind(':full_name', $customerData['full_name']);
             $this->db->execute();
 
             // Get the inserted user ID
@@ -25,14 +26,14 @@ class M_Fleet{
 
             // 2. Insert into `homeowner` table
             // Columns: user_id, company_id, full_name, address, contact, register_date, email
-            $this->db->query('INSERT INTO homeowner (user_id, company_id, full_name, address, contact, register_date, email) VALUES (:user_id, :company_id, :full_name, :address, :contact, :register_date, :email)');
+            $this->db->query('INSERT INTO homeowner (user_id, company_id, address, contact, register_date, nic, district) VALUES (:user_id, :company_id, :address, :contact, :register_date, :nic, :district)');
             $this->db->bind(':user_id', $userId);
-            $this->db->bind(':company_id', 1); // Default company_id - adjust as needed
-            $this->db->bind(':full_name', $customerData['full_name']);
+            $this->db->bind(':company_id', 1); 
             $this->db->bind(':address', $customerData['address']);
             $this->db->bind(':contact', $customerData['contact']);
             $this->db->bind(':register_date', date('Y-m-d'));
-            $this->db->bind(':email', $userData['email']);
+            $this->db->bind(':nic', $customerData['nic']);
+            $this->db->bind(':district', $customerData['district']);
             $this->db->execute();
 
             // 3. Insert into `solar_system` table
@@ -70,4 +71,6 @@ class M_Fleet{
             return false;
         }
     }
+
+
 }

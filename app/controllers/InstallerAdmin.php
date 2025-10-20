@@ -126,11 +126,6 @@
                 ];
                 if (isset($azimuthMap[$data['panelAzimuth']])) {
                     $data['panelAzimuth'] = $azimuthMap[$data['panelAzimuth']];
-                }else{
-                    // Check email is already registed or not
-                    if($this->authModel->findUserByEmail($data['email'])){
-                        $data['email_err'] = 'Email is already registered';
-                    }
                 }
 
                 // Validate all fields
@@ -140,6 +135,11 @@
 
                 if(empty($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)){
                     $data['email_err'] = "Please enter a valid email address";
+                }else{
+                    // Check email is already registed or not
+                    if($this->authModel->findUserByEmail($data['email'])){
+                        $data['email_err'] = 'Email is already registered';
+                    }
                 }
 
                 if(empty($data['contactNumber']) || !preg_match('/^[0-9\-\+\s\(\)]+$/', $data['contactNumber'])){
@@ -314,9 +314,6 @@
 
         // --- Team Management ---
         public function team($page = 'dashboard', $agentId = null){
-            $data = [
-                'user' => $this->user,
-            ];
             
             if($page === 'add_service_agent'){
                 return $this->add_service_agent();
@@ -334,6 +331,10 @@
                 return $this->delete_agent($agentId);
             }
             
+            $data = [
+                'user' => $this->user,
+            ];
+           
             $this->view('pages/installer_admin/team', $data, layout: 'dashboard');
         }
 
@@ -637,6 +638,7 @@
             
             // Call model to delete service agent
             if($this->teamModel->delete_service_agent($agentId, $agentId, true)){
+                redirect('installeradmin/team');
                 setToast('Service Agent Deleted Successfully', 'success');
             } else {
                 setToast('Failed to delete service agent. Please try again.', 'error');
