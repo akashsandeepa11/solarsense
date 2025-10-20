@@ -125,11 +125,86 @@
             $this->view('pages/auth/installer_registration', $data, layout: "main");
         }
 
-        public function installerRegistrationHandler(){
-            
-            $data = [];
-            $this->view('pages/auth/installerRegistrationHandler', $data, layout: "main");
+        public function installerRegistrationHandler() {
+    // Check if form is submitted (POST request)
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+        // Sanitize and collect form inputs
+        $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+
+        $data = [
+            'companyName'      => trim($_POST['companyName'] ?? ''),
+            'physicalAddress'  => trim($_POST['physicalAddress'] ?? ''),
+            'contactNumber'    => trim($_POST['contactNumber'] ?? ''),
+            'email'            => trim($_POST['email'] ?? ''),
+            'companyName_err'  => '',
+            'physicalAddress_err' => '',
+            'contactNumber_err' => '',
+            'email_err' => '',
+            'success' => false
+        ];
+
+        //Validate inputs
+        if (empty($data['companyName'])) {
+            $data['companyName_err'] = 'Please enter your full name.';
         }
+
+        if (empty($data['physicalAddress'])) {
+            $data['physicalAddress_err'] = 'Please enter your address.';
+        }
+
+        if (empty($data['contactNumber'])) {
+            $data['contactNumber_err'] = 'Please enter a contact number.';
+        } elseif (!preg_match("/^[0-9]{10,15}$/", $data['contactNumber'])) {
+            $data['contactNumber_err'] = 'Please enter a valid phone number.';
+        }
+
+        if (empty($data['email'])) {
+            $data['email_err'] = 'Please enter an email.';
+        } elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+            $data['email_err'] = 'Invalid email format.';
+        }
+
+        //If no validation errors, insert into DB
+        if (
+            empty($data['companyName_err']) &&
+            empty($data['physicalAddress_err']) &&
+            empty($data['contactNumber_err']) &&
+            empty($data['email_err'])
+        ) {
+            $installerModel = $this->model('InstallerModel');
+
+            if ($installerModel->add_company($data)) {
+                $data['success'] = true;
+
+                // Redirect or load success view
+                flash('register_success', 'Registration successful! We’ll contact you soon.');
+                redirect('auth/login'); // or wherever you want
+                return;
+            } else {
+                $data['general_err'] = 'Something went wrong. Please try again later.';
+            }
+        }
+
+        // If validation fails or insertion fails, reload the form with errors
+        $this->view('pages/auth/installerRegistrationHandler', $data, layout: "main");
+
+    } else {
+        // GET request — load the form
+        $data = [
+            'companyName' => '',
+            'physicalAddress' => '',
+            'contactNumber' => '',
+            'email' => '',
+            'companyName_err' => '',
+            'physicalAddress_err' => '',
+            'contactNumber_err' => '',
+            'email_err' => ''
+        ];
+
+        $this->view('pages/auth/installerRegistrationHandler', $data, layout: "main");
+    }
+}
 
         
     }

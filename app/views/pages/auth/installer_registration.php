@@ -55,7 +55,7 @@ $all_districts = [
                 </div>
             </div>
 
-            <form id="registration-form" action="installerRegistrationHandler.php" method="post" novalidate>
+            <form id="registration-form" action="<?php echo URLROOT; ?>/auth/installerRegistrationHandler" method="post" novalidate>
                 <!-- Step 1: Personal & Contact Details -->
                 <div id="step-1" class="form-step active">
                     <div class="row">
