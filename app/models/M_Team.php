@@ -23,10 +23,11 @@ class M_Team{
 
             // 1. Insert into `user` table
             // Columns: email, password, type
-            $this->db->query('INSERT INTO user (email, password, type) VALUES (:email, :password, :type)');
+            $this->db->query('INSERT INTO user (email, password, type, full_name) VALUES (:email, :password, :type, :full_name)');
             $this->db->bind(':email', $userData['email']);
             $this->db->bind(':password', $userData['password']);
             $this->db->bind(':type', ROLE_SERVICE_AGENT);
+            $this->db->bind(':full_name', $agentData['full_name']);
             $this->db->execute();
 
             // Get the inserted user ID
@@ -37,15 +38,13 @@ class M_Team{
             //          specialization, experience_years, availability, certifications, status, register_date, created_date
             $this->db->query('
                 INSERT INTO service_agent 
-                (user_id, company_id, full_name, email, nic, address, contact, district, specialization, experience_years, availability, certifications, status, register_date, created_date) 
+                (user_id, company_id, nic, address, contact, district, specialization, experience_years, availability, certifications, status, register_date) 
                 VALUES 
-                (:user_id, :company_id, :full_name, :email, :nic, :address, :contact, :district, :specialization, :experience_years, :availability, :certifications, :status, :register_date, :created_date)
+                (:user_id, :company_id, :nic, :address, :contact, :district, :specialization, :experience_years, :availability, :certifications, :status, :register_date)
             ');
             
             $this->db->bind(':user_id', $userId);
             $this->db->bind(':company_id', 1); // Default company_id - adjust as needed
-            $this->db->bind(':full_name', $agentData['full_name']);
-            $this->db->bind(':email', $userData['email']);
             $this->db->bind(':nic', $agentData['nic']);
             $this->db->bind(':address', $agentData['address']);
             $this->db->bind(':contact', $agentData['contact_number']);
@@ -56,7 +55,6 @@ class M_Team{
             $this->db->bind(':certifications', $agentData['certifications'] ?? NULL);
             $this->db->bind(':status', $agentData['status']);
             $this->db->bind(':register_date', date('Y-m-d'));
-            $this->db->bind(':created_date', $agentData['created_date'] ?? date('Y-m-d H:i:s'));
             
             $this->db->execute();
 

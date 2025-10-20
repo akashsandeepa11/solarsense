@@ -9,16 +9,9 @@
         ['label' => 'Services Completed (Month)', 'value' => '23', 'icon' => 'fas fa-check-circle', 'color' => 'success']
     ];
 
-    // Client Table Data
-    $clients = [
-        ['id' => 1, 'name' => 'John Doe', 'location' => 'Colombo', 'size' => '5.5', 'health' => 'Healthy', 'performance' => '102', 'last_upload' => '2025-08-20 09:45', 'avatar' => 'https://ui-avatars.com/api/?name=Lisa+Brown&background=00bcd4&color=fff'],
-        ['id' => 2, 'name' => 'Jane Smith', 'location' => 'Kandy', 'size' => '4.2', 'health' => 'Healthy', 'performance' => '99', 'last_upload' => '2025-08-20 10:15', 'avatar' => 'https://ui-avatars.com/api/?name=Lisa+Brown&background=00bcd4&color=fff'],
-        ['id' => 3, 'name' => 'Kamal Perera', 'location' => 'Galle', 'size' => '10.0', 'health' => 'Fault', 'performance' => '0', 'last_upload' => '2025-08-18 14:30', 'avatar' => 'https://ui-avatars.com/api/?name=Lisa+Brown&background=00bcd4&color=fff'],
-        ['id' => 4, 'name' => 'Nimali Silva', 'location' => 'Jaffna', 'size' => '3.0', 'health' => 'Underperforming', 'performance' => '85', 'last_upload' => '2025-08-20 08:30', 'avatar' => 'https://ui-avatars.com/api/?name=Lisa+Brown&background=00bcd4&color=fff'],
-        ['id' => 5, 'name' => 'David Miller', 'location' => 'Matara', 'size' => '7.8', 'health' => 'Healthy', 'performance' => '105', 'last_upload' => '2025-08-20 10:05', 'avatar' => 'https://ui-avatars.com/api/?name=Lisa+Brown&background=00bcd4&color=fff'],
-        ['id' => 6, 'name' => 'Fatima Rizvi', 'location' => 'Trincomalee', 'size' => '5.0', 'health' => 'Healthy', 'performance' => '98', 'last_upload' => '2025-08-20 09:55', 'avatar' => 'https://ui-avatars.com/api/?name=Lisa+Brown&background=00bcd4&color=fff'],
-        ['id' => 7, 'name' => 'Suresh Kumar', 'location' => 'Negombo', 'size' => '6.5', 'health' => 'Fault', 'performance' => '15', 'last_upload' => '2025-08-19 20:00', 'avatar' => 'https://ui-avatars.com/api/?name=Lisa+Brown&background=00bcd4&color=fff'],
-    ];
+    // Get Client Table Data from Database
+    $fleetModel = new M_Fleet();
+    $clients = $fleetModel->get_customer_by_company(1);
 
     // Function to determine the status dot color
     function getStatusClass($health) {
@@ -41,6 +34,7 @@
     <link rel="stylesheet" href="<?php echo URLROOT?>/css/components.css">
 
     <div class="container-fluid p-8">
+
         <!-- Page Header -->
         <?php
         $config = [

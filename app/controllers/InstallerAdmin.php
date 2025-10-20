@@ -30,9 +30,6 @@
 
         // --- Fleet Management ---
         public function fleet($page = 'dashboard', $customerId = null){
-            $data = [
-                'user' => $this->user,
-            ];
             
             if($page === 'add_customer'){               
                 return $this->add_customer();
@@ -53,6 +50,11 @@
             if($page === 'delete_customer'){
                 return $this->delete_customer();
             }
+
+            $data = [
+                'user' => $this->user,
+                'customers' => $this->fleetModel->get_customer_by_company(1)
+            ];
 
 
             
@@ -239,7 +241,7 @@
                 // Call model to save data
                 if($this->fleetModel->add_customer($userData, $customerData, $panelData)) {
                     setToast('Customer Added Successfully', 'success');
-                    redirect('installeradmin/fleet/add_customer');
+                    redirect('installeradmin/fleet');
                 } else {
                     setToast('Something went wrong during registration.', 'error');
                     $this->view('pages/installer_admin/add_customer', $data, layout: 'dashboard');
