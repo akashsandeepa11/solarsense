@@ -93,22 +93,24 @@ class M_Team{
      * @param array $agentData - Contains agent details to update
      * @return bool - true on success, false on failure
      */
-    public function update_service_agent($userId, $agentId, $userData, $agentData) {
+    public function update_service_agent($userId, $userData, $agentData) {
         try {
             // Start transaction
             $this->db->beginTransaction();
 
             // 1. Update user table (only if password provided)
             if (!empty($userData['password'])) {
-                $this->db->query('UPDATE user SET email = :email, password = :password WHERE user_id = :user_id');
+                $this->db->query('UPDATE user SET email = :email, password = :password, full_name = :full_name WHERE user_id = :user_id');
                 $this->db->bind(':email', $userData['email']);
                 $this->db->bind(':password', $userData['password']);
+                $this->db->bind(':full_name', $userData['full_name']);
                 $this->db->bind(':user_id', $userId);
                 $this->db->execute();
             } else {
                 // Update only email
-                $this->db->query('UPDATE user SET email = :email WHERE user_id = :user_id');
+                $this->db->query('UPDATE user SET email = :email, full_name = :full_name WHERE user_id = :user_id');
                 $this->db->bind(':email', $userData['email']);
+                $this->db->bind(':full_name', $userData['full_name']);
                 $this->db->bind(':user_id', $userId);
                 $this->db->execute();
             }
@@ -116,9 +118,7 @@ class M_Team{
             // 2. Update service_agent table
             $this->db->query('
                 UPDATE service_agent 
-                SET full_name = :full_name,
-                    email = :email,
-                    nic = :nic,
+                SET nic = :nic,
                     address = :address,
                     contact = :contact,
                     district = :district,
@@ -130,8 +130,6 @@ class M_Team{
                 WHERE user_id = :user_id
             ');
             
-            $this->db->bind(':full_name', $agentData['full_name']);
-            $this->db->bind(':email', $userData['email']);
             $this->db->bind(':nic', $agentData['nic']);
             $this->db->bind(':address', $agentData['address']);
             $this->db->bind(':contact', $agentData['contact_number']);
@@ -219,10 +217,10 @@ class M_Team{
 
 
     /**
-     * Get service agent by ID
+     * Get service agent by user ID (basic info - used for edit form population)
      * 
      * @param int $userId - User ID
-     * @return array|false - Agent data or false if not found
+     * @return object|false - Agent data or false if not found
      */
     public function get_service_agent($userId) {
         try {
@@ -239,6 +237,112 @@ class M_Team{
         } catch (Exception $e) {
             error_log('Get service agent failed: ' . $e->getMessage());
             return false;
+        }
+    }
+
+    /**
+     * Get complete service agent data by user ID
+     * Returns all data that was added during service agent creation
+     * 
+     * @param int $userId - User ID
+     * @return object|false - Complete agent data object or false if not found
+     */
+    public function get_service_agent_complete($userId) {
+        try {
+            $this->db->query('
+                SELECT 
+                    u.user_id,
+                    u.email,
+                    u.full_name ,
+                    u.type as user_type,
+                    sa.nic,
+                    sa.address,
+                    sa.contact,
+                    sa.district,
+                    sa.specialization,
+                    sa.experience_years,
+                    sa.availability,
+                    sa.certifications,
+                    sa.status,
+                    sa.register_date,
+                    sa.company_id
+                FROM service_agent sa
+                JOIN user u ON sa.user_id = u.user_id
+                WHERE sa.user_id = :user_id
+            ');
+            $this->db->bind(':user_id', $userId);
+            
+            $result = $this->db->single();
+            
+            if (!$result) {
+                return false;
+            }
+
+            return $result;
+
+        } catch (Exception $e) {
+            error_log('Get service agent complete failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Get all service agent data as array by user ID (includes all fields with aliases)
+     * Useful for displaying complete agent information in various formats
+     * 
+     * @param int $userId - User ID
+     * @return array - Comprehensive agent data with field name variations
+     */
+    public function get_service_agent_all_fields($userId) {
+        try {
+            $this->db->query('
+                SELECT u.user_id, u.email, u.full_name as user_full_name, u.type, sa.* 
+                FROM service_agent sa
+                JOIN user u ON sa.user_id = u.user_id
+                WHERE sa.user_id = :user_id
+            ');
+            $this->db->bind(':user_id', $userId);
+            
+            $result = $this->db->single();
+            
+            if (!$result) {
+                return [];
+            }
+
+            // Build comprehensive array with all variations
+            return [
+                // User table fields
+                'user_id' => $result->user_id,
+                'email' => $result->email,
+                'user_full_name' => $result->user_full_name,
+                'user_type' => $result->type,
+                
+                // Service Agent table fields
+                'full_name' => $result->full_name,
+                'nic' => $result->nic,
+                'address' => $result->address,
+                'contact' => $result->contact,
+                'contact_number' => $result->contact,
+                'phone' => $result->contact,
+                'district' => $result->district,
+                'specialization' => $result->specialization,
+                'experience_years' => $result->experience_years,
+                'experienceYears' => $result->experience_years,
+                'years_of_experience' => $result->experience_years,
+                'availability' => $result->availability,
+                'certifications' => $result->certifications,
+                'status' => $result->status,
+                'register_date' => $result->register_date,
+                'created_date' => $result->created_date,
+                'company_id' => $result->company_id,
+                
+                // Original object for backward compatibility
+                'raw' => $result
+            ];
+
+        } catch (Exception $e) {
+            error_log('Get service agent all fields failed: ' . $e->getMessage());
+            return [];
         }
     }
 

@@ -316,7 +316,7 @@
 
         // --- Team Management ---
         public function team($page = 'dashboard', $agentId = null){
-            
+
             if($page === 'add_service_agent'){
                 return $this->add_service_agent();
             }
@@ -593,6 +593,8 @@
                 'contactNumber' => '',
                 'address' => '',
                 'nic' => '',
+                'password' => '',
+                'confirmPassword' => '',
                 'district' => '',
                 'specialization' => '',
                 'experienceYears' => '',
@@ -612,14 +614,180 @@
                 'availability_err' => '',
                 'certifications_err' => ''
             ];
-            
-            // TODO: Fetch agent details from database using $agentId and populate $data
+
+            // Fetch agent details from database using get_service_agent_complete() for all 18 fields
+            if(!empty($agentId)){
+                // Use the complete retrieval function for comprehensive data access
+                $agentData = $this->teamModel->get_service_agent_complete($agentId);
+                
+                if($agentData){
+                    // Populate form with agent data from all 18 fields
+                    // Supports both snake_case and camelCase field access
+                    $data['fullName'] = $agentData->full_name ?? $agentData->user_full_name ?? '';
+                    $data['email'] = $agentData->email ?? '';
+                    $data['contactNumber'] = $agentData->contact ?? $agentData->contact_number ?? '';
+                    $data['address'] = $agentData->address ?? '';
+                    $data['nic'] = $agentData->nic ?? '';
+                    $data['district'] = $agentData->district ?? '';
+                    $data['specialization'] = $agentData->specialization ?? '';
+                    $data['experienceYears'] = $agentData->experience_years ?? $agentData->experienceYears ?? '';
+                    $data['availability'] = $agentData->availability ?? '';
+                    $data['certifications'] = $agentData->certifications ?? '';
+                    
+                    // Additional metadata available from get_service_agent_complete()
+                    $data['user_type'] = $agentData->user_type ?? ROLE_SERVICE_AGENT;
+                    $data['status'] = $agentData->status ?? 'active';
+                    $data['register_date'] = $agentData->register_date ?? '';
+                    $data['company_id'] = $agentData->company_id ?? 1;
+                } else {
+                    setToast('Agent not found', 'error');
+                    redirect('installeradmin/team');
+                    return;
+                }
+            } else {
+                setToast('Invalid agent ID', 'error');
+                redirect(url: 'installeradmin/team');
+                return;
+            }
             
             if($_SERVER['REQUEST_METHOD'] == 'POST'){
-                // Handle update logic similar to add_service_agent
-                // TODO: Implement update validation and database save
-                setToast('Service Agent Updated Successfully', 'success');
-                redirect('installeradmin/team/agent_details/' . $agentId);
+                // Form is submitting - validation and update logic
+                // Validate the data
+                $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+
+                // Input data from form
+                $data = [
+                    'user' => $this->user,
+                    'mode' => $_POST['mode'] ?? 'edit',
+                    'agentId' => $_POST['agentId'] ?? '',
+                    'fullName' => trim($_POST['fullName'] ?? ''),
+                    'email' => trim($_POST['email'] ?? ''),
+                    'contactNumber' => trim($_POST['contactNumber'] ?? ''),
+                    'address' => trim($_POST['address'] ?? ''),
+                    'nic' => trim($_POST['nic'] ?? ''),
+                    'password' => trim($_POST['password'] ?? ''),
+                    'confirmPassword' => trim($_POST['confirmPassword'] ?? ''),
+                    'district' => trim($_POST['district'] ?? ''),
+                    'specialization' => trim($_POST['specialization'] ?? ''),
+                    'experienceYears' => trim($_POST['experienceYears'] ?? ''),
+                    'availability' => trim($_POST['availability'] ?? ''),
+                    'certifications' => trim($_POST['certifications'] ?? ''),
+
+                    // Error fields
+                    'fullName_err' => '',
+                    'email_err' => '',
+                    'contactNumber_err' => '',
+                    'address_err' => '',
+                    'nic_err' => '',
+                    'password_err' => '',
+                    'confirmPassword_err' => '',
+                    'district_err' => '',
+                    'specialization_err' => '',
+                    'experienceYears_err' => '',
+                    'availability_err' => '',
+                    'certifications_err' => ''
+                ];
+
+                // Validation Logic
+                // Validate Full Name
+                if(empty($data['fullName'])){
+                    $data['fullName_err'] = 'Full Name is required';
+                }
+
+                // Validate Email
+                if(empty($data['email'])){
+                    $data['email_err'] = 'Email is required';
+                } elseif(!filter_var($data['email'], FILTER_VALIDATE_EMAIL)){
+                    $data['email_err'] = 'Please enter a valid email';
+                }
+
+                // Validate Contact Number
+                if(empty($data['contactNumber'])){
+                    $data['contactNumber_err'] = 'Contact Number is required';
+                }elseif(!preg_match('/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im', $data['contactNumber'])){
+                    $data['contactNumber_err'] = 'Please enter a valid phone number';
+                }
+
+                // Validate NIC
+                if(empty($data['nic'])){
+                    $data['nic_err'] = 'NIC/ID Number is required';
+                }
+
+                // Validate Address
+                if(empty($data['address'])){
+                    $data['address_err'] = 'Address is required';
+                }
+
+                // Validate District
+                if(empty($data['district'])){
+                    $data['district_err'] = 'District is required';
+                }
+
+                // Validate Password (optional in edit mode, but must match if provided)
+                if(!empty($data['password'])){
+                    if(strlen($data['password']) < 6){
+                        $data['password_err'] = 'Password must be at least 6 characters';
+                    }
+                    if($data['password'] !== $data['confirmPassword']){
+                        $data['confirmPassword_err'] = 'Passwords do not match';
+                    }
+                }
+
+                // Validate Specialization
+                if(empty($data['specialization'])){
+                    $data['specialization_err'] = 'Specialization is required';
+                }
+
+                // Validate Experience Years
+                if(empty($data['experienceYears'])){
+                    $data['experienceYears_err'] = 'Years of Experience is required';
+                } elseif(!is_numeric($data['experienceYears']) || $data['experienceYears'] < 0){
+                    $data['experienceYears_err'] = 'Please enter a valid number';
+                }
+
+                // Validate Availability
+                if(empty($data['availability'])){
+                    $data['availability_err'] = 'Availability is required';
+                }
+
+                // Check for validation errors
+                if(empty($data['fullName_err']) && empty($data['email_err']) && empty($data['contactNumber_err']) && 
+                   empty($data['nic_err']) && empty($data['address_err']) && empty($data['district_err']) && 
+                   empty($data['password_err']) && empty($data['confirmPassword_err']) && 
+                   empty($data['specialization_err']) && empty($data['experienceYears_err']) && empty($data['availability_err'])){
+
+                    // All validations passed - prepare data for model
+                    $agentData = [
+                        'contact_number' => $data['contactNumber'],
+                        'nic' => $data['nic'],
+                        'address' => $data['address'],
+                        'district' => $data['district'],
+                        'specialization' => $data['specialization'],
+                        'experience_years' => $data['experienceYears'],
+                        'availability' => $data['availability'],
+                        'certifications' => $data['certifications'],
+                        'status' => 'active'
+                    ];
+                    
+                    // Prepare user data for model
+                    $userData = [
+                        'full_name' => $data['fullName'],
+                        'email' => $data['email'],
+                        'password' => !empty($data['password']) ? password_hash($data['password'], PASSWORD_DEFAULT) : ''
+                    ];
+
+                    // Call model to update data
+                    if($this->teamModel->update_service_agent($data['agentId'], $userData, $agentData)){
+                        setToast('Service Agent Updated Successfully', 'success');
+                        redirect('installeradmin/team');
+                    } else {
+                        setToast('Failed to update service agent. Please try again.', 'error');
+                        $this->view('pages/installer_admin/add_service_agent', $data, layout: 'dashboard');
+                    }
+                } else {
+                    // Show form again with errors
+                    $this->view('pages/installer_admin/add_service_agent', $data, layout: 'dashboard');
+                }
                 return;
             }
             

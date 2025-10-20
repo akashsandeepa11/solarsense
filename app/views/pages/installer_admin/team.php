@@ -199,7 +199,7 @@
             [
                 'label' => 'Edit',
                 'icon' => 'fas fa-edit',
-                'url' => URLROOT . '/installeradmin/team/edit/{id}'
+                'url' => URLROOT . '/installeradmin/team/edit_agent/{id}'
             ],
             [
                 'label' => 'Remove',
