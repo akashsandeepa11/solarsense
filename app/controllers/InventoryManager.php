@@ -22,13 +22,34 @@
 
         // ✅ Check if form was submitted
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+          
+
+            if (isset($_FILES['itemPhoto']) && $_FILES['itemPhoto']['error'] == UPLOAD_ERR_OK) {
+                $fileTmpPath = $_FILES['itemPhoto']['tmp_name'];
+                $fileName = time() . '_' . $_FILES['itemPhoto']['name'];
+                $uploadDir = APPROOT . '/../public/img/';
+
+                $destPath = $uploadDir . $fileName;
+
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+
+                move_uploaded_file($fileTmpPath, $destPath);
+                $photoName = $fileName;
+            } else {
+                $photoName = null;
+            }
+
    
             $data = [
                 'company_id' => 1, // or $_SESSION['company_id'] if dynamic
                 'item_name'  => trim($_POST['itemName']),
                 'category'   => trim($_POST['itemCategory']),
                 'quantity'   => (int) $_POST['itemQty'],
-                'unit_price' => (float) $_POST['itemPrice']
+                'unit_price' => (float) $_POST['itemPrice'],
+                'itemPhoto' => $photoName
             ];
 
             // Save to DB

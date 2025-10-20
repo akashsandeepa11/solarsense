@@ -228,7 +228,7 @@ $addModalSections = [
 <div id="addModal" class="modal">
   <div class="modal-content add">
     <!-- Begin Form -->
-    <form id="addForm" method="POST" action="<?php echo URLROOT; ?>/inventorymanager/inventory">
+    <form id="addForm" method="POST" enctype="multipart/form-data" action="<?php echo URLROOT; ?>/inventorymanager/inventory">
       <?php foreach ($addModalSections as $section): ?>
         <h3><?php echo htmlspecialchars($section['title']); ?></h3>
         <div class="card-body">
@@ -238,11 +238,15 @@ $addModalSections = [
             require APPROOT . '/views/inc/components/input_field.php'; 
             ?>
           <?php endforeach; ?>
+          <label for="itemPhoto">
+    <i class="fas fa-image"></i> Item Photo
+  </label>
+  <input type="file" id="itemPhoto" name="itemPhoto" accept="image/*">
         </div>
       <?php endforeach; ?>
 
       <div class="modal-buttons mt-3">
-        <button type="submit" class="add-btn btn btn-primary btn-sm">Add</button>
+        <button type="submit" class="add-btn btn btn-primary btn-sm" >Add</button>
         <button type="button" class="delete-btn btn btn-secondary btn-sm" onclick="closeAddModal()">Cancel</button>
       </div>
     </form>
