@@ -1,12 +1,7 @@
 <?php
-// Dummy inventory data (replace with DB query later)
-$items = [
-    [ "id" => "I-1001", "name" => "Solar Panel", "category" => "Electrical", "qty" => 25, "price" => 12000 ],
-    [ "id" => "I-1002", "name" => "Inverter", "category" => "Electrical", "qty" => 2, "price" => 85000 ],
-    [ "id" => "I-1003", "name" => "Battery", "category" => "Storage", "qty" => 10, "price" => 35000 ],
-    [ "id" => "I-1004", "name" => "Wiring Kit", "category" => "Accessories", "qty" => 40, "price" => 2500 ],
-];
+$items = $data['items'] ?? []; // ensure $items exists
 ?>
+
 <style>
 .main {
     display: flex;
@@ -132,6 +127,14 @@ tr:hover {
     flex: 1;
     min-width: 150px;
 }
+.card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* space between input fields */
+}
+
+
+
 </style>
 
 
@@ -170,120 +173,171 @@ tr:hover {
     </table>
   </div>
 </div>
-
-<!-- ✅ Add Modal (using your component loop structure) -->
+<!-- ✅ Add Modal (componentized) -->
 <?php
 $addModalSections = [
     [
         'title' => 'Add New Item',
         'fields' => [
             [
-                'id'       => 'itemName',
-                'label'    => 'Item Name',
-                'value'    => '',
-                'editable' => true,
+                'id' => 'itemName',
+                'name' => 'itemName',
+                'label' => 'Item Name',
+                'type' => 'text',
+                'icon' => 'fas fa-box',
+                'value' => $data['itemName'] ?? '',
+                'error' => $data['itemName_err'] ?? '',
                 'required' => true
             ],
             [
-                'id'       => 'itemCategory',
-                'label'    => 'Category',
-                'value'    => '',
-                'editable' => true,
+                'id' => 'itemCategory',
+                'name' => 'itemCategory',
+                'label' => 'Category',
+                'type' => 'text',
+                'icon' => 'fas fa-tags',
+                'value' => $data['itemCategory'] ?? '',
+                'error' => $data['itemCategory_err'] ?? '',
                 'required' => true
             ],
             [
-                'id'       => 'itemQty',
-                'label'    => 'Quantity',
-                'value'    => '',
-                'editable' => true,
+                'id' => 'itemQty',
+                'name' => 'itemQty',
+                'label' => 'Quantity',
+                'type' => 'number',
+                'icon' => 'fas fa-layer-group',
+                'value' => $data['itemQty'] ?? '',
+                'error' => $data['itemQty_err'] ?? '',
                 'required' => true
             ],
             [
-                'id'       => 'itemPrice',
-                'label'    => 'Unit Price (Rs.)',
-                'value'    => '',
-                'editable' => true,
+                'id' => 'itemPrice',
+                'name' => 'itemPrice',
+                'label' => 'Unit Price (Rs.)',
+                'type' => 'number',
+                'icon' => 'fas fa-money-bill-wave',
+                'step' => '0.01',
+                'value' => $data['itemPrice'] ?? '',
+                'error' => $data['itemPrice_err'] ?? '',
                 'required' => true
             ],
         ]
     ]
 ];
-
-
 ?>
 
 <div id="addModal" class="modal">
   <div class="modal-content add">
-    <?php foreach ($addModalSections as $section): ?>
-      <h3><?php echo htmlspecialchars($section['title']); ?></h3>
-      <div class="card-body">
-        <?php foreach ($section['fields'] as $field) {
-          require APPROOT . '/views/inc/components/profile_input_field.php';
-        } ?>
+    <!-- Begin Form -->
+    <form id="addForm" method="POST" enctype="multipart/form-data" action="<?php echo URLROOT; ?>/inventorymanager/inventory">
+      <?php foreach ($addModalSections as $section): ?>
+        <h3><?php echo htmlspecialchars($section['title']); ?></h3>
+        <div class="card-body">
+          <?php foreach ($section['fields'] as $field): ?>
+            <?php 
+            $inputConfig = $field; // pass the field directly to the input component
+            require APPROOT . '/views/inc/components/input_field.php'; 
+            ?>
+          <?php endforeach; ?>
+          <label for="itemPhoto">
+    <i class="fas fa-image"></i> Item Photo
+  </label>
+  <input type="file" id="itemPhoto" name="itemPhoto" accept="image/*">
+        </div>
+      <?php endforeach; ?>
+
+      <div class="modal-buttons mt-3">
+        <button type="submit" class="add-btn btn btn-primary btn-sm" >Add</button>
+        <button type="button" class="delete-btn btn btn-secondary btn-sm" onclick="closeAddModal()">Cancel</button>
       </div>
-    <?php endforeach; ?>
-    <div class="modal-buttons">
-      <button class="add-btn btn btn-primary btn-sm" onclick="addItem()">Add</button>
-      <button class="delete-btn btn btn-primary btn-sm bg-secondary" onclick="closeAddModal()">Cancel</button>
-    </div>
+    </form>
+    <!-- End Form -->
   </div>
 </div>
+
+
 
 <!-- ✅ Edit Modal (using your component loop structure) -->
- <?php
-$editModalSections = [
-    [
-        'title' => 'Edit Item',
-        'fields' => [
-            [
-                'id'       => 'editName',
-                'label'    => 'Item Name',
-                'value'    => '',
-                'editable' => true,
-                'required' => true
-            ],
-            [
-                'id'       => 'editCategory',
-                'label'    => 'Category',
-                'value'    => '',
-                'editable' => true,
-                'required' => true
-            ],
-            [
-                'id'       => 'editQty',
-                'label'    => 'Quantity',
-                'value'    => '',
-                'editable' => true,
-                'required' => true
-            ],
-            [
-                'id'       => 'editPrice',
-                'label'    => 'Unit Price (Rs.)',
-                'value'    => '',
-                'editable' => true,
-                'required' => true
-            ],
-        ]
-    ]
-];
-?>
-
+<!-- Edit Modal -->
 <div id="editModal" class="modal">
   <div class="modal-content edit">
-    <?php foreach ($editModalSections as $section): ?>
-      <h3><?php echo htmlspecialchars($section['title']); ?></h3>
+    <form id="editForm" method="POST" action="<?php echo URLROOT; ?>/inventorymanager/update_item">
+      <h3>Edit Item</h3>
+      
       <div class="card-body">
-        <?php foreach ($section['fields'] as $field) {
-          require APPROOT . '/views/inc/components/profile_input_field.php';
-        } ?>
+            <?php 
+        $inputConfig = [
+            'id' => 'editName',
+            'name' => 'itemName',
+            'label' => 'Item Name',
+            'type' => 'text',
+            'icon' => 'fas fa-box', // optional, you can pick any relevant icon
+            'value' => $data['itemName'] ?? '',
+            'error' => $data['itemName_err'] ?? '',
+            'required' => true
+        ]; 
+        require APPROOT . '/views/inc/components/input_field.php'; 
+        ?>
+      
+        <?php 
+        $inputConfig = [
+            'id' => 'editCategory',
+            'name' => 'itemCategory',
+            'label' => 'Category',
+            'type' => 'text',
+            'icon' => 'fas fa-tags', // optional icon
+            'value' => $data['itemCategory'] ?? '',
+            'error' => $data['itemCategory_err'] ?? '',
+            'required' => true
+        ]; 
+        require APPROOT . '/views/inc/components/input_field.php'; 
+        ?>
+        
+
+
+     <?php 
+            $inputConfig = [
+                'id' => 'editQty',
+                'name' => 'itemQty',
+                'label' => 'Quantity',
+                'type' => 'number',
+                'icon' => 'fas fa-layer-group', // optional, pick any relevant icon
+                'value' => $data['itemQty'] ?? '',
+                'error' => $data['itemQty_err'] ?? '',
+                'required' => true
+            ]; 
+            require APPROOT . '/views/inc/components/input_field.php'; 
+      ?>
+
+
+      <?php 
+            $inputConfig = [
+                'id' => 'editPrice',
+                'name' => 'itemPrice',
+                'label' => 'Unit Price (Rs.)',
+                'type' => 'number',
+                'icon' => 'fas fa-money-bill-wave', // optional, pick any icon you like
+                'value' => $data['itemPrice'] ?? '',
+                'error' => $data['itemPrice_err'] ?? '',
+                'required' => true,
+                'step' => '0.01' // preserves your decimal step
+            ]; 
+            require APPROOT . '/views/inc/components/input_field.php'; 
+       ?>
+
       </div>
-    <?php endforeach; ?>
-    <div class="modal-buttons">
-      <button class="add-btn btn btn-primary btn-sm" id="saveEditBtn">Save</button>
-      <button class="delete-btn btn btn-primary btn-sm bg-secondary" onclick="closeEditModal()">Cancel</button>
-    </div>
+                            
+
+      <!-- Hidden input for inventory ID -->
+      <input type="hidden" name="inventory_id" id="editInventoryId">
+
+      <div class="modal-buttons" style="margin-top:15px;">
+        <button type="submit" class="btn btn-primary btn-sm">Save</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeEditModal()">Cancel</button>
+      </div>
+    </form>
   </div>
 </div>
+
 
 <!-- Delete Modal (unchanged) -->
 <div id="deleteModal" class="modal">
@@ -297,8 +351,35 @@ $editModalSections = [
   </div>
 </div>
 
+<form id="deleteForm" method="POST" action="<?php echo URLROOT; ?>/inventorymanager/delete_item">
+    <input type="hidden" name="inventory_id" id="deleteInventoryId">
+</form>
+
+
+
+
+
+
+
 <script>
-let items = <?php echo json_encode($items); ?>;
+
+let items = <?php echo json_encode(array_map(function($i){
+  return [
+    'id'       => isset($i->inventory_id) ? (string)$i->inventory_id : (string)($i['inventory_id'] ?? ''),
+    'name'     => $i->item_name ?? $i['item_name'] ?? '',
+    'category' => $i->category ?? $i['category'] ?? '',
+    'qty'      => (int)($i->quantity ?? $i['quantity'] ?? 0),
+    'price'    => (float)($i->unit_price ?? $i['unit_price'] ?? 0),
+  ];
+}, $items), JSON_NUMERIC_CHECK); ?>;
+
+
+
+
+
+
+
+
 
 // ---------- Render Table ----------
 function renderTable(data) {
@@ -371,58 +452,74 @@ let currentEditItem=null, currentDeleteItemId=null;
 
 function showAddModal() { addModal.classList.add("show"); }
 function closeAddModal() { addModal.classList.remove("show"); }
-function addItem() {
-  const name=document.getElementById("itemName").value.trim();
-  const category=document.getElementById("itemCategory").value.trim();
-  const qty=parseInt(document.getElementById("itemQty").value);
-  const price=parseFloat(document.getElementById("itemPrice").value);
-  if(!name||!category||isNaN(qty)||isNaN(price)){ alert("Fill all fields correctly"); return; }
-  items.push({id:"I-"+(items.length+1001), name, category, qty, price});
-  populateFilters(); applyFilters();
-  ["itemName","itemCategory","itemQty","itemPrice"].forEach(id=>document.getElementById(id).value="");
-  closeAddModal();
-}
+// function addItem() {
+//   const name=document.getElementById("itemName").value.trim();
+//   const category=document.getElementById("itemCategory").value.trim();
+//   const qty=parseInt(document.getElementById("itemQty").value);
+//   const price=parseFloat(document.getElementById("itemPrice").value);
+//   if(!name||!category||isNaN(qty)||isNaN(price)){ alert("Fill all fields correctly"); return; }
+//   items.push({id:"I-"+(items.length+1001), name, category, qty, price});
+//   populateFilters(); applyFilters();
+//   ["itemName","itemCategory","itemQty","itemPrice"].forEach(id=>document.getElementById(id).value="");
+//   closeAddModal();
+// }
 
 function editItem(id){
-  const item=items.find(i=>i.id===id);
-  if(!item)return;
-  currentEditItem=item;
-  document.getElementById("editName").value=item.name;
-  document.getElementById("editCategory").value=item.category;
-  document.getElementById("editQty").value=item.qty;
-  document.getElementById("editPrice").value=item.price;
+  const item = items.find(i => i.id == id);
+  if (!item) return;
+  currentEditItem = item;
+
+  document.getElementById("editInventoryId").value = item.id;  // <-- set ID
+  document.getElementById("editName").value = item.name;
+  document.getElementById("editCategory").value = item.category;
+  document.getElementById("editQty").value = item.qty;
+  document.getElementById("editPrice").value = item.price;
+
   editModal.classList.add("show");
 }
 
 function closeEditModal(){ editModal.classList.remove("show"); currentEditItem=null; }
 
-document.getElementById("saveEditBtn").addEventListener("click", ()=>{
-  if(!currentEditItem)return;
-  const name=document.getElementById("editName").value.trim();
-  const category=document.getElementById("editCategory").value.trim();
-  const qty=parseInt(document.getElementById("editQty").value);
-  const price=parseFloat(document.getElementById("editPrice").value);
-  if(!name||!category||isNaN(qty)||isNaN(price)){ alert("Fill all fields correctly"); return; }
-  Object.assign(currentEditItem,{name,category,qty,price});
-  populateFilters(); applyFilters();
-  closeEditModal();
-});
+// document.getElementById("saveEditBtn").addEventListener("click", ()=>{
+//   if(!currentEditItem)return;
+//   const name=document.getElementById("editName").value.trim();
+//   const category=document.getElementById("editCategory").value.trim();
+//   const qty=parseInt(document.getElementById("editQty").value);
+//   const price=parseFloat(document.getElementById("editPrice").value);
+//   if(!name||!category||isNaN(qty)||isNaN(price)){ alert("Fill all fields correctly"); return; }
+//   Object.assign(currentEditItem,{name,category,qty,price});
+//   populateFilters(); applyFilters();
+//   closeEditModal();
+// });
 
 function deleteItem(id){
-  const item=items.find(i=>i.id===id);
+  //not 3 === works as intended
+  const item=items.find(i=>i.id==id);
   currentDeleteItemId=id;
   document.getElementById("deleteMessage").innerText=`Are you sure you want to delete "${item.name}"?`;
   deleteModal.classList.add("show");
+
+
+
 }
 
-document.getElementById("confirmDeleteBtn").addEventListener("click", ()=>{
-  if(currentDeleteItemId){
-    const idx=items.findIndex(i=>i.id===currentDeleteItemId);
-    if(idx!==-1) items.splice(idx,1);
-    populateFilters(); applyFilters();
-    currentDeleteItemId=null;
-    deleteModal.classList.remove("show");
-  }
+// document.getElementById("confirmDeleteBtn").addEventListener("click", ()=>{
+//   if(currentDeleteItemId){
+//     const idx=items.findIndex(i=>i.id===currentDeleteItemId);
+//     if(idx!==-1) items.splice(idx,1);
+//     populateFilters(); applyFilters();
+//     currentDeleteItemId=null;
+//     deleteModal.classList.remove("show");
+//   }
+// });
+
+document.getElementById("confirmDeleteBtn").addEventListener("click", () => {
+    if(currentDeleteItemId){
+        // Set the hidden input value
+        document.getElementById("deleteInventoryId").value = currentDeleteItemId;
+        // Submit the form (page will reload after deletion)
+        document.getElementById("deleteForm").submit();
+    }
 });
 
 document.getElementById("cancelDeleteBtn").addEventListener("click", ()=>{
