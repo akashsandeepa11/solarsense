@@ -169,13 +169,47 @@
                 'label' => 'Remove',
                 'icon' => 'fas fa-trash',
                 'class' => 'btn-icon-danger',
-                'onclick' => 'onclick="deleteAgent(' . 'this' . ')"'
+                'onclick' => 'onclick="openDeleteModal(' . '{id}' . ')"'
                 ],
             ],
             'empty_message' => 'No clients available'
         ];
         include __DIR__ . '/../../inc/components/data_table.php';
-        ?>
+?>
+
+    <!-- Delete Confirmation Modal -->
+    <?php
+    $config = [
+        'modal_id' => 'deletefleetModal',
+        'title' => 'Confirm Delete',
+        'icon' => 'fas fa-exclamation-triangle',
+        'icon_color' => 'text-warning',
+        'heading' => 'Delete Service Customer?',
+        'message' => 'Are you sure you want to delete this customer? This action cannot be undone. All associated task data will be archived.',
+        'confirm_text' => 'Delete Customer',
+        'confirm_icon' => 'fas fa-check',
+        'cancel_text' => 'Cancel',
+        'cancel_icon' => 'fas fa-times',
+        'confirm_action' => URLROOT . '/installeradmin/fleet/delete_customer/',
+        'confirm_method' => 'POST',
+        'confirm_class' => 'btn-danger'
+    ];
+    include __DIR__ . '/../../inc/models/confirmation_modal.php';
+    ?>
+
+    <!-- Dynamic Delete Modal Handler -->
+    <script>
+    function openDeleteModal(customerId) {
+        // Get the form inside the modal and update its action
+        const modal = document.getElementById('deletefleetModal');
+        const form = modal.querySelector('form');
+        if (form) {
+            form.action = '<?php echo URLROOT; ?>/installeradmin/fleet/delete_customer/' + customerId;
+        }
+        // Show the modal
+        showConfirmationModal('deletefleetModal');
+    }
+    </script>
     </div>
 
 

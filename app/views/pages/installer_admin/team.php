@@ -207,7 +207,8 @@
                 'class' => 'btn-icon-danger',
                 'onclick' => 'onclick="openDeleteModal(' . '{id}' . ')"'
             ]
-        ]
+            ],
+            'empty_message' => 'No clients available'
     ];
     include __DIR__ . '/../../inc/components/data_table.php';
     ?>
