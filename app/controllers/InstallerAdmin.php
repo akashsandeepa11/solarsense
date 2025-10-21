@@ -670,7 +670,7 @@
                     'district' => trim($_POST['district'] ?? ''),
                     'specialization' => trim($_POST['specialization'] ?? ''),
                     'experienceYears' => trim($_POST['experienceYears'] ?? ''),
-                    'availability' => trim($_POST['availability'] ?? ''),
+                    'availability' => trim($_POST['a1vailability'] ?? ''),
                     'certifications' => trim($_POST['certifications'] ?? ''),
 
                     // Error fields
