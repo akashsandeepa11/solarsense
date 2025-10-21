@@ -104,7 +104,7 @@
 .floating-element--4 {
   width: 110px;
   height: 110px;
-  background: var(--color-primary-light, rgba(34, 197, 94, 0.35));
+  background: var(--color-primary-light, rgba(34, 197, 94, 1));
   bottom: 15%;
   right: 22%;
   animation: heroFloat4 40s ease-in-out infinite;
@@ -114,81 +114,21 @@
 .floating-element--5 {
   width: 90px;
   height: 90px;
-  background: rgba(14, 165, 233, 0.25);
+  background: var(--color-primary);
   top: 28%;
   left: 20%;
   animation: heroFloat5 38s ease-in-out infinite;
   animation-delay: -18s;
 }
 
-.floating-element--6 {
-  width: 130px;
-  height: 130px;
-  background: rgba(251, 191, 36, 0.22);
-  bottom: 34%;
-  left: 42%;
-  animation: heroFloat6 42s ease-in-out infinite;
-  animation-delay: -24s;
-}
-
-.floating-element--7 {
-  width: 70px;
-  height: 70px;
-  background: rgba(99, 102, 241, 0.28);
-  top: 14%;
-  right: 32%;
-  animation: heroFloat7 46s ease-in-out infinite;
-  animation-delay: -30s;
-}
-
-.floating-element--8 {
-  width: 160px;
-  height: 160px;
-  background: rgba(34, 197, 94, 0.18);
-  top: 68%;
-  right: 6%;
-  animation: heroFloat8 50s ease-in-out infinite;
-  animation-delay: -36s;
-}
-
 .floating-element--9 {
   width: 95px;
   height: 95px;
-  background: rgba(56, 189, 248, 0.24);
+  background: var(--color-success);
   bottom: 10%;
   left: 30%;
   animation: heroFloat9 54s ease-in-out infinite;
   animation-delay: -42s;
-}
-
-.floating-element--10 {
-  width: 120px;
-  height: 120px;
-  background: rgba(129, 140, 248, 0.24);
-  top: 38%;
-  right: 58%;
-  animation: heroFloat10 58s ease-in-out infinite;
-  animation-delay: -12s;
-}
-
-.floating-element--11 {
-  width: 140px;
-  height: 140px;
-  background: rgba(22, 163, 74, 0.18);
-  bottom: 44%;
-  right: 45%;
-  animation: heroFloat11 62s ease-in-out infinite;
-  animation-delay: -48s;
-}
-
-.floating-element--12 {
-  width: 60px;
-  height: 60px;
-  background: rgba(45, 212, 191, 0.28);
-  top: 8%;
-  left: 58%;
-  animation: heroFloat12 66s ease-in-out infinite;
-  animation-delay: -6s;
 }
 
 @keyframes heroFloat1 {
@@ -281,60 +221,6 @@
   }
 }
 
-@keyframes heroFloat6 {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  20% {
-    transform: translate3d(30px, 22px, 0) scale(1.05) rotate(4deg);
-  }
-  48% {
-    transform: translate3d(14px, -28px, 0) scale(0.95) rotate(-6deg);
-  }
-  78% {
-    transform: translate3d(-26px, 18px, 0) scale(1.02) rotate(3deg);
-  }
-  100% {
-    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
-  }
-}
-
-@keyframes heroFloat7 {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  27% {
-    transform: translate3d(-18px, 24px, 0) scale(1.07) rotate(-4deg);
-  }
-  56% {
-    transform: translate3d(24px, 34px, 0) scale(0.95) rotate(5deg);
-  }
-  83% {
-    transform: translate3d(14px, -22px, 0) scale(1.02) rotate(-3deg);
-  }
-  100% {
-    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
-  }
-}
-
-@keyframes heroFloat8 {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  21% {
-    transform: translate3d(-26px, 30px, 0) scale(1.05) rotate(4deg);
-  }
-  47% {
-    transform: translate3d(-36px, -18px, 0) scale(0.97) rotate(-5deg);
-  }
-  73% {
-    transform: translate3d(18px, -38px, 0) scale(1.02) rotate(6deg);
-  }
-  100% {
-    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
-  }
-}
-
 @keyframes heroFloat9 {
   0% {
     transform: translate3d(0, 0, 0) scale(1);
@@ -353,59 +239,6 @@
   }
 }
 
-@keyframes heroFloat10 {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  18% {
-    transform: translate3d(-18px, 20px, 0) scale(1.03) rotate(-3deg);
-  }
-  46% {
-    transform: translate3d(32px, 24px, 0) scale(0.94) rotate(4deg);
-  }
-  78% {
-    transform: translate3d(-22px, -30px, 0) scale(1.05) rotate(-6deg);
-  }
-  100% {
-    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
-  }
-}
-
-@keyframes heroFloat11 {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  24% {
-    transform: translate3d(-30px, 26px, 0) scale(1.05) rotate(4deg);
-  }
-  52% {
-    transform: translate3d(18px, -34px, 0) scale(0.96) rotate(-5deg);
-  }
-  81% {
-    transform: translate3d(34px, 18px, 0) scale(1.02) rotate(3deg);
-  }
-  100% {
-    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
-  }
-}
-
-@keyframes heroFloat12 {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  22% {
-    transform: translate3d(14px, -18px, 0) scale(1.06) rotate(-6deg);
-  }
-  49% {
-    transform: translate3d(-26px, 22px, 0) scale(0.94) rotate(4deg);
-  }
-  76% {
-    transform: translate3d(28px, 16px, 0) scale(1.03) rotate(-3deg);
-  }
-  100% {
-    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
-  }
-}
 .hero__container {
   position: relative;
   z-index: 1;

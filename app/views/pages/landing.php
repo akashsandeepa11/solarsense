@@ -52,13 +52,7 @@
             <div class="floating-element floating-element--3"></div>
             <div class="floating-element floating-element--4"></div>
             <div class="floating-element floating-element--5"></div>
-            <div class="floating-element floating-element--6"></div>
-            <div class="floating-element floating-element--7"></div>
-            <div class="floating-element floating-element--8"></div>
-            <div class="floating-element floating-element--9"></div>
-            <div class="floating-element floating-element--10"></div>
-            <div class="floating-element floating-element--11"></div>
-            <div class="floating-element floating-element--12"></div>
+            <div class="floating-element floating-element--9"></div>>
         </div>
         <div class="hero__container container">
             <div class="row align-center">
