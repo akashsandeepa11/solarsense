@@ -81,7 +81,7 @@ function getAgentStatusClass($status) {
             </div>
             <div>
                 <a href="#" class="btn btn-primary rounded-lg mr-2">+ Add New Customer</a>
-                <a href="#" class="btn btn-secondary rounded-lg">+ Add Service Agent</a>
+                <a href="#" class="btn btn-primary-outline rounded-lg">+ Add Service Agent</a>
             </div>
         </div>
 

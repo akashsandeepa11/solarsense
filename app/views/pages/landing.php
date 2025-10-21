@@ -34,7 +34,7 @@
             </div>
 
             <div class="nav__buttons d-flex gap-2">
-                <a href="installer-registration.php" class="btn btn-secondary btn-sm">Installer Registration</a>
+                <a href="installer-registration.php" class="btn btn-primary-outline btn-sm">Installer Registration</a>
                 <a href="<?php echo URLROOT; ?>/auth/login" class="btn btn-primary btn-sm">Login</a>
             </div>
 
@@ -92,7 +92,7 @@
                                 <i class="fas fa-calculator"></i>
                                 Get a Free Quotation Now
                             </a>
-                            <a href="#how-it-works" class="btn btn-secondary btn-lg">
+                            <a href="#how-it-works" class="btn btn-primary-outline btn-lg">
                                 <i class="fas fa-play-circle"></i>
                                 Watch How It Works
                             </a>
@@ -541,7 +541,7 @@
                     </div>
 
                     <div class="quotation-footer" id="quotation-footer">
-                        <button type="button" class="btn btn-secondary" id="prev-step-btn">&larr; Back</button>
+                        <button type="button" class="btn btn-primary-outline" id="prev-step-btn">&larr; Back</button>
                         <button type="button" class="btn btn-primary" id="next-step-btn">Next Step</button>
                     </div>
                 </div>

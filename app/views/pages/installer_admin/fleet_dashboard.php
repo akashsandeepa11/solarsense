@@ -45,7 +45,7 @@
                     'label' => 'Add Customer',
                     'url' => URLROOT . '/installeradmin/fleet/add_customer',
                     'icon' => 'fas fa-plus',
-                    'class' => 'btn-primary btn-lg'
+                    'class' => 'btn-primary btn-md'
                 ]
             ]
         ];
@@ -120,9 +120,7 @@
                     'key' => 'name',
                     'render' => function($row) {
                         return '<div class="d-flex align-center gap-3">
-                                    <div class="agent-avatar">
-                                        <img src="' . htmlspecialchars($row['avatar']) . '" alt="' . htmlspecialchars($row['name']) . '">
-                                    </div>
+                                    <img src="' . getAvatarUrl($row['name']) . '" alt="' . htmlspecialchars($row['name']) . '">
                                     <div class="agent-details">
                                         <div class="agent-name font-semibold">' . htmlspecialchars($row['name']) . '</div>
                                         <div class="agent-role text-secondary text-sm">' . htmlspecialchars($row['location']) . '</div>

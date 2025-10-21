@@ -13,7 +13,7 @@
                 'label' => 'Add New Agent',
                 'url' => URLROOT . '/installeradmin/team/add_service_agent',
                 'icon' => 'fas fa-plus',
-                'class' => 'btn-success'
+                'class' => 'btn-primary'
             ]
         ]
     ];
@@ -116,7 +116,7 @@
                 'pending' => rand(1, 3), // constant/simulated value
                 'status' => ucfirst($status), // use status from db
                 'last_active' => 'Today, 2:30 PM', // constant value
-                'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode($fullName) . '&background=fe9630&color=fff'
+                'avatar' => getAvatarUrl($fullName)
             ];
         }
     }
