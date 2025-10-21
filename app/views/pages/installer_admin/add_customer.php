@@ -158,7 +158,7 @@
 
                 <!-- Submit Button -->
                 <div class="mt-8 pt-5 border-t d-flex justify-end">
-                    <button type="submit" class="btn btn-success">
+                    <button type="submit" class="btn btn-primary">
                         <i class="fas fa-plus mr-2"></i> Create Account
                     </button>
                 </div>

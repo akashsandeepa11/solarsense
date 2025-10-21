@@ -105,15 +105,19 @@
             $contact = is_object($agent) ? ($agent->contact ?? 'N/A') : ($agent['contact'] ?? 'N/A');
             $status = is_object($agent) ? ($agent->status ?? 'Inactive') : ($agent['status'] ?? 'Inactive');
             
+            $assigned = rand(3, 8);
+            $pending = rand(1, 3);
+            $completed = $assigned - $pending;
+            
             $processedAgents[] = [
                 'id' => $id,
                 'name' => $fullName,
                 'role' => 'Service Agent', // constant value
                 'email' => $email,
                 'phone' => $contact,
-                'assigned' => rand(3, 8), // constant/simulated value
-                'completed' => rand(1, 6), // constant/simulated value
-                'pending' => rand(1, 3), // constant/simulated value
+                'assigned' => $assigned,
+                'pending' => $pending,
+                'completed' => $completed,
                 'status' => ucfirst($status), // use status from db
                 'last_active' => 'Today, 2:30 PM', // constant value
                 'avatar' => getAvatarUrl($fullName)
@@ -170,7 +174,7 @@
                                 <div class="progress-bar">
                                     <div class="progress-fill" style="width: ' . $percentage . '%"></div>
                                 </div>
-                                <div class="progress-text text-sm">' . htmlspecialchars($row['completed']) . '</div>
+                                <div class="badge bg-success">' . htmlspecialchars($row['completed']) . '</div>
                             </div>';
                 }
             ],
@@ -228,7 +232,7 @@
         'cancel_icon' => 'fas fa-times',
         'confirm_action' => URLROOT . '/installeradmin/team/delete_agent/',
         'confirm_method' => 'POST',
-        'confirm_class' => 'btn-danger'
+        'confirm_class' => 'btn-error'
     ];
     include __DIR__ . '/../../inc/models/confirmation_modal.php';
     ?>
