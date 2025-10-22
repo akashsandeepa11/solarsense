@@ -3,7 +3,7 @@
     require APPROOT . '/config/nav_arrays.php';
 
     // This is a placeholder. You would replace this with your own session/role check.
-    $user_role = $data['user']['role'] ?? ''; 
+    $user_role = $data['user']['role'] ?? ''; ;
     $navigation_links = [];
 
     switch ($user_role) {

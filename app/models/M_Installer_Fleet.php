@@ -46,7 +46,11 @@ class M_Installer_Fleet{
         }
     }
 
-    
+    public function get_verifications(){
+        $this->db->query("SELECT company_name, address, contact, email, request_date, status FROM prospective_installer_company");
+        return $this->db->resultSet();
+    }
+
     
     //add customer
     public function add_company($userData, $installerAdminData, $installerCompanyData) {
