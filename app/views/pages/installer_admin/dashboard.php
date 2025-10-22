@@ -83,20 +83,6 @@ function getAgentStatusClass($status) {
     $config = [
         'title' => 'Dashboard',
         'description' => 'Business and fleet performance overview',
-        'buttons' => [
-            [
-                'label' => 'Add New Customer',
-                'url' => URLROOT . '/installeradmin/fleet/add_customer',
-                'icon' => 'fas fa-plus',
-                'class' => 'btn-primary btn-md'
-            ],
-            [
-                'label' => 'Add Service Agent',
-                'url' => URLROOT . '/installeradmin/team/add_service_agent',
-                'icon' => 'fas fa-plus',
-                'class' => 'btn-primary-outline btn-md'
-            ]
-        ]
     ];
     include __DIR__ . '/../../inc/components/page_header.php';
     ?>
