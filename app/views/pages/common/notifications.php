@@ -365,11 +365,12 @@ foreach ($allNotifications as $notif) {
 <div class="notifications-container">
     <!-- Page Header -->
     <?php
+
     $config = [
         'title' => 'All Notifications',
         'description' => 'View and manage all your notifications',
         'show_back' => true,
-        'back_url' => URLROOT . '/installeradmin/dashboard',
+        'back_url' => isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : URLROOT . '/'.$data['user']['role'].'/dashboard',
         'back_label' => 'Back to Dashboard'
     ];
     include __DIR__ . '/../../inc/components/page_header.php';

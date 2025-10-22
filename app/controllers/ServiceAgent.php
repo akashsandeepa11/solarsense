@@ -52,6 +52,15 @@
             $this->view('pages/service_agent/report', $data, 'dashboard');
         }
 
+        // --- Notifications ---
+        public function notifications(){
+            $data = [
+                'user' => $this->user,
+            ];
+            
+            $this->view('pages/common/notifications', $data, layout: 'dashboard');
+        }
+
     }
 
        

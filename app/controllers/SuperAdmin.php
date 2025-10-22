@@ -59,6 +59,15 @@
 
             $this->view('pages/super_admin/profile', $data, 'dashboard');
         }
+
+        // --- Notifications ---
+        public function notifications(){
+            $data = [
+                'user' => $this->user,
+            ];
+            
+            $this->view('pages/common/notifications', $data, layout: 'dashboard');
+        }
     }
 
 ?>

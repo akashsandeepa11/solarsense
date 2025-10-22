@@ -39,7 +39,7 @@
                 'user' => $this->user,
             ];
             
-            $this->view('pages/installer_admin/notifications', $data, layout: 'dashboard');
+            $this->view('pages/common/notifications', $data, layout: 'dashboard');
         }
 
         // --- Reports ---

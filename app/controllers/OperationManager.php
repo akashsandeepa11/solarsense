@@ -75,6 +75,15 @@
             
             $this->view('pages/operation_manager/profile', $data, layout: 'dashboard');
         }
+
+        // --- Notifications ---
+        public function notifications(){
+            $data = [
+                'user' => $this->user,
+            ];
+            
+            $this->view('pages/common/notifications', $data, layout: 'dashboard');
+        }
         
         
     }
