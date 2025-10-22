@@ -1,5 +1,19 @@
-<link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/installer_admin/team.css">
+    <!-- <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/installer_admin/team.css"> -->
 <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/components.css">
+
+<style> 
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.35rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #ffffff;
+        border: none;
+    }
+</style>
 
 <div class="team-container container-fluid p-8">
     
@@ -13,7 +27,7 @@
                 'label' => 'Add New Agent',
                 'url' => URLROOT . '/installeradmin/team/add_service_agent',
                 'icon' => 'fas fa-plus',
-                'class' => 'btn-success'
+                'class' => 'btn-primary'
             ]
         ]
     ];
@@ -25,12 +39,14 @@
     $config = [
         'search' => [
             'id' => 'searchAgents',
+            'name' => 'search',
             'label' => 'Search Agents',
             'placeholder' => 'Search by name or email...'
         ],
         'filters' => [
             [
                 'id' => 'filterStatus',
+                'name' => 'status',
                 'label' => 'Status',
                 'options' => [
                     ['value' => '', 'label' => 'All Status'],
@@ -41,6 +57,7 @@
             ],
             [
                 'id' => 'filterWorkload',
+                'name' => 'workload',
                 'label' => 'Workload',
                 'options' => [
                     ['value' => '', 'label' => 'All Workloads'],
@@ -50,13 +67,11 @@
                 ]
             ]
         ],
-        'buttons' => [
-            [
-                'id' => 'filterBtn',
-                'label' => 'Filter',
-                'icon' => 'fas fa-filter'
-            ]
-        ]
+        'buttons' => [],
+        'form_action' => URLROOT . '/installeradmin/team',
+        'form_method' => 'GET',
+        'auto_submit' => true,
+        'reset_on_clear' => true
     ];
     include __DIR__ . '/../../inc/components/filter_bar.php';
     ?>
@@ -74,7 +89,7 @@
         'stats' => $stats_data,
         'columns' => 4
     ];
-    include __DIR__ . '/../../inc/components/stats_grid.php';
+    include __DIR__ . '/../../inc/components/stat_card.php';
     ?>
 
     <!-- Service Agents List -->
@@ -105,18 +120,22 @@
             $contact = is_object($agent) ? ($agent->contact ?? 'N/A') : ($agent['contact'] ?? 'N/A');
             $status = is_object($agent) ? ($agent->status ?? 'Inactive') : ($agent['status'] ?? 'Inactive');
             
+            $assigned = rand(3, 8);
+            $pending = rand(1, 3);
+            $completed = $assigned - $pending;
+            
             $processedAgents[] = [
                 'id' => $id,
                 'name' => $fullName,
                 'role' => 'Service Agent', // constant value
                 'email' => $email,
                 'phone' => $contact,
-                'assigned' => rand(3, 8), // constant/simulated value
-                'completed' => rand(1, 6), // constant/simulated value
-                'pending' => rand(1, 3), // constant/simulated value
+                'assigned' => $assigned,
+                'pending' => $pending,
+                'completed' => $completed,
                 'status' => ucfirst($status), // use status from db
                 'last_active' => 'Today, 2:30 PM', // constant value
-                'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode($fullName) . '&background=fe9630&color=fff'
+                'avatar' => getAvatarUrl($fullName)
             ];
         }
     }
@@ -170,7 +189,7 @@
                                 <div class="progress-bar">
                                     <div class="progress-fill" style="width: ' . $percentage . '%"></div>
                                 </div>
-                                <div class="progress-text text-sm">' . htmlspecialchars($row['completed']) . '</div>
+                                <div class="badge bg-success">' . htmlspecialchars($row['completed']) . '</div>
                             </div>';
                 }
             ],
@@ -228,7 +247,7 @@
         'cancel_icon' => 'fas fa-times',
         'confirm_action' => URLROOT . '/installeradmin/team/delete_agent/',
         'confirm_method' => 'POST',
-        'confirm_class' => 'btn-danger'
+        'confirm_class' => 'btn-error'
     ];
     include __DIR__ . '/../../inc/models/confirmation_modal.php';
     ?>

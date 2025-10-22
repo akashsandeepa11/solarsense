@@ -4,6 +4,7 @@
     require_once 'helpers/URL_Helper.php';
     require_once 'helpers/Session_Helper.php';
     require_once 'helpers/Toast_Helper.php';
+    require_once 'helpers/Avatar_Helper.php';
 
     // Load Configarations
     require_once "config/config.php";

@@ -1,18 +1,17 @@
 <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/installer_admin/agent_details.css">
 
 <div class="agent-details-container">
-    <!-- Header with Back Button -->
-    <div class="agent-header mb-6">
-        <div class="d-flex align-center gap-3 mb-4">
-            <a href="<?php echo URLROOT; ?>/installeradmin/team" class="btn-back">
-                <i class="fas fa-arrow-left"></i>
-            </a>
-            <div>
-                <h1 class="text-3xl font-bold">Agent Details</h1>
-                <p class="text-secondary text-sm">View and manage service agent information</p>
-            </div>
-        </div>
-    </div>
+    <!-- Page Header -->
+    <?php
+    $config = [
+        'title' => 'Agent Details',
+        'description' => 'View and manage service agent information',
+        'show_back' => true,
+        'back_url' => URLROOT . '/installeradmin/team',
+        'back_label' => 'Back to Team'
+    ];
+    include __DIR__ . '/../../inc/components/page_header.php';
+    ?>
 
     <div class="row gap-6">
         <!-- Left Column: Agent Profile & Info -->

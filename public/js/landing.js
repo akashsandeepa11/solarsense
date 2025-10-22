@@ -461,7 +461,7 @@ function initializeInstallerDirectory() {
         </div>
         <div class="installer-card__actions">
           <a href="#quotation-section" class="btn btn-primary btn-sm quote-trigger">Request Quote</a>
-          <button type="button" class="btn btn-secondary btn-sm">View Profile</button>
+          <button type="button" class="btn btn-primary-outline btn-sm">View Profile</button>
         </div>
       `;
 

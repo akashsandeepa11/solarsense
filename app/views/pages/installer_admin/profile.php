@@ -1,6 +1,15 @@
 
 
 <div class="container my-6">
+  <!-- Page Header -->
+  <?php
+  $config = [
+      'title' => 'Company Profile',
+      'description' => 'Manage your company information and settings'
+  ];
+  include __DIR__ . '/../../inc/components/page_header.php';
+  ?>
+
   <div class="row">
     <!-- Left Column -->
     <div class="col-8">
