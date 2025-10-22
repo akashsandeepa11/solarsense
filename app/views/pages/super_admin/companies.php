@@ -1,138 +1,214 @@
-<?php
-// --- PHP Setup for Dummy Data ---
+    <?php
+    // --- PHP Setup for Dummy Data ---
 
-// Summary Cards (example values)
-$summary_cards = [
-    ['label' => 'Total Companies', 'value' => '6', 'icon' => 'fas fa-building', 'color' => 'primary'],
-    ['label' => 'Verified Companies', 'value' => '3', 'icon' => 'fas fa-check-circle', 'color' => 'success'],
-    ['label' => 'Pending Verifications', 'value' => '3', 'icon' => 'fas fa-hourglass-half', 'color' => 'warning']
-];
+    // Summary Card Data
+    $summary_cards = [
+        ['label' => 'Total Clients', 'value' => '128', 'icon' => 'fas fa-users', 'color' => 'primary'],
+        ['label' => 'Systems with Active Faults', 'value' => '4', 'icon' => 'fas fa-exclamation-triangle', 'color' => 'error'],
+        ['label' => 'Pending Maintenance', 'value' => '9', 'icon' => 'fas fa-wrench', 'color' => 'warning'],
+        ['label' => 'Services Completed (Month)', 'value' => '23', 'icon' => 'fas fa-check-circle', 'color' => 'success']
+    ];
 
-// Verified company data from registration
-$companies = [
-    [
-        "companyName" => "SunTech Installers",
-        "email" => "info@suntech.com",
-        "contactNumber" => "0771234567",
-        "physicalAddress" => "45 Solar Avenue, Colombo",
-        "submittedDate" => "2025-10-19",
-        "status" => "pending"
-    ],
-    [
-        "companyName" => "EcoWatt Solutions",
-        "email" => "support@ecowatt.lk",
-        "contactNumber" => "0769876543",
-        "physicalAddress" => "22 Green Park Road, Kandy",
-        "submittedDate" => "2025-10-18",
-        "status" => "verified"
-    ],
-    [
-        "companyName" => "SolarRise Energy",
-        "email" => "contact@solarrise.lk",
-        "contactNumber" => "0714456789",
-        "physicalAddress" => "10 Lighthouse Road, Galle",
-        "submittedDate" => "2025-10-17",
-        "status" => "pending"
-    ],
-    [
-        "companyName" => "GreenVolt Installers",
-        "email" => "info@greenvolt.com",
-        "contactNumber" => "0782345678",
-        "physicalAddress" => "88 Powerline Street, Negombo",
-        "submittedDate" => "2025-10-15",
-        "status" => "verified"
-    ],
-    [
-        "companyName" => "SunPeak Engineering",
-        "email" => "service@sunpeak.lk",
-        "contactNumber" => "0759988776",
-        "physicalAddress" => "5 Tech Park Avenue, Kurunegala",
-        "submittedDate" => "2025-10-16",
-        "status" => "pending"
-    ],
-    [
-        "companyName" => "BrightRay Solutions",
-        "email" => "admin@brightray.com",
-        "contactNumber" => "0701234987",
-        "physicalAddress" => "32 Central Road, Matara",
-        "submittedDate" => "2025-10-12",
-        "status" => "verified"
-    ]
-];
+    // Get Client Table Data from Database
+    $fleetModel = new M_Fleet();
+    $clients = $fleetModel->get_customer_by_company(1);
 
-// Function to color the status
-function getStatusBadge($status) {
-    switch ($status) {
-        case 'verified':
-            return '<span class="badge bg-success text-white px-3 py-1 rounded-lg">Verified</span>';
-        case 'pending':
-            return '<span class="badge bg-warning text-dark px-3 py-1 rounded-lg">Pending</span>';
-        case 'rejected':
-            return '<span class="badge bg-error text-white px-3 py-1 rounded-lg">Rejected</span>';
-        default:
-            return '<span class="badge bg-secondary text-white px-3 py-1 rounded-lg">Unknown</span>';
+    // Function to determine the status dot color
+    function getStatusClass($health) {
+        switch ($health) {
+            case 'Healthy':
+                return 'bg-success';
+            case 'Underperforming':
+                return 'bg-warning';
+            case 'Fault':
+                return 'bg-error';
+            default:
+                return 'bg-secondary';
+        }
     }
-}
+    ?>
+    <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/installer_admin/team.css">
+
+
+    <link rel="stylesheet" href="<?php echo URLROOT?>/css/pages/installer/fleet_dashboard.css">
+    <link rel="stylesheet" href="<?php echo URLROOT?>/css/components.css">
+
+    <div class="container-fluid p-8">
+
+        <!-- Page Header -->
+        <?php
+        $config = [
+            'title' => 'Fleet Dashboard',
+            'description' => 'Overview of your client systems.',
+            'buttons' => [
+                [
+                    'label' => 'Add Customer',
+                    'url' => URLROOT . '/installeradmin/fleet/add_customer',
+                    'icon' => 'fas fa-plus',
+                    'class' => 'btn-primary btn-md'
+                ]
+            ]
+        ];
+        include __DIR__ . '/../../inc/components/page_header.php';
+        ?>
+
+        
+        <!-- Filter & Search Section -->
+        <?php
+        $config = [
+            'search' => [
+                'id' => 'searchAgents',
+                'label' => 'Search Agents',
+                'placeholder' => 'Search by name or email...'
+            ],
+            'filters' => [
+                [
+                    'id' => 'filterStatus',
+                    'label' => 'Status',
+                    'options' => [
+                        ['value' => '', 'label' => 'All Status'],
+                        ['value' => 'active', 'label' => 'Active'],
+                        ['value' => 'inactive', 'label' => 'Inactive'],
+                        ['value' => 'on_leave', 'label' => 'On Leave']
+                    ]
+                ],
+                [
+                    'id' => 'filterWorkload',
+                    'label' => 'Workload',
+                    'options' => [
+                        ['value' => '', 'label' => 'All Workloads'],
+                        ['value' => 'high', 'label' => 'High (5+ tasks)'],
+                        ['value' => 'medium', 'label' => 'Medium (2-4 tasks)'],
+                        ['value' => 'low', 'label' => 'Low (0-1 tasks)']
+                    ]
+                ]
+            ],
+            'buttons' => [
+                [
+                    'id' => 'filterBtn',
+                    'label' => 'Filter',
+                    'icon' => 'fas fa-filter'
+                ]
+            ]
+        ];
+        include __DIR__ . '/../../inc/components/filter_bar.php';
+        ?>
+
+        <!-- Summary Cards -->
+        <?php
+        $config = [
+            'stats' => $summary_cards,
+            'columns' => 4
+        ];
+        include __DIR__ . '/../../inc/components/stats_grid.php';
+        ?>
+
+        <!-- Clients Table -->
+        <?php
+        $config = [
+            'headers' => [
+                ['key' => 'name', 'label' => 'Client Name'],
+                ['key' => 'location', 'label' => 'Location'],
+                ['key' => 'size', 'label' => 'System Size'],
+                ['key' => 'health', 'label' => 'System Health'],
+                ['key' => 'performance', 'label' => 'Performance'],
+                ['key' => 'last_upload', 'label' => 'Last SMS Upload']
+            ],
+            'rows' => $clients,
+            'columns' => [
+                [
+                    'key' => 'name',
+                    'render' => function($row) {
+                        return '<div class="d-flex align-center gap-3">
+                                    <img src="' . getAvatarUrl($row['name']) . '" alt="' . htmlspecialchars($row['name']) . '">
+                                    <div class="agent-details">
+                                        <div class="agent-name font-semibold">' . htmlspecialchars($row['name']) . '</div>
+                                        <div class="agent-role text-secondary text-sm">' . htmlspecialchars($row['location']) . '</div>
+                                    </div>
+                                </div>';
+                    }
+                ],
+                [
+                    'key' => 'health',
+                    'render' => function($row) {
+                        return '<div class="d-flex align-center">
+                                    <span class="status-dot ' . getStatusClass($row['health']) . ' mr-2"></span>
+                                    ' . htmlspecialchars($row['health']) . '
+                                </div>';
+                    }
+                ],
+                [
+                    'key' => 'performance',
+                    'render' => function($row) {
+                        return htmlspecialchars($row['performance']) . '%';
+                    }
+                ],
+                [
+                    'key' => 'size',
+                    'render' => function($row) {
+                        return htmlspecialchars($row['size']) . ' kWp';
+                    }
+                ]
+            ],
+            'actions' => [
+                [
+                    'label' => 'View Details',
+                    'icon' => 'fas fa-eye',
+                    'url' => URLROOT . '/installeradmin/fleet/customer_details/{id}',
+                    'class' => 'btn-sm btn-info'
+                ],
+                [
+                    'label' => 'Edit',
+                    'icon' => 'fas fa-edit',
+                    'url' => URLROOT . '/installeradmin/fleet/edit_customer/{id}',
+                    'class' => 'btn-sm btn-primary'
+                ],
+                [
+                'label' => 'Remove',
+                'icon' => 'fas fa-trash',
+                'class' => 'btn-icon-danger',
+                'onclick' => 'onclick="openDeleteModal(' . '{id}' . ')"'
+                ],
+            ],
+            'empty_message' => 'No clients available'
+        ];
+        include __DIR__ . '/../../inc/components/data_table.php';
 ?>
 
-<link rel="stylesheet" href="<?php echo URLROOT ?>/public/css/pages/installer/fleet_dashboard.css">
+    <!-- Delete Confirmation Modal -->
+    <?php
+    $config = [
+        'modal_id' => 'deletefleetModal',
+        'title' => 'Confirm Delete',
+        'icon' => 'fas fa-exclamation-triangle',
+        'icon_color' => 'text-warning',
+        'heading' => 'Delete Service Customer?',
+        'message' => 'Are you sure you want to delete this customer? This action cannot be undone. All associated task data will be archived.',
+        'confirm_text' => 'Delete Customer',
+        'confirm_icon' => 'fas fa-check',
+        'cancel_text' => 'Cancel',
+        'cancel_icon' => 'fas fa-times',
+        'confirm_action' => URLROOT . '/installeradmin/fleet/delete_customer/',
+        'confirm_method' => 'POST',
+        'confirm_class' => 'btn-danger'
+    ];
+    include __DIR__ . '/../../inc/models/confirmation_modal.php';
+    ?>
 
-<div class="container-fluid p-8">
-    <!-- Page Header -->
-    <div class="d-flex justify-between align-center mb-6">
-        <div>
-            <h1 class="text-4xl font-bold">Company Fleet Dashboard</h1>
-            <p class="text-secondary">Overview of all registered and verified installation companies.</p>
-        </div>
+    <!-- Dynamic Delete Modal Handler -->
+    <script>
+    function openDeleteModal(customerId) {
+        // Get the form inside the modal and update its action
+        const modal = document.getElementById('deletefleetModal');
+        const form = modal.querySelector('form');
+        if (form) {
+            form.action = '<?php echo URLROOT; ?>/installeradmin/fleet/delete_customer/' + customerId;
+        }
+        // Show the modal
+        showConfirmationModal('deletefleetModal');
+    }
+    </script>
     </div>
 
-    <!-- Summary Cards -->
-    <div class="row">
-        <?php foreach ($summary_cards as $card): ?>
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="card shadow-md rounded-xl">
-                    <div class="card-body d-flex align-center">
-                        <div class="summary-card-icon d-flex align-center justify-center rounded-full mr-4 bg-<?php echo $card['color']; ?>">
-                            <i class="<?php echo $card['icon']; ?>"></i>
-                        </div>
-                        <div>
-                            <div class="text-4xl font-bold"><?php echo $card['value']; ?></div>
-                            <div class="text-secondary"><?php echo $card['label']; ?></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        <?php endforeach; ?>
-    </div>
 
-    <!-- Company List Table -->
-    <div class="card shadow-lg rounded-xl mt-6">
-        <div class="card-body">
-            <h3 class="card-title text-2xl font-semibold mb-4">All Companies</h3>
-            <div class="table-responsive">
-                <table class="client-table w-100">
-                    <thead>
-                        <tr>
-                            <th>Company Name</th>
-                            <th>Email</th>
-                            <th>Contact</th>
-                            <th>Address</th>
-                            <th>Registered Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($companies as $company): ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($company['companyName']); ?></td>
-                                <td><?php echo htmlspecialchars($company['email']); ?></td>
-                                <td><?php echo htmlspecialchars($company['contactNumber']); ?></td>
-                                <td><?php echo htmlspecialchars($company['physicalAddress']); ?></td>
-                                <td><?php echo htmlspecialchars($company['submittedDate']); ?></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
+                                
