@@ -10,7 +10,7 @@
     ];
 
     // Get Client Table Data from Database
-    $fleetModel = new M_Companies_Fleet();
+    $fleetModel = new M_Installer_Fleet();
     $clients = $fleetModel->get_customer_by_company(1);
 
     // Function to determine the status dot color
