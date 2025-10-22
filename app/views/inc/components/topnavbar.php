@@ -67,7 +67,7 @@
                 ]
             ],
             'badge_count' => 3,
-            'view_all_url' => URLROOT . '/installeradmin/notifications'
+            'view_all_url' => URLROOT . '/'.$data['user']['role'].'/notifications'
         ];
         include __DIR__ . '/notification_panel.php';
         ?>
