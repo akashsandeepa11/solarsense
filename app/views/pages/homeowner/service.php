@@ -2,24 +2,12 @@
 
 <body>
     <div class="container">
-    <h1>Maintenance Service</h1>
+    <!-- <h1>Maintenance Service</h1> -->
 
     <!-- Service Request Form -->
     <div class="card">
         <h2>Request a Maintenance Service</h2>
         <form>
-            <label for="customer-name">Full Name</label>
-            <input type="text" id="customer-name" name="customer-name" placeholder="Enter your full name" required>
-
-            <label for="email">Email Address</label>
-            <input type="email" id="email" name="email" placeholder="Enter your email" required>
-
-            <label for="phone">Phone Number</label>
-            <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" required>
-
-            <label for="panel-id">Solar Panel ID / Location</label>
-            <input type="text" id="panel-id" name="panel-id" placeholder="Enter panel ID or location" required>
-
             <label for="service-type">Service Type</label>
             <select id="service-type" name="service-type" required>
                 <option value="">Select service type</option>
@@ -37,7 +25,7 @@
 
     <!-- Service History -->
     <div class="history-list">
-        <h2>Service History</h2>
+        <h4>Service History</h4>
 
         <div class="history-item completed">
             <div class="info">

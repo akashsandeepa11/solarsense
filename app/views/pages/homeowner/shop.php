@@ -137,11 +137,11 @@ $products = $data['products'] ?? [
             <label for="priceFilter">Price Range</label>
             <select id="priceFilter">
                 <option value="">Any Price</option>
-                <option value="0-100">Under $100</option>
-                <option value="100-500">$100 - $500</option>
-                <option value="500-1000">$500 - $1,000</option>
-                <option value="1000-2000">$1,000 - $2,000</option>
-                <option value="2000+">Above $2,000</option>
+                <option value="0-30000">Under Rs. 30,000</option>
+                <option value="30000-150000">Rs. 30,000 - Rs. 150,000</option>
+                <option value="150000-300000">Rs. 150,000 - Rs. 300,000</option>
+                <option value="300000-600000">Rs. 300,000 - Rs. 600,000</option>
+                <option value="600000+">Above Rs. 600,000</option>
             </select>
         </div>
 
@@ -167,7 +167,7 @@ $products = $data['products'] ?? [
             <div class="product-info">
                 <h3 class="product-title"><?php echo htmlspecialchars($product['title']); ?></h3>
                 <p class="product-company"><?php echo htmlspecialchars($product['company']); ?></p>
-                <p class="product-price">$<?php echo number_format($product['price'], 2); ?></p>
+                <p class="product-price">Rs. <?php echo number_format($product['price'] * 325, 2); ?></p>
                 <p class="product-description"><?php echo htmlspecialchars($product['description']); ?></p>
                 <div class="product-actions">
                     <button class="btn btn-primary">Add to Cart</button>
@@ -198,21 +198,23 @@ $products = $data['products'] ?? [
                 if (showProduct && priceRange) {
                     const price = parseFloat(product.dataset.price);
                     
+                    // Convert price to Sri Lankan Rupees for comparison
+                    const priceInLKR = price * 325;
                     switch(priceRange) {
-                        case '0-100':
-                            showProduct = price <= 100;
+                        case '0-30000':
+                            showProduct = priceInLKR <= 30000;
                             break;
-                        case '100-500':
-                            showProduct = price > 100 && price <= 500;
+                        case '30000-150000':
+                            showProduct = priceInLKR > 30000 && priceInLKR <= 150000;
                             break;
-                        case '500-1000':
-                            showProduct = price > 500 && price <= 1000;
+                        case '150000-300000':
+                            showProduct = priceInLKR > 150000 && priceInLKR <= 300000;
                             break;
-                        case '1000-2000':
-                            showProduct = price > 1000 && price <= 2000;
+                        case '300000-600000':
+                            showProduct = priceInLKR > 300000 && priceInLKR <= 600000;
                             break;
-                        case '2000+':
-                            showProduct = price > 2000;
+                        case '600000+':
+                            showProduct = priceInLKR > 600000;
                             break;
                     }
                 }
