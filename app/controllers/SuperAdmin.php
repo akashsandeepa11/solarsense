@@ -41,7 +41,7 @@
         //     $this->view('pages/super_admin/verification', $data, 'dashboard');
         // }
 
-        public function add_propective_installer(): void{
+        public function add_installer_verification(): void{
             
             
             if($_SERVER['REQUEST_METHOD'] == 'POST'){
@@ -54,14 +54,14 @@
                     'user' => $this->user,
                     'companyName' => trim($_POST['companyName'] ?? ''),
                     'email' => trim($_POST['email'] ?? ''),
-                    'contactNumber' => trim($_POST['contactNumber'] ?? ''),
-                    'physicalAddress' => trim($_POST['physicalAddress'] ?? ''),
+                    'contact' => trim($_POST['contact'] ?? ''),
+                    'address' => trim($_POST['address'] ?? ''),
 
                     // Error fields
                     'companyName_err' => '',
                     'email_err' => '',
-                    'contactNumber_err' => '',
-                    'physicalAddress_err' => ''
+                    'contact_err' => '',
+                    'address_err' => ''
                 ];
 
                 // Validate all fields
@@ -77,21 +77,21 @@
                     $data['email_err'] = "Please enter a valid email address";
                 }
 
-                if(empty($data['contactNumber']) || !preg_match('/^[0-9\-\+\s\(\)]+$/', $data['contactNumber'])){
-                    $data['contactNumber_err'] = "Please enter a valid contact number";
+                if(empty($data['contact']) || !preg_match('/^[0-9\-\+\s\(\)]+$/', $data['contact'])){
+                    $data['contact_err'] = "Please enter a valid contact number";
                 }
 
-                if(empty($data['physicalAddress'])){
-                    $data['physicalAddress_err'] = "Please enter physical address";
+                if(empty($data['address'])){
+                    $data['address_err'] = "Please enter physical address";
                 }
 
                 // Check for any errors
                 $hasErrors = !empty($data['companyName_err']) || !empty($data['email_err']) || 
-                             !empty($data['contactNumber_err']) || !empty($data['physicalAddress_err']);
+                             !empty($data['contact_err']) || !empty($data['address_err']);
 
                 if($hasErrors){
                     // Reload form with errors
-                    $this->view('pages/auth/installer_registration', $data, layout: 'dashboard');
+                    $this->view('pages/auth/installer_registration', $data, layout: 'main');
                     return;
                 }
 
@@ -99,17 +99,17 @@
 
                 $prospectiveInstallerData = [
                     'full_name' => $data['companyName'],
-                    'address' => $data['physicalAddress'],
-                    'contact' => $data['contactNumber']
+                    'address' => $data['address'],
+                    'contact' => $data['contact']
                 ];
 
                 // Call model to save data
-                if($this->fleetModel->add_prospective_installer($prospectiveInstallerData)) {
-                    setToast('Customer Added Successfully', 'success');
-                    redirect('installeradmin/fleet/add_customer');
+                if($this->fleetModel->add_installer_verification($prospectiveInstallerData)) {
+                    setToast('Request Submitted Successfully', 'success');
+                    redirect('auth/installerRegistrationHandler');
                 } else {
                     setToast('Something went wrong during registration.', 'error');
-                    $this->view('pages/installer_admin/add_customer', $data, layout: 'dashboard');
+                    $this->view('pages/auth/installer_registration', $data, layout: 'main');
                 }
                 return;
 
@@ -119,16 +119,16 @@
                     'user' => $this->user,
                     'companyName' => '',
                     'email' => '',
-                    'contactNumber' => '',
-                    'physicalAddress' => '',
+                    'contact' => '',
+                    'address' => '',
 
                     'companyName_err' => '',
                     'email_err' => '',
-                    'contactNumber_err' => '',
-                    'physicalAddress_err' => ''
+                    'contact_err' => '',
+                    'address_err' => ''
                 ];
 
-                $this->view('pages/super_admin/verification', $data, layout: 'dashboard');
+                $this->view('pages/auth/installer_registration', $data, layout: 'main');
             }
         }
 

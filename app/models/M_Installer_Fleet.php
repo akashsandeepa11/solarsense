@@ -1,5 +1,5 @@
 <?php
-class M_installer_registration{
+class M_Installer_Fleet{
     private $db;
     private $stmt;
 
@@ -8,6 +8,44 @@ class M_installer_registration{
     }
 
     //receive verification request
+    public function add_installer_verification($prospectiveInstallerData) {
+        try {
+            // Start transaction
+            $this->db->beginTransaction();
+
+            // 1. Insert into `user` table
+            $this->db->query('INSERT INTO prospective_installer_company (company_name, address, contact, email) VALUES (:company_name, :address, :contact, :email)');
+            $this->db->bind(':company_name', $prospectiveInstallerData['companyName']);
+            $this->db->bind(':address', $prospectiveInstallerData['address']);
+            $this->db->bind(':contact', $prospectiveInstallerData['contact']);
+            $this->db->bind(':email', $prospectiveInstallerData['email']);
+            $this->db->execute();
+
+
+            // Commit the transaction
+            $this->db->commit();
+
+            return true;
+
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            $errorMsg = 'Add company failed: ' . $e->getMessage();
+            error_log($errorMsg);
+            
+            // Write to a file we can read easily
+            if (!is_dir(dirname(__DIR__) . '/logs')) {
+                mkdir(dirname(__DIR__) . '/logs', 0755, true);
+            }
+            file_put_contents(
+                dirname(__DIR__) . '/logs/add_customer_error.log', 
+                date('Y-m-d H:i:s') . ' - ' . $errorMsg . "\n",
+                FILE_APPEND
+            );
+            
+            return false;
+        }
+    }
+
     
     
     //add customer
@@ -21,7 +59,7 @@ class M_installer_registration{
             $this->db->bind(':email', $userData['email']);
             $this->db->bind(':password', $userData['password']);
             $this->db->bind(':type', ROLE_INSTALLER_ADMIN);
-            $this->db->bind(':full_name', $installerAdminData['full_name']);
+            $this->db->bind(':full_name', $installerCompanyData['full_name']);
             $this->db->execute();
 
             // Get the inserted user ID

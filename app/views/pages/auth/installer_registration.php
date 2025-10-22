@@ -4,8 +4,8 @@
     // Handle potential POST data to repopulate the form if there's an error
     $companyName = $_POST['companyName'] ?? '';
     $email = $_POST['email'] ?? '';
-    $contactNumber = $_POST['contactNumber'] ?? '';
-    $physicalAddress = $_POST['physicalAddress'] ?? '';
+    $contact = $_POST['contact'] ?? '';
+    $address = $_POST['address'] ?? '';
     // $district = $_POST['district'] ?? '';
     // $systemCapacity = $_POST['systemCapacity'] ?? '';
     // $panelTilt = $_POST['panelTilt'] ?? '';
@@ -20,7 +20,7 @@
     // $mode = $data['mode'] ?? 'add';
     // // $isEditMode = $mode === 'edit';
     // $customerId = $data['customerId'] ?? '';
-    $pageTitle = 'Weclcome to SolarSense!';
+    $pageTitle = 'Welcome to SolarSense!';
     $pageDescription = 'Please fill all required fields';
     // $buttonText = $isEditMode ? 'Update Account' : 'Create Account';
     // $buttonIcon = $isEditMode ? 'fas fa-save' : 'fas fa-plus';
@@ -41,7 +41,7 @@
                 <p class="text-secondary mt-1"><?php echo $pageDescription; ?></p>
             </div>
 
-            <form id="prospectiveInstallerRequest-form" action="<?php echo URLROOT?>/superadmin/verification" method="post" novalidate>
+            <form id="prospectiveInstallerRequest-form" action="<?php echo URLROOT?>/superadmin/add_installer_verification" method="post" novalidate>
                 
                 <!-- Hidden fields for form mode and customer ID -->
                 
@@ -56,10 +56,10 @@
                             <?php $inputConfig = ['id' => 'email', 'name' => 'email', 'label' => 'Email Address (Username)', 'type' => 'email', 'icon' => 'fas fa-envelope', 'value' => $data['email'] ?? '', 'error' => $data['email_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                         <div class="col-md-6 form-group">
-                            <?php $inputConfig = ['id' => 'contactNumber', 'name' => 'contactNumber', 'label' => 'Contact Number', 'type' => 'tel', 'icon' => 'fas fa-phone', 'value' => $data['contactNumber'] ?? '', 'error' => $data['contactNumber_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                            <?php $inputConfig = ['id' => 'contact', 'name' => 'contact', 'label' => 'Contact Number', 'type' => 'tel', 'icon' => 'fas fa-phone', 'value' => $data['contact'] ?? '', 'error' => $data['contact_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                         <div class="col-md-12 form-group">
-                            <?php $inputConfig = ['id' => 'physicalAddress', 'name' => 'physicalAddress', 'label' => 'Physical Address', 'type' => 'text', 'icon' => 'fas fa-map-marker-alt', 'value' => $data['physicalAddress'] ?? '', 'error' => $data['physicalAddress_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                            <?php $inputConfig = ['id' => 'address', 'name' => 'address', 'label' => 'Physical Address', 'type' => 'text', 'icon' => 'fas fa-map-marker-alt', 'value' => $data['address'] ?? '', 'error' => $data['address_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                     </div>
                 </div>
