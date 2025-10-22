@@ -19,17 +19,21 @@
     
     <!-- Page Header -->
     <?php
+    // Build buttons array based on role
+    $buttons = [];
+    if($data['user']['role'] === ROLE_INSTALLER_ADMIN) {   
+        $buttons[] = [
+            'label' => 'Add New Agent',
+            'url' => URLROOT . '/installeradmin/team/add_service_agent',
+            'icon' => 'fas fa-plus',
+            'class' => 'btn-primary'
+        ];
+    }
+    
     $config = [
         'title' => 'Service Agents',
         'description' => 'Manage your team of service agents and track their tasks',
-        'buttons' => [
-            [
-                'label' => 'Add New Agent',
-                'url' => URLROOT . '/installeradmin/team/add_service_agent',
-                'icon' => 'fas fa-plus',
-                'class' => 'btn-primary'
-            ]
-        ]
+        'buttons' => $buttons
     ];
     include __DIR__ . '/../../inc/components/page_header.php';
     ?>
@@ -208,27 +212,37 @@
                             </span>';
                 }
             ]
-        ],
-        'actions' => [
+        ]
+    ];
+    
+    // Build actions array - View Details always available
+    if(!isset($config['actions'])) {
+        $config['actions'] = [
             [
                 'label' => 'View Details',
                 'icon' => 'fas fa-eye',
                 'url' => URLROOT . '/installeradmin/team/agent_details/{id}'
-            ],
-            [
-                'label' => 'Edit',
-                'icon' => 'fas fa-edit',
-                'url' => URLROOT . '/installeradmin/team/edit_agent/{id}'
-            ],
-            [
-                'label' => 'Remove',
-                'icon' => 'fas fa-trash',
-                'class' => 'btn-icon-danger',
-                'onclick' => 'onclick="openDeleteModal(' . '{id}' . ')"'
             ]
-            ],
-            'empty_message' => 'No clients available'
-    ];
+        ];
+    }
+    
+    // Add Edit and Remove actions only for Installer Admin
+    if($data['user']['role'] === ROLE_INSTALLER_ADMIN) {
+        $config['actions'][] = [
+            'label' => 'Edit',
+            'icon' => 'fas fa-edit',
+            'url' => URLROOT . '/installeradmin/team/edit_agent/{id}'
+        ];
+        $config['actions'][] = [
+            'label' => 'Remove',
+            'icon' => 'fas fa-trash',
+            'class' => 'btn-icon-danger',
+            'onclick' => 'onclick="openDeleteModal(' . '{id}' . ')"'
+        ];
+    }
+    
+    $config['empty_message'] = 'No clients available';
+    
     include __DIR__ . '/../../inc/components/data_table.php';
     ?>
 

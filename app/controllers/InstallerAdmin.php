@@ -27,7 +27,7 @@
 
             if($page == 'system_performance'){
                 
-                return $this->view('pages/installer_admin/system_performance', $data, layout: 'dashboard');
+                return $this->view('pages/common/system_performance', $data, layout: 'dashboard');
             }
             
             $this->view('pages/installer_admin/dashboard', $data, layout: 'dashboard');
@@ -62,10 +62,6 @@
                 return $this->customerdetails($customerId);
             }
 
-            if($page === 'view'){
-                return $this->view_customer();
-            }
-
             if($page === 'edit_customer'){
                 return $this->edit_customer($customerId);
             }
@@ -80,7 +76,7 @@
             ];
 
             
-            $this->view('pages/installer_admin/fleet_dashboard', $data, layout: 'dashboard');
+            $this->view('pages/common/fleet_dashboard', $data, layout: 'dashboard');
         }
 
         public function customerdetails($customerId = null){
@@ -89,7 +85,7 @@
                 'customerId' => $customerId
             ];
             
-            $this->view('pages/installer_admin/customer_details', $data, layout: 'dashboard');
+            $this->view('pages/common/customer_details', $data, layout: 'dashboard');
         }
         
         public function add_customer(): void{
@@ -309,14 +305,6 @@
 
                 $this->view('pages/installer_admin/add_customer', $data, layout: 'dashboard');
             }
-        }
-
-        public function view_customer(): void{
-            $data = [
-                'user' => $this->user,
-            ];
-
-            $this->view('pages/installer_admin/view_customer', $data, layout: 'dashboard');
         }
 
         public function edit_customer($customerId = null){
@@ -625,7 +613,7 @@
                 'agents' => $this->teamModel->get_service_agents_by_company(1)
             ];
            
-            $this->view('pages/installer_admin/team', $data, layout: 'dashboard');
+            $this->view('pages/common/team', $data, layout: 'dashboard');
         }
 
         public function add_service_agent(){
@@ -867,7 +855,7 @@
             // TODO: Fetch agent details from database using $agentId
             // For now, using sample data
             
-            $this->view('pages/installer_admin/agent_details', $data, layout: 'dashboard');
+            $this->view('pages/common/agent_details', $data, layout: 'dashboard');
         }
 
         public function edit_agent($agentId = null){
