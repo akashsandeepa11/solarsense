@@ -2,6 +2,13 @@
 <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/homeowner/shop.css">
 
 <?php
+// Page Header Configuration
+$config = [
+    'title' => 'Accessories Store',
+    'description' => 'Browse and purchase solar accessories and equipment'
+];
+include __DIR__ . '/../../inc/components/page_header.php';
+
 $products = $data['products'] ?? [
     [
         'id' => 1,

@@ -1,6 +1,16 @@
 <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/homeowner/shop.css">
 
 <?php
+// Page Header Configuration
+$config = [
+    'title' => 'Shopping Cart',
+    'description' => 'Review your items and proceed to checkout',
+    'show_back' => true,
+    'back_url' => URLROOT . '/homeowner/shop',
+    'back_label' => 'Continue Shopping'
+];
+include __DIR__ . '/../../inc/components/page_header.php';
+
 // Dummy cart data (like products added to cart)
 $cartItems = [
     [
@@ -31,8 +41,6 @@ $cartItems = [
 ?>
 
 <div class="shop-container">
-
-    <h2 style="margin-bottom: 20px;">Your Shopping Cart</h2>
 
     <div class="cart-grid">
         <div class="cart-items">
