@@ -11,6 +11,7 @@ $value = $cfg['value'] ?? '';
 $icon = $cfg['icon'] ?? ''; // Expects Font Awesome classes e.g., "fas fa-envelope"
 $required = !empty($cfg['required']); // This boolean is the key
 $error = $cfg['error'] ?? ''; // Error message
+$editable = isset($cfg['editable']) ? !empty($cfg['editable']) : true; // Default to true
 $wrapperClass = $cfg['wrapperClass'] ?? '';
 $inputClass = $cfg['inputClass'] ?? '';
 
@@ -56,6 +57,13 @@ if (!defined('INPUT_BEM_ASSETS')):
     .input__field:not(:placeholder-shown) + .input__label {
         transform: translate(0.25rem, -65%) scale(0.8);
         color: var(--color-primary, #fe9630);
+    }
+    .input__field:readonly {
+        background-color: #f3f4f6;
+        cursor: not-allowed;
+    }
+    .input__field:readonly:focus {
+        border-color: #ced4da;
     }
     .input__icon {
         position: absolute;
@@ -105,6 +113,7 @@ if (!defined('INPUT_BEM_ASSETS')):
             placeholder=" "
             value="<?= htmlspecialchars($value) ?>"
             <?= $required ? 'required' : '' ?>
+            <?= !$editable ? 'readonly' : '' ?>
             />
             <span class="input__label">
             <?php 

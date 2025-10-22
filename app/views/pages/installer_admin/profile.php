@@ -1,6 +1,6 @@
 
 
-<div class="container my-6">
+<div class="container-fluid p-8">
   <!-- Page Header -->
   <?php
   $config = [
@@ -12,7 +12,7 @@
 
   <div class="row">
     <!-- Left Column -->
-    <div class="col-8">
+    <div class="col-lg-8">
       <?php
       // One array for all profile fields, grouped by section
       $profileSections = [
@@ -67,6 +67,7 @@
                       'id' => 'established-date',
                       'label' => 'Established Date',
                       'value' => '2010',
+                      'type' => 'number',
                       'editable' => false
                   ],
                   [
@@ -79,7 +80,8 @@
                       'id' => 'service-areas',
                       'label' => 'Service Areas',
                       'value' => 'Western Province, Southern Province',
-                      'editable' => true
+                      'editable' => true,
+                      'fieldType' => 'textarea'
                   ],
                   [
                       'id' => 'certification',
@@ -91,12 +93,21 @@
                       'id' => 'specialization',
                       'label' => 'Specialization',
                       'value' => 'Commercial Solar Installations',
-                      'editable' => true
+                      'editable' => true,
+                      'fieldType' => 'select',
+                      'options' => [
+                          'Residential Solar' => 'Residential Solar Installations',
+                          'Commercial Solar' => 'Commercial Solar Installations',
+                          'Industrial Solar' => 'Industrial Solar Installations',
+                          'Hybrid Systems' => 'Hybrid Systems',
+                          'All Services' => 'All Services'
+                      ]
                   ],
                   [
                       'id' => 'website',
                       'label' => 'Website',
                       'value' => 'www.solartech.lk',
+                      'type' => 'url',
                       'editable' => true
                   ]
               ]
@@ -123,64 +134,138 @@
       // Render all profile sections
       foreach ($profileSections as $section):
       ?>
-      <div class="card mb-4 p-2" >
-        <h5 class="card-title px-4 pt-4"><?php echo htmlspecialchars($section['title']); ?></h5>
+      <div class="card mb-4">
+        <div class="card-header bg-light border-bottom">
+          <h5 class="mb-0"><?php echo htmlspecialchars($section['title']); ?></h5>
+        </div>
         <div class="card-body">
+          <div class="row">
             <?php
             // Render fields for this section
             foreach ($section['fields'] as $field) {
-                require APPROOT . '/views/inc/components/profile_input_field.php';
+                // Handle different field types
+                if (isset($field['fieldType']) && $field['fieldType'] === 'select') {
+                    // Select field
+                    $selectConfig = [
+                        'id' => $field['id'],
+                        'name' => $field['id'],
+                        'label' => $field['label'],
+                        'value' => $field['value'],
+                        'options' => $field['options'] ?? [],
+                        'required' => $field['required'] ?? false,
+                        'editable' => $field['editable'] ?? true,
+                        'wrapperClass' => 'mb-3'
+                    ];
+                ?>
+                  <div class="col-md-6">
+                    <?php include APPROOT . '/views/inc/components/select_field.php'; ?>
+                  </div>
+                <?php
+                } elseif (isset($field['fieldType']) && $field['fieldType'] === 'textarea') {
+                    // Textarea field
+                    $textareaConfig = [
+                        'id' => $field['id'],
+                        'name' => $field['id'],
+                        'label' => $field['label'],
+                        'value' => $field['value'],
+                        'required' => $field['required'] ?? false,
+                        'editable' => $field['editable'] ?? true,
+                        'wrapperClass' => 'mb-3',
+                        'rows' => 3
+                    ];
+                    
+                    if (!empty($field['summaryTarget'])) {
+                        $textareaConfig['textareaClass'] = 'update-summary';
+                    }
+                ?>
+                  <div class="col-md-6">
+                    <?php include APPROOT . '/views/inc/components/textarea_field.php'; ?>
+                  </div>
+                <?php
+                } else {
+                    // Regular input field
+                    $inputConfig = [
+                        'id' => $field['id'],
+                        'name' => $field['id'],
+                        'label' => $field['label'],
+                        'value' => $field['value'],
+                        'type' => $field['type'] ?? 'text',
+                        'required' => $field['required'] ?? false,
+                        'editable' => $field['editable'] ?? true,
+                        'wrapperClass' => 'mb-3'
+                    ];
+                    
+                    // Add data attribute for summary updates
+                    if (!empty($field['summaryTarget'])) {
+                        $inputConfig['inputClass'] = 'update-summary';
+                    }
+                ?>
+                  <div class="col-md-6">
+                    <?php include APPROOT . '/views/inc/components/input_field.php'; ?>
+                  </div>
+                <?php
+                }
             }
             ?>
+          </div>
         </div>
       </div>
       <?php endforeach; ?>
     </div>
 
     <!-- Right Column -->
-    <div class="col-4">
-      <div class="card text-center">
+    <div class="col-lg-4">
+      <div class="card sticky-top" style="top: 20px;">
         <div class="card-body">
-          <!-- Avatar Upload -->
-          <div class="d-flex flex-column align-center mb-4">
-            <div class="rounded-full bg-secondary mx-auto" style="width:120px;height:120px;background-size:cover;background-position:center" id="profile-avatar"></div>
-            <input type="file" id="avatar-upload" accept="image/*" hidden>
-            <label for="avatar-upload" class="text-primary mt-2 cursor-pointer">Change</label>
+          <!-- Avatar Upload - Centered -->
+          <!-- <div class="d-flex flex-column rounded-full align-items-center mb-4"> -->
+            <!-- <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:140px;height:140px;background-color:#f3f4f6;overflow:hidden;flex-shrink:0;" id="profile-avatar"> -->
+              <!-- </div> -->
+              <!-- <input type="file" id="avatar-upload" accept="image/*" hidden> -->
+            <!-- <label for="avatar-upload" class="btn btn-sm btn-outline-primary cursor-pointer">
+              <i class="fas fa-camera me-1"></i> Change Logo
+            </label> -->
+          <!-- </div> -->
+          
+          <!-- Profile Info -->
+          <div class="text-center">
+            <img src="<?php echo htmlspecialchars(getAvatarUrl('SolarTech Solutions Ltd.', 140)); ?>" alt="Profile" style="object-fit:cover;">
+            <h5 class="mb-1 fw-bold" id="summary-name">SolarTech Solutions Ltd.</h5>
+            <p class="text-primary small mb-1" id="registration-display">BRG12345678</p>
+            <p class="text-muted small mb-1" id="summary-email">info@solartech.lk</p>
+            <p class="text-muted small mb-1" id="summary-location">123 Green Energy Park, Colombo 05, Sri Lanka</p>
+            <p class="text-muted small mb-1" id="summary-phone">+94 112 345 678</p>
+            <p class="text-muted small mb-3" id="certification-display">ISO 9001:2015, SEA Certified</p>
           </div>
 
-          <!-- Profile Info -->
-          <h4 class="mb-1" id="summary-name">SolarTech Solutions Ltd.</h4>
-          <p class="text-primary mb-1" id="registration-display">BRG12345678</p>
-          <p class="text-secondary mb-1" id="summary-email">info@solartech.lk</p>
-          <p class="text-secondary mb-1" id="summary-location">123 Green Energy Park, Colombo 05, Sri Lanka</p>
-          <p class="mb-1" id="summary-phone">+94 112 345 678</p>
-          <p class="text-secondary mb-3" id="certification-display">ISO 9001:2015, SEA Certified</p>
+          <!-- Divider -->
+          <hr>
 
           <!-- Business Stats -->
-          <div class="d-flex flex-wrap justify-center mt-4">
-            <div class="text-center px-3">
-              <h5 class="mb-1">500+</h5>
-              <p class="text-secondary m-0">Installations</p>
-            </div>
-
-            <div class="mx-3" style="width:1px;height:70px;background:rgba(0,0,0,0.1)"></div>
-
-            <div class="text-center px-3">
-              <h5 class="mb-1">4.8/5.0</h5>
-              <p class="text-secondary m-0">Rating</p>
-            </div>
-
-            <div class="w-100 mt-3 pt-3 border-top">
-              <div class="text-center mb-2">
-                <p class="text-secondary m-0">Service Areas</p>
-                <small class="text-primary">Western Province, Southern Province</small>
+          <div class="row text-center mb-3">
+            <div class="col-6">
+              <div>
+                <h6 class="fw-bold mb-1">500+</h6>
+                <small class="text-muted">Installations</small>
               </div>
-              <div class="text-center">
-                <p class="text-secondary m-0">Experience</p>
-                <small class="text-primary">Since 2010</small>
+            </div>
+            <div class="col-6">
+              <div>
+                <h6 class="fw-bold mb-1">4.8/5.0</h6>
+                <small class="text-muted">Rating</small>
               </div>
             </div>
           </div>
+
+          <div class="p-3 bg-light rounded">
+            <div class="mb-2">
+              <small class="text-muted">Service Areas</small>
+              <p class="text-primary small mb-0" id="service-areas-display">Western Province, Southern Province</p>
+            </div>
+            <div>
+              <small class="text-muted">Experience</small>
+              <p class="text-primary small mb-0" id="experience-display">Since 2010</p>
+            </div>
           </div>
         </div>
       </div>
@@ -189,57 +274,35 @@
 </div>
 
 <script>
-// Select all edit buttons
-const buttons = document.querySelectorAll('.edit-btn'); 
-
-buttons.forEach(button => {
-  button.addEventListener('click', () => {
-    const inputs = document.querySelectorAll('.form-control'); 
-    const selectedInput = button.parentElement.querySelector('.form-control'); 
-
-    // Lock all other inputs
-    inputs.forEach(input => {
-      if (input !== selectedInput) {
-        input.setAttribute('readonly', true);
-        input.style.border = 'none';
+// Update summary card when inputs change
+document.querySelectorAll('.update-summary').forEach(input => {
+  const id = input.id;
+  const summaryMap = {
+    'company-name': 'summary-name',
+    'business-email': 'summary-email',
+    'contact-number': 'summary-phone',
+    'business-address': 'summary-location',
+    'registration-number': 'registration-display',
+    'certification': 'certification-display',
+    'service-areas': 'service-areas-display',
+    'established-date': 'experience-display'
+  };
+  
+  if (summaryMap[id]) {
+    input.addEventListener('input', function() {
+      const target = document.getElementById(summaryMap[id]);
+      if (target) {
+        if (id === 'established-date') {
+          target.textContent = `Since ${this.value}`;
+        } else {
+          target.textContent = this.value;
+        }
       }
     });
-
-    // Enable the clicked input
-    selectedInput.removeAttribute('readonly');  
-    selectedInput.style.border = '1px solid var(--color-primary)'; 
-    selectedInput.focus();                       
-
-    // Update right profile card in real-time
-    selectedInput.addEventListener('input', () => {
-      const value = selectedInput.value;
-      const summaryTarget = selectedInput.getAttribute('data-summary-target');
-      const fieldId = selectedInput.id;
-      
-      // Update standard summary fields
-      if (summaryTarget) {
-        document.getElementById(summaryTarget).textContent = value;
-      }
-      
-      // Update additional display fields
-      if (fieldId === 'registration-number' && document.getElementById('registration-display')) {
-        document.getElementById('registration-display').textContent = value;
-      }
-      if (fieldId === 'certification' && document.getElementById('certification-display')) {
-        document.getElementById('certification-display').textContent = value;
-      }
-      if (fieldId === 'service-areas') {
-        const serviceAreas = document.querySelector('.text-primary:first-of-type');
-        if (serviceAreas) serviceAreas.textContent = value;
-      }
-      if (fieldId === 'established-date') {
-        const experience = document.querySelector('.text-primary:last-of-type');
-        if (experience) experience.textContent = `Since ${value}`;
-      }
-    });
-  });
+  }
 });
 
+// Avatar upload handler
 const avatarUpload = document.getElementById('avatar-upload');
 const profileAvatar = document.getElementById('profile-avatar');
 
@@ -248,9 +311,17 @@ avatarUpload.addEventListener('change', function () {
   if (file) {
     const reader = new FileReader();
     reader.onload = function (e) {
-      profileAvatar.style.backgroundImage = `url(${e.target.result})`;
+      const img = profileAvatar.querySelector('img');
+      if (img) {
+        img.src = e.target.result;
+      } else {
+        profileAvatar.style.backgroundImage = `url(${e.target.result})`;
+      }
     };
     reader.readAsDataURL(file);
   }
 });
 </script>
+
+
+

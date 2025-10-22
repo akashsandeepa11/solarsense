@@ -11,6 +11,7 @@ $value = $cfg['value'] ?? ''; // Currently selected value
 $icon = $cfg['icon'] ?? ''; // Expects Font Awesome classes e.g., "fas fa-location"
 $required = !empty($cfg['required']); // This boolean is the key
 $error = $cfg['error'] ?? ''; // Error message
+$editable = isset($cfg['editable']) ? !empty($cfg['editable']) : true; // Default to true
 $wrapperClass = $cfg['wrapperClass'] ?? '';
 $selectClass = $cfg['selectClass'] ?? '';
 $placeholder = $cfg['placeholder'] ?? 'Select an option';
@@ -61,6 +62,13 @@ if (!defined('SELECT_BEM_ASSETS')):
         transform: translate(0.25rem, -65%) scale(0.8);
         color: var(--color-primary, #fe9630);
     }
+    .select__field:disabled {
+        background-color: #f3f4f6;
+        cursor: not-allowed;
+    }
+    .select__field:disabled:focus {
+        border-color: #ced4da;
+    }
     .select__icon {
         position: absolute;
         left: 12px;
@@ -105,6 +113,7 @@ if (!defined('SELECT_BEM_ASSETS')):
         id="<?= htmlspecialchars($id) ?>"
         name="<?= htmlspecialchars($name) ?>"
         <?= $required ? 'required' : '' ?>
+        <?= !$editable ? 'disabled' : '' ?>
     >
         <option value="" disabled <?= empty($value) ? 'selected' : '' ?>>
             <?= htmlspecialchars($placeholder) ?>

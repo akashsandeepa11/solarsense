@@ -7,12 +7,13 @@ $id = $cfg['id'] ?? ('textarea_' . uniqid());
 $name = $cfg['name'] ?? $id;
 $label = $cfg['label'] ?? 'Some Fancy Label';
 $value = $cfg['value'] ?? '';
-$icon = $cfg['icon'] ?? ''; // Expects Font Awesome classes e.g., "fas fa-comment"
+$icon = $cfg['icon'] ?? ''; // Expects Font Awesome classes e.g., "fas fa-message"
 $required = !empty($cfg['required']); // This boolean is the key
 $error = $cfg['error'] ?? ''; // Error message
+$editable = isset($cfg['editable']) ? !empty($cfg['editable']) : true; // Default to true
 $wrapperClass = $cfg['wrapperClass'] ?? '';
 $textareaClass = $cfg['textareaClass'] ?? '';
-$rows = $cfg['rows'] ?? 4; // Number of rows for textarea
+$rows = $cfg['rows'] ?? 4; // Default to 4 rows
 $placeholder = $cfg['placeholder'] ?? '';
 
 // This block ensures the CSS and JS are only included once on the page.
@@ -61,6 +62,13 @@ if (!defined('TEXTAREA_BEM_ASSETS')):
         transform: translate(0.25rem, -65%) scale(0.8);
         color: var(--color-primary, #fe9630);
     }
+    .textarea__field:readonly {
+        background-color: #f3f4f6;
+        cursor: not-allowed;
+    }
+    .textarea__field:readonly:focus {
+        border-color: #ced4da;
+    }
     .textarea__icon {
         position: absolute;
         left: 12px;
@@ -107,6 +115,7 @@ if (!defined('TEXTAREA_BEM_ASSETS')):
             placeholder=" "
             rows="<?= htmlspecialchars($rows) ?>"
             <?= $required ? 'required' : '' ?>
+            <?= !$editable ? 'readonly' : '' ?>
             ><?= htmlspecialchars($value) ?></textarea>
             <span class="textarea__label">
             <?php 
