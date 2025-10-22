@@ -43,6 +43,14 @@
 
             $this->view('pages/super_admin/complaints', $data, 'dashboard');
         }
+
+        public function reports(){
+            $data = [
+                'user' => $this->user,
+            ];
+
+            $this->view('pages/super_admin/reports', $data, 'dashboard');
+        }
         
         public function profile(){
             $data = [

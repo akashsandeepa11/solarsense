@@ -42,6 +42,15 @@
             $this->view('pages/installer_admin/notifications', $data, layout: 'dashboard');
         }
 
+        // --- Reports ---
+        public function reports(){
+            $data = [
+                'user' => $this->user,
+            ];
+            
+            $this->view('pages/installer_admin/reports', $data, layout: 'dashboard');
+        }
+
         // --- Fleet Management ---
         public function fleet($page = 'dashboard', $customerId = null){
             
