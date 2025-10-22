@@ -20,12 +20,26 @@
 
         // -----------------Admin Dashboard Methods -----------------
 
-        public function dashboard(){
+        public function dashboard($page='dashboard'){
+            $data = [
+                'user' => $this->user,
+            ];
+
+            if($page == 'system_performance'){
+                
+                return $this->view('pages/installer_admin/system_performance', $data, layout: 'dashboard');
+            }
+            
+            $this->view('pages/installer_admin/dashboard', $data, layout: 'dashboard');
+        }
+
+        // --- Notifications ---
+        public function notifications(){
             $data = [
                 'user' => $this->user,
             ];
             
-            $this->view('pages/installer_admin/dashboard', $data, layout: 'dashboard');
+            $this->view('pages/installer_admin/notifications', $data, layout: 'dashboard');
         }
 
         // --- Fleet Management ---

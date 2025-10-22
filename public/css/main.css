@@ -32,7 +32,7 @@ button {
   font-weight: 400 !important;
   line-height: 1.5;
   color: #212121;
-  background-color: #f5f5f5;
+  background-color: #f9fafb;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -612,7 +612,7 @@ a:hover {
 }
 
 .text-background {
-  color: #f5f5f5;
+  color: #f9fafb;
 }
 
 .text-truncate {
@@ -2242,7 +2242,7 @@ a:hover {
 }
 
 .bg-background {
-  background-color: #f5f5f5;
+  background-color: #f9fafb;
 }
 
 .border {
@@ -2570,7 +2570,7 @@ a:focus {
   --color-error: #ef4444;
   --color-surface: #ffffff;
   --color-text: #212121;
-  --color-background: #f5f5f5;
+  --color-background: #f9fafb;
 }
 
 body {
@@ -2715,19 +2715,19 @@ body {
 }
 
 .bg-background {
-  background-color: #f5f5f5 !important;
+  background-color: #f9fafb !important;
 }
 
 .text-background {
-  color: #f5f5f5 !important;
+  color: #f9fafb !important;
 }
 
 .border-background {
-  border-color: #f5f5f5 !important;
+  border-color: #f9fafb !important;
 }
 
 .btn-background {
-  background-color: #f5f5f5;
+  background-color: #f9fafb;
   color: #fff;
 }
 

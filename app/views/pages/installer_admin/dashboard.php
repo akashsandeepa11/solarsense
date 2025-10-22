@@ -208,7 +208,12 @@ function getAgentStatusClass($status) {
             <!-- System Performance Snapshot -->
             <div class="card shadow-lg rounded-xl mb-6">
                 <div class="card-body">
-                    <h3 class="card-title text-xl font-semibold mb-4">System Performance Snapshot</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 class="card-title text-xl font-semibold">System Performance Snapshot</h3>
+                        <a href="<?php echo URLROOT; ?>/installeradmin/dashboard/system_performance" class="btn btn-sm btn-primary" style="padding: 0.5rem 1rem; background-color: #fe9630; color: white; text-decoration: none; border-radius: 0.375rem; font-size: 0.875rem;">
+                            <i class="fas fa-chart-bar mr-2"></i>View Full Analytics
+                        </a>
+                    </div>
                     
                     <!-- Best Performers -->
                     <div class="mb-6">
