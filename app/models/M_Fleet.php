@@ -26,7 +26,7 @@ class M_Fleet{
 
             // 2. Insert into `homeowner` table
             // Columns: user_id, company_id, full_name, address, contact, register_date, email
-            $this->db->query('INSERT INTO homeowner (user_id, company_id, address, contact, register_date, nic, district) VALUES (:user_id, :company_id, :address, :contact, :register_date, :nic, :district)');
+            $this->db->query('INSERT INTO homeowner (user_id, company_id, address, contact, register_date, nic, district, ceb_account) VALUES (:user_id, :company_id, :address, :contact, :register_date, :nic, :district, :ceb_account)');
             $this->db->bind(':user_id', $userId);
             $this->db->bind(':company_id', 1); 
             $this->db->bind(':address', $customerData['address']);
@@ -34,6 +34,7 @@ class M_Fleet{
             $this->db->bind(':register_date', date('Y-m-d'));
             $this->db->bind(':nic', $customerData['nic']);
             $this->db->bind(':district', $customerData['district']);
+            $this->db->bind(':ceb_account', $customerData['ceb_account']);
             $this->db->execute();
 
             // 3. Insert into `solar_system` table
@@ -68,6 +69,143 @@ class M_Fleet{
                 FILE_APPEND
             );
             
+            return false;
+        }
+    }
+
+    public function update_customer($userId, $userData, $customerData, $panelData) {
+        try {
+            // Start transaction
+            $this->db->beginTransaction();
+
+            // 1. Update user table
+            if (!empty($userData['password'])) {
+                // Update with new password
+                $this->db->query('UPDATE user SET email = :email, password = :password, full_name = :full_name WHERE user_id = :user_id');
+                $this->db->bind(':email', $userData['email']);
+                $this->db->bind(':password', $userData['password']);
+                $this->db->bind(':full_name', $userData['full_name']);
+                $this->db->bind(':user_id', $userId);
+                $this->db->execute();
+            } else {
+                // Update without password
+                $this->db->query('UPDATE user SET email = :email, full_name = :full_name WHERE user_id = :user_id');
+                $this->db->bind(':email', $userData['email']);
+                $this->db->bind(':full_name', $userData['full_name']);
+                $this->db->bind(':user_id', $userId);
+                $this->db->execute();
+            }
+
+            // 2. Update homeowner table
+            $this->db->query('
+                UPDATE homeowner 
+                SET address = :address,
+                    contact = :contact,
+                    nic = :nic,
+                    district = :district,
+                    ceb_account = :ceb_account
+                WHERE user_id = :user_id
+            ');
+            
+            $this->db->bind(':address', $customerData['address']);
+            $this->db->bind(':contact', $customerData['contact']);
+            $this->db->bind(':nic', $customerData['nic']);
+            $this->db->bind(':district', $customerData['district']);
+            $this->db->bind(':ceb_account', $customerData['ceb_account']);
+            $this->db->bind(':user_id', $userId);
+
+            $this->db->execute();
+
+            // 3. Update solar_system table
+            $this->db->query('
+                UPDATE solar_system 
+                SET capacity = :capacity,
+                    tilt = :tilt,
+                    azimuth = :azimuth,
+                    panel_brand = :panel_brand,
+                    inverter_brand = :inverter_brand,
+                    installation_date = :installation_date
+                WHERE user_id = :user_id
+            ');
+            
+            $this->db->bind(':capacity', $panelData['system_capacity']);
+            $this->db->bind(':tilt', $panelData['panel_tilt']);
+            $this->db->bind(':azimuth', $panelData['panel_azimuth']);
+            $this->db->bind(':panel_brand', $panelData['panel_brand']);
+            $this->db->bind(':inverter_brand', $panelData['inverter_brand']);
+            $this->db->bind(':installation_date', $panelData['installation_date']);
+            $this->db->bind(':user_id', $userId);
+            
+            $this->db->execute();
+
+            // Handle CEB account if it's stored separately (adjust based on your schema)
+            // If ceb_account is in homeowner table, add it to the homeowner update above
+            // If it's in solar_system table, add it to the solar_system update above
+            // For now, assuming it might be in solar_system, so update if column exists
+            if (!empty($panelData['ceb_account'])) {
+                try {
+                    $this->db->query('UPDATE solar_system SET ceb_account = :ceb_account WHERE user_id = :user_id');
+                    $this->db->bind(':ceb_account', $panelData['ceb_account']);
+                    $this->db->bind(':user_id', $userId);
+                    $this->db->execute();
+                } catch (Exception $e) {
+                    // Column may not exist, continue without error
+                }
+            }
+
+            // Commit the transaction
+            $this->db->commit();
+
+            return true;
+
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            $errorMsg = 'Update customer failed: ' . $e->getMessage();
+            error_log($errorMsg);
+            
+            // Write to a file we can read easily
+            if (!is_dir(dirname(__DIR__) . '/logs')) {
+                mkdir(dirname(__DIR__) . '/logs', 0755, true);
+            }
+            file_put_contents(
+                dirname(__DIR__) . '/logs/update_customer_error.log', 
+                date('Y-m-d H:i:s') . ' - ' . $errorMsg . "\n",
+                FILE_APPEND
+            );
+            
+            return false;
+        }
+    }
+
+    public function get_customer_details($userId) {
+        try {
+            $query = 'SELECT u.user_id, u.email, u.full_name, h.address, h.contact, h.nic, h.district, s.capacity as system_capacity, s.tilt as panel_tilt, s.azimuth as panel_azimuth, s.panel_brand, s.inverter_brand, s.installation_date, h.ceb_account FROM user u JOIN homeowner h ON u.user_id = h.user_id JOIN solar_system s ON u.user_id = s.user_id WHERE u.user_id = :user_id';
+            
+            $this->db->query($query);
+            $this->db->bind(':user_id', $userId);
+            $this->db->execute();
+            $result = $this->db->single();
+            
+            // Log the result for debugging
+            error_log('get_customer_details result for ID ' . $userId . ': ' . ($result ? 'Found' : 'Not Found'));
+            
+            return $result;
+        } catch (Exception $e) {
+            $errorMsg = 'Get customer details failed: ' . $e->getMessage();
+            error_log($errorMsg);
+
+            // Log into a readable file
+            $logDir = dirname(__DIR__) . '/logs';
+            if (!is_dir($logDir)) {
+                mkdir($logDir, 0755, true);
+            }
+
+            file_put_contents(
+                $logDir . '/get_customer_details_error.log',
+                date('Y-m-d H:i:s') . ' - ' . $errorMsg . "\n",
+                FILE_APPEND
+            );
+
             return false;
         }
     }

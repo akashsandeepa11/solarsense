@@ -22,6 +22,15 @@
         "Mannar", "Matale", "Matara", "Monaragala", "Mullaitivu", "Nuwara Eliya",
         "Polonnaruwa", "Puttalam", "Ratnapura", "Trincomalee", "Vavuniya"
     ];
+
+    // Determine if this is add or edit mode
+    $mode = $data['mode'] ?? 'add';
+    $isEditMode = $mode === 'edit';
+    $customerId = $data['customerId'] ?? '';
+    $pageTitle = $isEditMode ? 'Edit Homeowner' : 'Add New Homeowner';
+    $pageDescription = $isEditMode ? 'Update homeowner information' : 'Fill all required fields to register a new homeowner';
+    $buttonText = $isEditMode ? 'Update Account' : 'Create Account';
+    $buttonIcon = $isEditMode ? 'fas fa-save' : 'fas fa-plus';
 ?>
 
 <!-- Link to the custom CSS for this page -->
@@ -35,11 +44,17 @@
             
             <!-- Form Header -->
             <div class="form-header text-center mb-10">
-                <h2 class="text-2xl font-bold">Add New Homeowner</h2>
-                <p class="text-secondary mt-1">Fill all required fields to register a new homeowner</p>
+                <h2 class="text-2xl font-bold"><?php echo $pageTitle; ?></h2>
+                <p class="text-secondary mt-1"><?php echo $pageDescription; ?></p>
             </div>
 
-            <form id="registration-form" action="<?php echo URLROOT?>/installeradmin/fleet/add_customer" method="post" novalidate>
+            <form id="registration-form" action="<?php echo URLROOT?>/installeradmin/fleet/<?php echo $isEditMode ? 'edit_customer/' . $customerId : 'add_customer'; ?>" method="post" novalidate>
+                
+                <!-- Hidden fields for form mode and customer ID -->
+                <input type="hidden" name="mode" value="<?php echo $mode; ?>">
+                <?php if($isEditMode): ?>
+                    <input type="hidden" name="customerId" value="<?php echo $customerId; ?>">
+                <?php endif; ?>
                 
                 <!-- Personal & Contact Details Section -->
                 <div class="form-section mb-10">
@@ -82,13 +97,13 @@
 
                 <!-- Credentials Section -->
                 <div class="form-section mb-10">
-                    <h3 class="text-lg font-semibold mb-6"><i class="fas fa-lock text-primary mr-2"></i>Login Credentials</h3>
+                    <h3 class="text-lg font-semibold mb-6"><i class="fas fa-lock text-primary mr-2"></i>Login Credentials <?php if($isEditMode): ?><span class="text-secondary text-sm">(Leave blank to keep current password)</span><?php endif; ?></h3>
                     <div class="row">
                         <div class="col-md-6 form-group">
-                            <?php $inputConfig = ['id' => 'password', 'name' => 'password', 'label' => 'Password', 'type' => 'password', 'icon' => 'fas fa-lock', 'value' => $data['password'] ?? '', 'error' => $data['password_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                            <?php $inputConfig = ['id' => 'password', 'name' => 'password', 'label' => 'Password', 'type' => 'password', 'icon' => 'fas fa-lock', 'value' => $data['password'] ?? '', 'error' => $data['password_err'] ?? '', 'required' => !$isEditMode]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                         <div class="col-md-6 form-group">
-                            <?php $inputConfig = ['id' => 'confirmPassword', 'name' => 'confirmPassword', 'label' => 'Confirm Password', 'type' => 'password', 'icon' => 'fas fa-lock', 'value' => $data['confirmPassword'] ?? '', 'error' => $data['confirmPassword_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                            <?php $inputConfig = ['id' => 'confirmPassword', 'name' => 'confirmPassword', 'label' => 'Confirm Password', 'type' => 'password', 'icon' => 'fas fa-lock', 'value' => $data['confirmPassword'] ?? '', 'error' => $data['confirmPassword_err'] ?? '', 'required' => !$isEditMode]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                     </div>
                 </div>
@@ -158,8 +173,8 @@
 
                 <!-- Submit Button -->
                 <div class="mt-8 pt-5 border-t d-flex justify-end">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-plus mr-2"></i> Create Account
+                    <button type="submit" class="btn <?php echo $isEditMode ? 'btn-warning' : 'btn-primary'; ?>">
+                        <i class="<?php echo $buttonIcon; ?> mr-2"></i> <?php echo $buttonText; ?>
                     </button>
                 </div>
             </form>
