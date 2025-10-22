@@ -38,15 +38,21 @@
 
 <div class="content-area">
 
+    <!-- Page Header -->
+    <?php
+    $config = [
+        'title' => $pageTitle,
+        'description' => $pageDescription,
+        'show_back' => $isEditMode,
+        'back_url' => URLROOT . '/installeradmin/fleet',
+        'back_label' => 'Back to Fleet'
+    ];
+    include __DIR__ . '/../../inc/components/page_header.php';
+    ?>
+
     <!-- Main Form Card -->
     <div class="card shadow-lg rounded-xl">
         <div class="card-body p-10">
-            
-            <!-- Form Header -->
-            <div class="form-header text-center mb-10">
-                <h2 class="text-2xl font-bold"><?php echo $pageTitle; ?></h2>
-                <p class="text-secondary mt-1"><?php echo $pageDescription; ?></p>
-            </div>
 
             <form id="registration-form" action="<?php echo URLROOT?>/installeradmin/fleet/<?php echo $isEditMode ? 'edit_customer/' . $customerId : 'add_customer'; ?>" method="post" novalidate>
                 

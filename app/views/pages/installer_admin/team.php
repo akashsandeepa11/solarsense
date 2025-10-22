@@ -1,5 +1,19 @@
-<link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/installer_admin/team.css">
+    <!-- <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/installer_admin/team.css"> -->
 <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/components.css">
+
+<style> 
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.35rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #ffffff;
+        border: none;
+    }
+</style>
 
 <div class="team-container container-fluid p-8">
     
@@ -25,12 +39,14 @@
     $config = [
         'search' => [
             'id' => 'searchAgents',
+            'name' => 'search',
             'label' => 'Search Agents',
             'placeholder' => 'Search by name or email...'
         ],
         'filters' => [
             [
                 'id' => 'filterStatus',
+                'name' => 'status',
                 'label' => 'Status',
                 'options' => [
                     ['value' => '', 'label' => 'All Status'],
@@ -41,6 +57,7 @@
             ],
             [
                 'id' => 'filterWorkload',
+                'name' => 'workload',
                 'label' => 'Workload',
                 'options' => [
                     ['value' => '', 'label' => 'All Workloads'],
@@ -50,13 +67,11 @@
                 ]
             ]
         ],
-        'buttons' => [
-            [
-                'id' => 'filterBtn',
-                'label' => 'Filter',
-                'icon' => 'fas fa-filter'
-            ]
-        ]
+        'buttons' => [],
+        'form_action' => URLROOT . '/installeradmin/team',
+        'form_method' => 'GET',
+        'auto_submit' => true,
+        'reset_on_clear' => true
     ];
     include __DIR__ . '/../../inc/components/filter_bar.php';
     ?>
@@ -74,7 +89,7 @@
         'stats' => $stats_data,
         'columns' => 4
     ];
-    include __DIR__ . '/../../inc/components/stats_grid.php';
+    include __DIR__ . '/../../inc/components/stat_card.php';
     ?>
 
     <!-- Service Agents List -->

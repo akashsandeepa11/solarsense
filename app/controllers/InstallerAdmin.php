@@ -56,7 +56,6 @@
                 'customers' => $this->fleetModel->get_customer_by_company(1)
             ];
 
-
             
             $this->view('pages/installer_admin/fleet_dashboard', $data, layout: 'dashboard');
         }

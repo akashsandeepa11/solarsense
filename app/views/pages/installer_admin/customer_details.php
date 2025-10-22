@@ -2,18 +2,17 @@
 <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/installer_admin/customer_details.css">
 
 <div class="customer-details-container">
-    <!-- Header with Back Button -->
-    <div class="customer-header mb-6">
-        <div class="d-flex align-center gap-3 mb-4">
-            <a href="<?php echo URLROOT; ?>/installeradmin/customers" class="btn-back">
-                <i class="fas fa-arrow-left"></i>
-            </a>
-            <div>
-                <h1 class="text-3xl font-bold">Customer Details</h1>
-                <p class="text-secondary text-sm">View and manage solar customer information</p>
-            </div>
-        </div>
-    </div>
+    <!-- Page Header -->
+    <?php
+    $config = [
+        'title' => 'Customer Details',
+        'description' => 'View and manage solar customer information',
+        'show_back' => true,
+        'back_url' => URLROOT . '/installeradmin/fleet',
+        'back_label' => 'Back to Fleet'
+    ];
+    include __DIR__ . '/../../inc/components/page_header.php';
+    ?>
 
     <div class="row gap-6">
         <!-- Left Column: Customer Profile & Info -->

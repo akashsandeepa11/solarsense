@@ -9,9 +9,8 @@
         ['label' => 'Services Completed (Month)', 'value' => '23', 'icon' => 'fas fa-check-circle', 'color' => 'success']
     ];
 
-    // Get Client Table Data from Database
-    $fleetModel = new M_Fleet();
-    $clients = $fleetModel->get_customer_by_company(1);
+    // Get all customers from controller
+    $clients = isset($data['customers']) ? $data['customers'] : [];
 
     // Function to determine the status dot color
     function getStatusClass($health) {
@@ -27,11 +26,81 @@
         }
     }
     ?>
-    <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/installer_admin/team.css">
 
-
-    <link rel="stylesheet" href="<?php echo URLROOT?>/css/pages/installer/fleet_dashboard.css">
     <link rel="stylesheet" href="<?php echo URLROOT?>/css/components.css">
+
+    <style>
+        /* Status Dot */
+        .status-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .status-dot.bg-success {
+            background-color: #22c55e !important;
+        }
+
+        .status-dot.bg-warning {
+            background-color: #f59e0b !important;
+        }
+
+        .status-dot.bg-error {
+            background-color: #ef4444 !important;
+        }
+
+        .status-dot.bg-secondary {
+            background-color: #9ca3af !important;
+        }
+
+        /* Agent Details */
+        .agent-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            min-width: 0;
+        }
+
+        .agent-name {
+            font-size: 0.95rem;
+            color: #212121;
+            font-weight: 600;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .agent-role {
+            font-size: 0.85rem;
+            color: #6b7280;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .agent-name {
+                font-size: 0.85rem;
+            }
+
+            .agent-role {
+                font-size: 0.75rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .agent-name {
+                font-size: 0.8rem;
+            }
+
+            .agent-role {
+                font-size: 0.7rem;
+            }
+        }
+    </style>
 
     <div class="container-fluid p-8">
 
@@ -57,39 +126,40 @@
         <?php
         $config = [
             'search' => [
-                'id' => 'searchAgents',
-                'label' => 'Search Agents',
-                'placeholder' => 'Search by name or email...'
+                'id' => 'searchClients',
+                'name' => 'search',
+                'label' => 'Search Clients',
+                'placeholder' => 'Search by name or location...'
             ],
             'filters' => [
                 [
-                    'id' => 'filterStatus',
-                    'label' => 'Status',
+                    'id' => 'filterHealth',
+                    'name' => 'health',
+                    'label' => 'System Health',
                     'options' => [
-                        ['value' => '', 'label' => 'All Status'],
-                        ['value' => 'active', 'label' => 'Active'],
-                        ['value' => 'inactive', 'label' => 'Inactive'],
-                        ['value' => 'on_leave', 'label' => 'On Leave']
+                        ['value' => '', 'label' => 'All Health Status'],
+                        ['value' => 'healthy', 'label' => 'Healthy'],
+                        ['value' => 'underperforming', 'label' => 'Underperforming'],
+                        ['value' => 'fault', 'label' => 'Fault']
                     ]
                 ],
                 [
-                    'id' => 'filterWorkload',
-                    'label' => 'Workload',
+                    'id' => 'filterSize',
+                    'name' => 'size',
+                    'label' => 'System Size',
                     'options' => [
-                        ['value' => '', 'label' => 'All Workloads'],
-                        ['value' => 'high', 'label' => 'High (5+ tasks)'],
-                        ['value' => 'medium', 'label' => 'Medium (2-4 tasks)'],
-                        ['value' => 'low', 'label' => 'Low (0-1 tasks)']
+                        ['value' => '', 'label' => 'All Sizes'],
+                        ['value' => 'small', 'label' => 'Small (< 5kW)'],
+                        ['value' => 'medium', 'label' => 'Medium (5-10kW)'],
+                        ['value' => 'large', 'label' => 'Large (> 10kW)']
                     ]
                 ]
             ],
-            'buttons' => [
-                [
-                    'id' => 'filterBtn',
-                    'label' => 'Filter',
-                    'icon' => 'fas fa-filter'
-                ]
-            ]
+            'buttons' => [],
+            'form_action' => URLROOT . '/installeradmin/fleet',
+            'form_method' => 'GET',
+            'auto_submit' => true,
+            'reset_on_clear' => true
         ];
         include __DIR__ . '/../../inc/components/filter_bar.php';
         ?>
@@ -100,7 +170,7 @@
             'stats' => $summary_cards,
             'columns' => 4
         ];
-        include __DIR__ . '/../../inc/components/stats_grid.php';
+        include __DIR__ . '/../../inc/components/stat_card.php';
         ?>
 
         <!-- Clients Table -->
