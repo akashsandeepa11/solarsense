@@ -7,18 +7,46 @@ class M_installer_registration{
         $this->db = new Database();
     }
 
+    //receive verification request
+    
+    
     //add customer
-    public function add_company($companyData) {
+    public function add_company($userData, $installerAdminData, $installerCompanyData) {
         try {
             // Start transaction
             $this->db->beginTransaction();
 
             // 1. Insert into `user` table
-            $this->db->query('INSERT INTO prospective_installer_company (company_name, address, contact, email) VALUES (:companyName, :physicalAddress, :contactNumber, :email)');
-            $this->db->bind(':companyName', $companyData['companyName']);
-            $this->db->bind(':physicalAddress', $companyData['physicalAddress']);
-            $this->db->bind(':contactNumber', $companyData['contactNumber']);
-            $this->db->bind(':email', $companyData['email']);
+            $this->db->query('INSERT INTO user (email, password, type, full_name) VALUES (:email, :password, :type, :full_name)');
+            $this->db->bind(':email', $userData['email']);
+            $this->db->bind(':password', $userData['password']);
+            $this->db->bind(':type', ROLE_INSTALLER_ADMIN);
+            $this->db->bind(':full_name', $installerAdminData['full_name']);
+            $this->db->execute();
+
+            // Get the inserted user ID
+            $userId = $this->db->lastInsertId();
+
+            // 2. Insert into `installer_company` table
+            // Columns: user_id, company_name, address, register_date, contact, email, verified_by
+            $this->db->query('INSERT INTO installer_company (company_name, address, register_date, contact, email) VALUES (:companyName, :physicalAddress, :contactNumber, :email)');
+            $this->db->bind(':companyName', $installerCompanyData['companyName']);
+            $this->db->bind(':physicalAddress', $installerCompanyData['physicalAddress']);
+            $this->db->bind(':contactNumber', $installerCompanyData['contactNumber']);
+            $this->db->bind(':email', $installerCompanyData['email']);
+
+            // 2. Insert into `installer_company` table
+            // Columns: user_id, company_id, full_name, address, contact, register_date, email
+            $this->db->query('INSERT INTO homeowner (user_id, company_id, address, contact, register_date, nic, district, ceb_account) VALUES (:user_id, :company_id, :address, :contact, :register_date, :nic, :district, :ceb_account)');
+            $this->db->bind(':user_id', $userId);
+            $this->db->bind(':company_id', 1); 
+            $this->db->bind(':address', $customerData['address']);
+            $this->db->bind(':contact', $customerData['contact']);
+            $this->db->bind(':register_date', date('Y-m-d'));
+            $this->db->bind(':nic', $customerData['nic']);
+            $this->db->bind(':district', $customerData['district']);
+            $this->db->bind(':ceb_account', $customerData['ceb_account']);
+            $this->db->execute();
 
             $this->db->execute();
 
@@ -47,7 +75,7 @@ class M_installer_registration{
         }
     }
 
-    public function update_company($userId, $userData, $customerData, $panelData) {
+    public function update_company($userId, $installerCompanyData) {
         try {
             // Start transaction
             $this->db->beginTransaction();
@@ -55,24 +83,24 @@ class M_installer_registration{
             // 1. Update user table
             if (!empty($userData['password'])) {
                 // Update with new password
-                $this->db->query('UPDATE user SET email = :email, password = :password, full_name = :full_name WHERE user_id = :user_id');
-                $this->db->bind(':email', $userData['email']);
-                $this->db->bind(':password', $userData['password']);
-                $this->db->bind(':full_name', $userData['full_name']);
+                $this->db->query('UPDATE user SET company_name = :companyName, address = :physical address, full_name = :full_name WHERE user_id = :user_id');
+                $this->db->bind(':email', $installerCompanyData['email']);
+                $this->db->bind(':password', $installerCompanyData['password']);
+                $this->db->bind(':full_name', $installerCompanyData['full_name']);
                 $this->db->bind(':user_id', $userId);
                 $this->db->execute();
             } else {
                 // Update without password
                 $this->db->query('UPDATE user SET email = :email, full_name = :full_name WHERE user_id = :user_id');
-                $this->db->bind(':email', $userData['email']);
-                $this->db->bind(':full_name', $userData['full_name']);
+                $this->db->bind(':email', $installerCompanyData['email']);
+                $this->db->bind(':full_name', $installerCompanyData['full_name']);
                 $this->db->bind(':user_id', $userId);
                 $this->db->execute();
             }
 
             // 2. Update homeowner table
             $this->db->query('
-                UPDATE homeowner 
+                UPDATE installer_company 
                 SET address = :address,
                     contact = :contact,
                     nic = :nic,
