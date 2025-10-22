@@ -60,6 +60,14 @@
             $this->view('pages/operation_manager/team', $data, layout: 'dashboard');
         }
 
+        public function reports(){
+            $data = [
+                'user' => $this->user,
+            ];
+            
+            $this->view('pages/operation_manager/reports', $data, layout: 'dashboard');
+        }
+
         public function profile(){
             $data = [
                 'user' => $this->user,

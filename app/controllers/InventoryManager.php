@@ -141,6 +141,14 @@
             $this->view('pages/inventory_manager/suppliers', $data, layout: 'dashboard');
         }
 
+        public function reports(){
+            $data = [
+                'user' => $this->user,
+            ];
+            
+            $this->view('pages/inventory_manager/reports', $data, layout: 'dashboard');
+        }
+
         public function profile(){
             $data = [
                 'user' => $this->user,
