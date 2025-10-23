@@ -17,7 +17,7 @@
         switch ($health) {
             case 'Healthy':
                 return 'bg-success';
-            case 'Underperforming':
+            case 'Underperforming': 
                 return 'bg-warning';
             case 'Fault':
                 return 'bg-error';
