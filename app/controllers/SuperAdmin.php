@@ -36,28 +36,29 @@ class SuperAdmin extends Controller
         $this->view('pages/super_admin/companies', $data, layout: 'dashboard');
     }
 
-    public function fleet($page = 'dashboard', $customerId = null){
+    public function fleet($page = 'dashboard', $customerId = null)
+    {
         $data = [
             'user' => $this->user,
         ];
-        
-        if($page === 'add_customer'){               
+
+        if ($page === 'add_customer') {
             return $this->add_customer();
         }
 
-        if($page === 'customer_details'){
+        if ($page === 'customer_details') {
             return $this->customerdetails($customerId);
         }
 
-        if($page === 'view'){
+        if ($page === 'view') {
             return $this->view_customer();
         }
 
-        if($page === 'edit_customer'){
+        if ($page === 'edit_customer') {
             return $this->edit_customer();
         }
 
-        if($page === 'delete_customer'){
+        if ($page === 'delete_customer') {
             return $this->delete_customer();
         }
 
@@ -85,13 +86,13 @@ class SuperAdmin extends Controller
             // Input data from form
             $data = [
                 'user' => $this->user,
-                'companyName' => trim($_POST['companyName'] ?? ''),
+                'company_name' => trim($_POST['company_name'] ?? ''),
                 'email' => trim($_POST['email'] ?? ''),
                 'contact' => trim($_POST['contact'] ?? ''),
                 'address' => trim($_POST['address'] ?? ''),
 
                 // Error fields
-                'companyName_err' => '',
+                'company_name_err' => '',
                 'email_err' => '',
                 'contact_err' => '',
                 'address_err' => ''
@@ -102,8 +103,8 @@ class SuperAdmin extends Controller
                 $data['email_err'] = 'Email is already registered';
             }
 
-            if (empty($data['companyName'])) {
-                $data['companyName_err'] = "Please enter full name";
+            if (empty($data['company_name'])) {
+                $data['company_name_err'] = "Please enter full name";
             }
 
             if (empty($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
@@ -119,7 +120,7 @@ class SuperAdmin extends Controller
             }
 
             // Check for any errors
-            $hasErrors = !empty($data['companyName_err']) || !empty($data['email_err']) ||
+            $hasErrors = !empty($data['company_name_err']) || !empty($data['email_err']) ||
                 !empty($data['contact_err']) || !empty($data['address_err']);
 
             if ($hasErrors) {
@@ -130,10 +131,12 @@ class SuperAdmin extends Controller
 
             // All validation passed - save to database
 
+            var_dump($data);
             $prospectiveInstallerData = [
-                'full_name' => $data['companyName'],
+                'company_name' => $data['company_name'],
                 'address' => $data['address'],
-                'contact' => $data['contact']
+                'contact' => $data['contact'],
+                'email' => $data['email']
             ];
 
             // Call model to save data
@@ -150,12 +153,12 @@ class SuperAdmin extends Controller
             // Initial form load
             $data = [
                 'user' => $this->user,
-                'companyName' => '',
+                'company_name' => '',
                 'email' => '',
                 'contact' => '',
                 'address' => '',
 
-                'companyName_err' => '',
+                'company_name_err' => '',
                 'email_err' => '',
                 'contact_err' => '',
                 'address_err' => ''
@@ -163,6 +166,15 @@ class SuperAdmin extends Controller
 
             $this->view('pages/auth/installer_registration', $data, layout: 'main');
         }
+    }
+
+    public function verify_company($companyId)
+    {
+        $companyId = (int) $companyId;
+        $this->fleetModel->verify_company($companyId);
+        setToast('Request Submitted Successfully', 'success');
+        redirect('superadmin/verification');
+
     }
 
     public function verification()

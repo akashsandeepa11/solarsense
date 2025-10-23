@@ -2,7 +2,7 @@
     // --- PHP LOGIC FOR THE FORM ---
 
     // Handle potential POST data to repopulate the form if there's an error
-    $companyName = $_POST['companyName'] ?? '';
+    $company_name = $_POST['company_name'] ?? '';
     $email = $_POST['email'] ?? '';
     $contact = $_POST['contact'] ?? '';
     $address = $_POST['address'] ?? '';
@@ -41,7 +41,7 @@
                 <p class="text-secondary mt-1"><?php echo $pageDescription; ?></p>
             </div>
 
-            <form id="prospectiveInstallerRequest-form" action="<?php echo URLROOT?>/superadmin/add_installer_verification" method="post" novalidate>
+            <form id="installerRequest-form" action="<?php echo URLROOT?>/superadmin/add_installer_verification" method="post" novalidate>
                 
                 <!-- Hidden fields for form mode and customer ID -->
                 
@@ -50,7 +50,7 @@
                     <h3 class="text-lg font-semibold mb-6"><i class="fas fa-user text-primary mr-2"></i>Personal & Contact Details</h3>
                     <div class="row">
                         <div class="col-md-6 form-group">
-                            <?php $inputConfig = ['id' => 'companyName', 'name' => 'companyName', 'label' => 'Full Name', 'type' => 'text', 'icon' => 'fas fa-user', 'value' => $data['companyName'] ?? '', 'error' => $data['companyName_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                            <?php $inputConfig = ['id' => 'company_name', 'name' => 'company_name', 'label' => 'Full Name', 'type' => 'text', 'icon' => 'fas fa-user', 'value' => $data['company_name'] ?? '', 'error' => $data['company_name_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                         <div class="col-md-6 form-group">
                             <?php $inputConfig = ['id' => 'email', 'name' => 'email', 'label' => 'Email Address (Username)', 'type' => 'email', 'icon' => 'fas fa-envelope', 'value' => $data['email'] ?? '', 'error' => $data['email_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>

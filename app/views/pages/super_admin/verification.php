@@ -237,7 +237,6 @@
     function renderRegistrations() {
         registrationList.innerHTML = "";
         let filtered = registrations.filter(reg => {
-            console.log(reg);
             const matchesSearch = (reg.company_name ?? '').toLowerCase().includes(searchBar.value.toLowerCase());
             const matchesStatus = statusFilter.value === "all" || reg.status === statusFilter.value;
 
@@ -249,7 +248,7 @@
             card.className = `task-card`;
 
             let verifyBtn = "";
-            if (reg.status === "pending") {
+            if (reg.status === "Pending") {
                 verifyBtn = `<button class="verify-btn">Verify</button>`;
             }
 
@@ -282,14 +281,29 @@
             const verifyButton = card.querySelector(".verify-btn");
             if (verifyButton) {
                 verifyButton.addEventListener("click", () => {
+                    // Optional: confirm action
+                    const confirmVerify = confirm(`Are you sure you want to verify ${reg.company_name}?`);
+                    if (!confirmVerify) return;
+
+                    // Update the status locally
                     reg.status = "verified";
+    
+                    window.location.href = "<?php echo URLROOT?>/superadmin/verify_company/" + reg.companyId;
+
+                    // Re-render the list
                     renderRegistrations();
+
+                    // Optional: show a success message
+                    alert(`${reg.company_name} has been verified.`);
                 });
             }
 
             registrationList.appendChild(card);
         });
     }
+
+    
+
 
     // Close modal
     closeModal.addEventListener("click", () => registrationModal.classList.remove("show"));

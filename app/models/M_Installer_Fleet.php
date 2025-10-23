@@ -1,25 +1,27 @@
 <?php
-class M_Installer_Fleet{
+class M_Installer_Fleet
+{
     private $db;
     private $stmt;
 
-    public function __construct(){
+    public function __construct()
+    {
         $this->db = new Database();
     }
 
     //receive verification request
-    public function add_installer($companyData) {
+    public function add_installer_verification($companyData)
+    {
         try {
             // Start transaction
             $this->db->beginTransaction();
 
             // 1. Insert into `user` table
-            $this->db->query('INSERT INTO installer_company (company_name, address, contact, email, status) VALUES (:company_name, :address, :contact, :email, :status)');
-            $this->db->bind(':company_name', $companyData['companyName']);
+            $this->db->query('INSERT INTO installer_company (company_name, address, contact, email) VALUES (:company_name, :address, :contact, :email)');
+            $this->db->bind(':company_name', $companyData['company_name']);
             $this->db->bind(':address', $companyData['address']);
             $this->db->bind(':contact', $companyData['contact']);
             $this->db->bind(':email', $companyData['email']);
-            $this->db->bind(':status', $companyData['status']);
 
             $this->db->execute();
 
@@ -33,71 +35,59 @@ class M_Installer_Fleet{
             $this->db->rollBack();
             $errorMsg = 'Add company failed: ' . $e->getMessage();
             error_log($errorMsg);
-            
+
             // Write to a file we can read easily
             if (!is_dir(dirname(__DIR__) . '/logs')) {
                 mkdir(dirname(__DIR__) . '/logs', 0755, true);
             }
             file_put_contents(
-                dirname(__DIR__) . '/logs/add_customer_error.log', 
+                dirname(__DIR__) . '/logs/add_customer_error.log',
                 date('Y-m-d H:i:s') . ' - ' . $errorMsg . "\n",
                 FILE_APPEND
             );
-            
+
             return false;
         }
     }
 
-    public function get_verifications(){
-        $this->db->query("SELECT company_name, address, contact, email, request_date, status FROM installer_company WHERE status = 'Pending'");
+    public function get_verifications()
+    {
+        $this->db->query("SELECT company_id AS companyId, company_name, address, contact, email, request_date, status FROM installer_company WHERE status = 'Pending'");
         return $this->db->resultSet();
     }
 
-    public function verify_company($companyId, $password) {
-    try {
-        $this->db->beginTransaction();
-
-        // 1. Update company status to Verified
-        $this->db->query("UPDATE installer_company SET status = 'Verified' WHERE id = :company_id");
-        $this->db->bind(':company_id', $companyId);
-        $this->db->execute();
-
-        // 2. Get company info (email and company name)
-        $this->db->query("SELECT company_name, email FROM installer_company WHERE id = :company_id");
-        $this->db->bind(':company_id', $companyId);
-        $company = $this->db->single();
-
-        if (!$company) {
-            throw new Exception("Company not found.");
-        }
-
-        // 3. Add the installer admin (create user and link)
-        $userData = [
-            'email' => $company['email'],
-            'password' => password_hash($password, PASSWORD_DEFAULT), // Hash password securely
-        ];
-
-        $this->add_installer_admin($userData, [
-            'company_id' => $companyId,
-            'company_name' => $company['company_name']
-        ]);
-
-        $this->db->commit();
-        return true;
-
-    } catch (Exception $e) {
-        $this->db->rollBack();
-        error_log('Company verification failed: ' . $e->getMessage());
-        return false;
-    }
-}
-
-
-    
-    //add installer admin account
-    public function add_installer_admin($userData, $installerAdminData) {
+    public function verify_company($companyId)
+    {
+        $password = '123';
         try {
             $this->db->beginTransaction();
+
+            // 1. Update company status to Verified
+            $this->db->query("UPDATE installer_company SET status = 'Verified' WHERE company_id = :company_id");
+            $this->db->bind(':company_id', $companyId);
+            $this->db->execute();
+
+            // 2. Get company info (email and company name)
+            $this->db->query("SELECT company_name, email FROM installer_company WHERE company_id = :company_id");
+            $this->db->bind(':company_id', $companyId);
+            $company = $this->db->single_assoc();
+
+            var_dump($company);
+
+            if (!$company) {
+                throw new Exception("Company not found.");
+            }
+
+            // 3. Add the installer admin (create user and link)
+            $userData = [
+                'email' => $company['email'],
+                'password' => password_hash($password, PASSWORD_DEFAULT), // Hash password securely
+            ];
+
+            $installerAdminData = [
+                'company_id' => $companyId,
+                'company_name' => $company['company_name']
+            ];
 
             // 1. Insert into `user` table
             $this->db->query('
@@ -128,12 +118,23 @@ class M_Installer_Fleet{
 
         } catch (Exception $e) {
             $this->db->rollBack();
-            error_log('Add installer admin failed: ' . $e->getMessage());
+            error_log('Company verification failed: ' . $e->getMessage());
             return false;
         }
     }
+    //add installer admin account
+    // public function add_installer_admin($userData, $installerAdminData) {
+    //     try {
+    //         var_dump($userData);
+    //         var_dump($installerAdminData);
 
-    public function update_company($userId, $installerCompanyData) {
+    //         $this->db->beginTransaction();
+
+
+    // }
+
+    public function update_company($userId, $installerCompanyData)
+    {
         try {
             // Start transaction
             $this->db->beginTransaction();
@@ -166,7 +167,7 @@ class M_Installer_Fleet{
                     ceb_account = :ceb_account
                 WHERE user_id = :user_id
             ');
-            
+
             $this->db->bind(':address', $customerData['address']);
             $this->db->bind(':contact', $customerData['contact']);
             $this->db->bind(':nic', $customerData['nic']);
@@ -187,7 +188,7 @@ class M_Installer_Fleet{
                     installation_date = :installation_date
                 WHERE user_id = :user_id
             ');
-            
+
             $this->db->bind(':capacity', $panelData['system_capacity']);
             $this->db->bind(':tilt', $panelData['panel_tilt']);
             $this->db->bind(':azimuth', $panelData['panel_azimuth']);
@@ -195,7 +196,7 @@ class M_Installer_Fleet{
             $this->db->bind(':inverter_brand', $panelData['inverter_brand']);
             $this->db->bind(':installation_date', $panelData['installation_date']);
             $this->db->bind(':user_id', $userId);
-            
+
             $this->db->execute();
 
             // Handle CEB account if it's stored separately (adjust based on your schema)
@@ -222,33 +223,34 @@ class M_Installer_Fleet{
             $this->db->rollBack();
             $errorMsg = 'Update customer failed: ' . $e->getMessage();
             error_log($errorMsg);
-            
+
             // Write to a file we can read easily
             if (!is_dir(dirname(__DIR__) . '/logs')) {
                 mkdir(dirname(__DIR__) . '/logs', 0755, true);
             }
             file_put_contents(
-                dirname(__DIR__) . '/logs/update_customer_error.log', 
+                dirname(__DIR__) . '/logs/update_customer_error.log',
                 date('Y-m-d H:i:s') . ' - ' . $errorMsg . "\n",
                 FILE_APPEND
             );
-            
+
             return false;
         }
     }
 
-    public function get_customer_details($userId) {
+    public function get_customer_details($userId)
+    {
         try {
             $query = 'SELECT u.user_id, u.email, u.full_name, h.address, h.contact, h.nic, h.district, s.capacity as system_capacity, s.tilt as panel_tilt, s.azimuth as panel_azimuth, s.panel_brand, s.inverter_brand, s.installation_date, h.ceb_account FROM user u JOIN homeowner h ON u.user_id = h.user_id JOIN solar_system s ON u.user_id = s.user_id WHERE u.user_id = :user_id';
-            
+
             $this->db->query($query);
             $this->db->bind(':user_id', $userId);
             $this->db->execute();
             $result = $this->db->single();
-            
+
             // Log the result for debugging
             error_log('get_customer_details result for ID ' . $userId . ': ' . ($result ? 'Found' : 'Not Found'));
-            
+
             return $result;
         } catch (Exception $e) {
             $errorMsg = 'Get customer details failed: ' . $e->getMessage();
@@ -270,8 +272,9 @@ class M_Installer_Fleet{
         }
     }
 
-    public function get_customer_by_company($companyId) {
-        try { 
+    public function get_customer_by_company($companyId)
+    {
+        try {
             $this->db->query('SELECT 
                             u.user_id,
                             u.full_name,
@@ -305,7 +308,7 @@ class M_Installer_Fleet{
                     'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode(str_replace(' ', '+', $row->full_name)) . '&background=00bcd4&color=fff'
                 ];
             }
-            
+
             return $formattedResults;
         } catch (Exception $e) {
             error_log('Get customer by company failed: ' . $e->getMessage());
@@ -313,7 +316,8 @@ class M_Installer_Fleet{
         }
     }
 
-    public function delete_customer($userId){
+    public function delete_customer($userId)
+    {
         try {
             // Start transaction
             $this->db->beginTransaction();
