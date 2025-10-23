@@ -19,9 +19,6 @@ $agents = ["Agent A", "Agent B", "Agent C"];
     $pageHeaderConfig = [
         'title' => 'Maintenance Task Management',
         'description' => 'Assign and track solar equipment maintenance tasks',
-        'show_back' => true,
-        'back_url' => URLROOT . '/operationmanager/dashboard',
-        'back_label' => 'Back to Dashboard'
     ];
     $config = $pageHeaderConfig;
     require APPROOT . '/views/inc/components/page_header.php';

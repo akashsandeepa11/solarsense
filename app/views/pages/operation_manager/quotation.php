@@ -16,9 +16,6 @@ $quotations = [
     $pageHeaderConfig = [
         'title' => 'Quotation Management',
         'description' => 'Create and manage customer quotations',
-        'show_back' => true,
-        'back_url' => URLROOT . '/operationmanager/dashboard',
-        'back_label' => 'Back to Dashboard'
     ];
     $config = $pageHeaderConfig;
     require APPROOT . '/views/inc/components/page_header.php';

@@ -15,10 +15,7 @@ $suppliers = [
     <?php
     $pageHeaderConfig = [
         'title' => 'Suppliers Management',
-        'description' => 'Manage your solar equipment suppliers and vendors',
-        'show_back' => true,
-        'back_url' => URLROOT . '/inventorymanager/dashboard',
-        'back_label' => 'Back to Dashboard'
+        'description' => 'Manage your solar equipment suppliers and vendors'
     ];
     $config = $pageHeaderConfig;
     require APPROOT . '/views/inc/components/page_header.php';
