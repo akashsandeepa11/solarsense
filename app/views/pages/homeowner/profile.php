@@ -22,7 +22,7 @@
                   [
                       'id' => 'full-name',
                       'label' => 'Full Name',
-                      'value' => 'Nadith Nemal',
+                      'value' => 'Kavidu Sandun',
                       'type' => 'text',
                       'editable' => true,
                       'required' => true,
@@ -180,10 +180,10 @@
 
           <!-- Profile Info -->
           <div class="text-center">
-            <img src="<?php echo htmlspecialchars(getAvatarUrl('Nadith Nemal', 140)); ?>" alt="Profile" style="object-fit:cover;">
+            <img src="<?php echo htmlspecialchars(getAvatarUrl('Kavidu Sandun', 140)); ?>" alt="Profile" style="object-fit:cover;">
 
-            <h5 class="mb-1 fw-bold" id="summary-name">Nadith Nemal</h5>
-            <p class="text-muted small mb-1" id="summary-email">nadithnemal2002@gmail.com</p>
+            <h5 class="mb-1 fw-bold" id="summary-name">Kavidu Sandun</h5>
+            <p class="text-muted small mb-1" id="summary-emailKavidu Sandun@gmail.com</p>
             <p class="text-muted small mb-1" id="summary-location">No. 47, Lakeview Lane, Colombo 07, Sri Lanka</p>
             <p class="text-muted small mb-4" id="summary-phone">+54 548 654 65</p>
           </div>

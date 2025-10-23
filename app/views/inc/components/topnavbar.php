@@ -73,10 +73,12 @@
         ?>
 
         <div class="d-flex align-items-center">
-            <img src="<?php echo getAvatarUrl($_SESSION['user_name']); ?>" alt="User Avatar" class="navbar-user-avatar">
+            <!-- <img src="<?php echo getAvatarUrl($_SESSION['user_name']); ?>" alt="User Avatar" class="navbar-user-avatar"> -->
+            <img src="<?php echo getAvatarUrl("Kavidu Sandun"); ?>" alt="User Avatar" class="navbar-user-avatar">
             <div class="ml-3">
-                <div class="font-semibold"><?php echo $_SESSION['user_name']; ?></div>
-                <div class="text-sm" style="color: #6c757d;"><?php echo $_SESSION['user_type']; ?></div>
+                <!-- <div class="font-semibold"><?php echo $_SESSION['user_name']; ?></div> -->
+                <div class="font-semibold">Kavidu Sandun</div>
+                <div class="text-sm" style="color: #6c757d;"><?php echo $data['user']['role']; ?></div>
             </div>
         </div>
     </div>

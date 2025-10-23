@@ -1094,8 +1094,24 @@
         }
 
 
-        public function managers($tab = 'operation_managers', $id = null){
+        public function managers($tab = 'operation_managers', $id = null, $action = null){
 
+            // Handle add action
+            if($id === 'add'){
+                return $this->add_manager($tab);
+            }
+
+            // Handle edit action
+            if($action === 'edit' && $id){
+                return $this->edit_manager($tab, $id);
+            }
+
+            // Handle delete action
+            if($action === 'delete' && $id){
+                return $this->delete_manager($tab, $id);
+            }
+
+            // Handle detail view
             if($id){
                 if($tab === 'operation_managers'){
                     return $this->operation_managers_detail($id);
@@ -1104,6 +1120,7 @@
                 }
             }
 
+            // Handle list views
             if($tab === 'operation_managers'){
                return $this->operation_managers();
             } elseif($tab === 'inventory_managers'){
@@ -1308,6 +1325,173 @@
             ];
 
             $this->view('pages/installer_admin/manager_details', $data, layout: 'dashboard');
+        }
+
+        // Add Manager
+        public function add_manager($managerType = 'operation_managers'){
+            if($_SERVER['REQUEST_METHOD'] == 'POST'){
+                // Process form submission
+                $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+
+                $data = [
+                    'user' => $this->user,
+                    'managerType' => $_POST['managerType'] ?? $managerType,
+                    'mode' => 'add',
+                    'fullName' => trim($_POST['fullName'] ?? ''),
+                    'email' => trim($_POST['email'] ?? ''),
+                    'contactNumber' => trim($_POST['contactNumber'] ?? ''),
+                    'nic' => trim($_POST['nic'] ?? ''),
+                    'address' => trim($_POST['address'] ?? ''),
+                    'district' => trim($_POST['district'] ?? ''),
+                    'joinDate' => trim($_POST['joinDate'] ?? ''),
+                    'password' => trim($_POST['password'] ?? ''),
+                    'confirmPassword' => trim($_POST['confirmPassword'] ?? ''),
+                    'status' => trim($_POST['status'] ?? 'Active'),
+                    'experienceLevel' => trim($_POST['experienceLevel'] ?? ''),
+                    'certifications' => trim($_POST['certifications'] ?? ''),
+                    'emergencyContactName' => trim($_POST['emergencyContactName'] ?? ''),
+                    'emergencyContactNumber' => trim($_POST['emergencyContactNumber'] ?? ''),
+                    
+                    // Error fields
+                    'fullName_err' => '',
+                    'email_err' => '',
+                    'contactNumber_err' => '',
+                    'nic_err' => '',
+                    'address_err' => '',
+                    'district_err' => '',
+                    'joinDate_err' => '',
+                    'password_err' => '',
+                    'confirmPassword_err' => '',
+                ];
+
+                // Add operation manager specific fields
+                if($managerType === 'operation_managers'){
+                    $data['specialization'] = trim($_POST['specialization'] ?? '');
+                    $data['teamSize'] = trim($_POST['teamSize'] ?? '');
+                    $data['specialization_err'] = '';
+                    $data['teamSize_err'] = '';
+                }
+
+                // Add inventory manager specific fields
+                if($managerType === 'inventory_managers'){
+                    $data['warehouseLocation'] = trim($_POST['warehouseLocation'] ?? '');
+                    $data['warehouseCapacity'] = trim($_POST['warehouseCapacity'] ?? '');
+                    $data['managedCategories'] = trim($_POST['managedCategories'] ?? '');
+                    $data['warehouseLocation_err'] = '';
+                    $data['warehouseCapacity_err'] = '';
+                }
+
+                // Validate fields
+                if(empty($data['fullName'])){
+                    $data['fullName_err'] = 'Please enter full name';
+                }
+
+                if(empty($data['email'])){
+                    $data['email_err'] = 'Please enter email';
+                } elseif(!filter_var($data['email'], FILTER_VALIDATE_EMAIL)){
+                    $data['email_err'] = 'Please enter valid email';
+                }
+
+                if(empty($data['contactNumber'])){
+                    $data['contactNumber_err'] = 'Please enter contact number';
+                }
+
+                if(empty($data['nic'])){
+                    $data['nic_err'] = 'Please enter NIC/ID number';
+                }
+
+                if(empty($data['password'])){
+                    $data['password_err'] = 'Please enter password';
+                } elseif(strlen($data['password']) < 6){
+                    $data['password_err'] = 'Password must be at least 6 characters';
+                }
+
+                if(empty($data['confirmPassword'])){
+                    $data['confirmPassword_err'] = 'Please confirm password';
+                } elseif($data['password'] !== $data['confirmPassword']){
+                    $data['confirmPassword_err'] = 'Passwords do not match';
+                }
+
+                if(empty($data['district'])){
+                    $data['district_err'] = 'Please select district';
+                }
+
+                if(empty($data['joinDate'])){
+                    $data['joinDate_err'] = 'Please select join date';
+                }
+
+                // Validate operation manager specific fields
+                if($managerType === 'operation_managers'){
+                    if(empty($data['specialization'])){
+                        $data['specialization_err'] = 'Please select specialization';
+                    }
+                    if(empty($data['teamSize'])){
+                        $data['teamSize_err'] = 'Please enter team size';
+                    }
+                }
+
+                // Validate inventory manager specific fields
+                if($managerType === 'inventory_managers'){
+                    if(empty($data['warehouseLocation'])){
+                        $data['warehouseLocation_err'] = 'Please enter warehouse location';
+                    }
+                    if(empty($data['warehouseCapacity'])){
+                        $data['warehouseCapacity_err'] = 'Please enter warehouse capacity';
+                    }
+                }
+
+                // Check if there are any errors
+                $hasErrors = false;
+                foreach($data as $key => $value){
+                    if(strpos($key, '_err') !== false && !empty($value)){
+                        $hasErrors = true;
+                        break;
+                    }
+                }
+
+                if(!$hasErrors){
+                    // TODO: Add manager to database
+                    // For now, just redirect with success message
+                    flash('manager_message', 'Manager added successfully', 'alert alert-success');
+                    redirect('installeradmin/managers/' . $managerType);
+                } else {
+                    // Load view with errors
+                    $this->view('pages/installer_admin/add_manager', $data, layout: 'dashboard');
+                }
+            } else {
+                // Show form
+                $data = [
+                    'user' => $this->user,
+                    'managerType' => $managerType,
+                    'mode' => 'add'
+                ];
+
+                $this->view('pages/installer_admin/add_manager', $data, layout: 'dashboard');
+            }
+        }
+
+        // Edit Manager
+        public function edit_manager($managerType, $managerId){
+            // TODO: Implement edit manager functionality
+            $data = [
+                'user' => $this->user,
+                'managerType' => $managerType,
+                'managerId' => $managerId,
+                'mode' => 'edit'
+            ];
+
+            $this->view('pages/installer_admin/add_manager', $data, layout: 'dashboard');
+        }
+
+        // Delete Manager
+        public function delete_manager($managerType, $managerId){
+            if($_SERVER['REQUEST_METHOD'] == 'POST'){
+                // TODO: Delete manager from database
+                flash('manager_message', 'Manager deleted successfully', 'alert alert-success');
+                redirect('installeradmin/managers/' . $managerType);
+            } else {
+                redirect('installeradmin/managers/' . $managerType);
+            }
         }
 
         public function profile(){
