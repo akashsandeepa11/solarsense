@@ -8,17 +8,19 @@ class M_Installer_Fleet{
     }
 
     //receive verification request
-    public function add_installer_verification($prospectiveInstallerData) {
+    public function add_installer($companyData) {
         try {
             // Start transaction
             $this->db->beginTransaction();
 
             // 1. Insert into `user` table
-            $this->db->query('INSERT INTO prospective_installer_company (company_name, address, contact, email) VALUES (:company_name, :address, :contact, :email)');
-            $this->db->bind(':company_name', $prospectiveInstallerData['companyName']);
-            $this->db->bind(':address', $prospectiveInstallerData['address']);
-            $this->db->bind(':contact', $prospectiveInstallerData['contact']);
-            $this->db->bind(':email', $prospectiveInstallerData['email']);
+            $this->db->query('INSERT INTO installer_company (company_name, address, contact, email, status) VALUES (:company_name, :address, :contact, :email, :status)');
+            $this->db->bind(':company_name', $companyData['companyName']);
+            $this->db->bind(':address', $companyData['address']);
+            $this->db->bind(':contact', $companyData['contact']);
+            $this->db->bind(':email', $companyData['email']);
+            $this->db->bind(':status', $companyData['status']);
+
             $this->db->execute();
 
 
@@ -47,72 +49,86 @@ class M_Installer_Fleet{
     }
 
     public function get_verifications(){
-        $this->db->query("SELECT company_name, address, contact, email, request_date, status FROM prospective_installer_company");
+        $this->db->query("SELECT company_name, address, contact, email, request_date, status FROM installer_company WHERE status = 'Pending'");
         return $this->db->resultSet();
     }
 
+    public function verify_company($companyId, $password) {
+    try {
+        $this->db->beginTransaction();
+
+        // 1. Update company status to Verified
+        $this->db->query("UPDATE installer_company SET status = 'Verified' WHERE id = :company_id");
+        $this->db->bind(':company_id', $companyId);
+        $this->db->execute();
+
+        // 2. Get company info (email and company name)
+        $this->db->query("SELECT company_name, email FROM installer_company WHERE id = :company_id");
+        $this->db->bind(':company_id', $companyId);
+        $company = $this->db->single();
+
+        if (!$company) {
+            throw new Exception("Company not found.");
+        }
+
+        // 3. Add the installer admin (create user and link)
+        $userData = [
+            'email' => $company['email'],
+            'password' => password_hash($password, PASSWORD_DEFAULT), // Hash password securely
+        ];
+
+        $this->add_installer_admin($userData, [
+            'company_id' => $companyId,
+            'company_name' => $company['company_name']
+        ]);
+
+        $this->db->commit();
+        return true;
+
+    } catch (Exception $e) {
+        $this->db->rollBack();
+        error_log('Company verification failed: ' . $e->getMessage());
+        return false;
+    }
+}
+
+
     
-    //add customer
-    public function add_company($userData, $installerAdminData, $installerCompanyData) {
+    //add installer admin account
+    public function add_installer_admin($userData, $installerAdminData) {
         try {
-            // Start transaction
             $this->db->beginTransaction();
 
             // 1. Insert into `user` table
-            $this->db->query('INSERT INTO user (email, password, type, full_name) VALUES (:email, :password, :type, :full_name)');
+            $this->db->query('
+                INSERT INTO user (email, password, type, full_name)
+                VALUES (:email, :password, :type, :full_name)
+            ');
             $this->db->bind(':email', $userData['email']);
             $this->db->bind(':password', $userData['password']);
             $this->db->bind(':type', ROLE_INSTALLER_ADMIN);
-            $this->db->bind(':full_name', $installerCompanyData['full_name']);
+            $this->db->bind(':full_name', $installerAdminData['company_name']);
             $this->db->execute();
 
-            // Get the inserted user ID
+            // Get inserted user ID
             $userId = $this->db->lastInsertId();
 
-            // 2. Insert into `installer_company` table
-            // Columns: user_id, company_name, address, register_date, contact, email, verified_by
-            $this->db->query('INSERT INTO installer_company (company_name, address, register_date, contact, email) VALUES (:companyName, :physicalAddress, :contactNumber, :email)');
-            $this->db->bind(':companyName', $installerCompanyData['companyName']);
-            $this->db->bind(':physicalAddress', $installerCompanyData['physicalAddress']);
-            $this->db->bind(':contactNumber', $installerCompanyData['contactNumber']);
-            $this->db->bind(':email', $installerCompanyData['email']);
-
-            // 2. Insert into `installer_company` table
-            // Columns: user_id, company_id, full_name, address, contact, register_date, email
-            $this->db->query('INSERT INTO homeowner (user_id, company_id, address, contact, register_date, nic, district, ceb_account) VALUES (:user_id, :company_id, :address, :contact, :register_date, :nic, :district, :ceb_account)');
+            // 2. Insert into `installer_admin` table
+            $this->db->query('
+                INSERT INTO installer_admin (user_id, company_id, register_date)
+                VALUES (:user_id, :company_id, :register_date)
+            ');
             $this->db->bind(':user_id', $userId);
-            $this->db->bind(':company_id', 1); 
-            $this->db->bind(':address', $customerData['address']);
-            $this->db->bind(':contact', $customerData['contact']);
+            $this->db->bind(':company_id', $installerAdminData['company_id']);
             $this->db->bind(':register_date', date('Y-m-d'));
-            $this->db->bind(':nic', $customerData['nic']);
-            $this->db->bind(':district', $customerData['district']);
-            $this->db->bind(':ceb_account', $customerData['ceb_account']);
             $this->db->execute();
 
-            $this->db->execute();
-
-
-            // Commit the transaction
             $this->db->commit();
-
             return true;
 
         } catch (Exception $e) {
             $this->db->rollBack();
-            $errorMsg = 'Add company failed: ' . $e->getMessage();
-            error_log($errorMsg);
-            
-            // Write to a file we can read easily
-            if (!is_dir(dirname(__DIR__) . '/logs')) {
-                mkdir(dirname(__DIR__) . '/logs', 0755, true);
-            }
-            file_put_contents(
-                dirname(__DIR__) . '/logs/add_customer_error.log', 
-                date('Y-m-d H:i:s') . ' - ' . $errorMsg . "\n",
-                FILE_APPEND
-            );
-            
+            error_log('Add installer admin failed: ' . $e->getMessage());
             return false;
         }
     }
