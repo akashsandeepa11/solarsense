@@ -12,6 +12,7 @@
             $_SESSION['user_id'] = $user->id;
             $_SESSION['user_email'] = $user->email;
             $_SESSION['user_type'] = $user->type;
+            $_SESSION['user_name'] = $user->full_name;
 
             //create switch case for redirecting based on user type
             switch($user->type) {
@@ -50,6 +51,7 @@
             unset($_SESSION['user_id']);
             unset($_SESSION['user_email']);
             unset($_SESSION['user_type']);
+            unset($_SESSION['user_name']);
 
             // Set the toast after unsetting user data
             $_SESSION['toast'] = $toastMessage;

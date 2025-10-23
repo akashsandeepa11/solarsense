@@ -73,10 +73,10 @@
         ?>
 
         <div class="d-flex align-items-center">
-            <img src="https://i.pravatar.cc/40?u=akash" alt="User Avatar" class="navbar-user-avatar">
+            <img src="<?php echo getAvatarUrl($_SESSION['user_name']); ?>" alt="User Avatar" class="navbar-user-avatar">
             <div class="ml-3">
-                <div class="font-semibold">Akash Sandeepa</div>
-                <div class="text-sm" style="color: #6c757d;">SOLAR OWNER</div>
+                <div class="font-semibold"><?php echo $_SESSION['user_name']; ?></div>
+                <div class="text-sm" style="color: #6c757d;"><?php echo $_SESSION['user_type']; ?></div>
             </div>
         </div>
     </div>
