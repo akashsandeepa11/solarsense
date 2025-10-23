@@ -1,58 +1,219 @@
 /*
  * Custom CSS for the Homeowner Dashboard
  * This file should be located at: public/css/pages/homeowner/dashboard.css
+ * Modern SolarSense theme styling
  */
 
-/* Power Cut Alert Banner */
-
-/* Daily Solar Forecast Card */
+/* ===== DAILY SOLAR FORECAST CARD ===== */
 .forecast-card {
-  background: linear-gradient(
-    135deg,
-    var(--color-primary),
-    #fca5a5
-  ); /* Orange to light red gradient */
+  background: linear-gradient(135deg, var(--color-primary) 0%, #fca5a5 100%);
+  /* Orange to light red gradient */
+  border: none;
+  color: white;
+  transition: all 0.3s ease;
 }
 
-/* Progress Bar Styles */
+.forecast-card:hover {
+  box-shadow: 0 8px 16px rgba(254, 150, 48, 0.25) !important;
+  transform: translateY(-2px);
+}
+
+.forecast-card .card-body {
+  padding: 1.5rem;
+}
+
+.forecast-card .card-title {
+  color: white;
+  margin-bottom: 1.5rem;
+}
+
+/* ===== PROGRESS BAR STYLES ===== */
 .progress-bar-container {
   width: 100%;
-  background-color: #e9ecef; /* A light gray background */
-  border-radius: 9999px; /* rounded-full */
+  background-color: #e9ecef;
+  /* A light gray background */
+  border-radius: 9999px;
+  /* rounded-full */
   height: 1.5rem;
   overflow: hidden;
   position: relative;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .progress-bar {
   height: 100%;
-  background-color: var(--color-success);
+  background: linear-gradient(90deg, var(--color-success), #10b981);
   border-radius: 9999px;
-  transition: width 0.5s ease-in-out;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.progress-bar.bg-accent {
+  background: linear-gradient(90deg, var(--color-accent), #06b6d4);
 }
 
 .progress-bar-label {
   color: white;
-  font-weight: 600; /* font-semibold */
-  font-size: 0.875rem; /* text-sm */
+  font-weight: 600;
+  /* font-semibold */
+  font-size: 0.875rem;
+  /* text-sm */
   padding: 0 0.5rem;
   white-space: nowrap;
+  position: relative;
+  z-index: 1;
 }
 
-/* Style for list items in cards (like alerts) */
+/* ===== ALERT ITEMS STYLING ===== */
 .alert-item {
-  border-bottom: 1px solid #eee; /* A light gray border */
+  border-bottom: 1px solid #f3f4f6;
+  /* Light gray border */
+  transition: all 0.2s ease;
+  padding: 1rem 0;
+}
+
+.alert-item:hover {
+  background-color: #f9fafb;
+  padding-left: 0.5rem;
 }
 
 .alert-item:last-child {
-  border-bottom: none; /* Remove border from the last item */
+  border-bottom: none;
+  /* Remove border from the last item */
 }
 
-/* Set a fixed height for the chart containers */
+.alert-item i {
+  color: var(--color-warning);
+  transition: transform 0.2s ease;
+}
+
+.alert-item:hover i {
+  transform: scale(1.1);
+}
+
+/* ===== CHART CONTAINER ===== */
 .chart-container {
   height: 400px;
   position: relative;
+  margin: 1rem 0;
+}
+
+/* Responsive chart height */
+@media (max-width: 1024px) {
+  .chart-container {
+    height: 350px;
+  }
+}
+
+@media (max-width: 768px) {
+  .chart-container {
+    height: 300px;
+  }
+}
+
+@media (max-width: 576px) {
+  .chart-container {
+    height: 250px;
+  }
+}
+
+/* ===== FILTER CONTROLS STYLING ===== */
+/* Filter styles are now included in the filter_bar component */
+/* This section is reserved for dashboard-specific filter customizations */
+
+.filter-bar {
+  margin-bottom: 1.5rem;
+}
+
+/* ===== CARD STYLING ENHANCEMENTS ===== */
+.card {
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.card-title {
+  color: #212121;
+  font-weight: 600;
+}
+
+/* ===== RESPONSIVE ADJUSTMENTS ===== */
+@media (max-width: 768px) {
+  .content-area {
+    padding: 1rem;
+  }
+
+  .card {
+    margin-bottom: 1rem;
+  }
+
+  .progress-bar-container {
+    height: 1.25rem;
+  }
+
+  .progress-bar-label {
+    font-size: 0.75rem;
+  }
+
+  .alert-item {
+    padding: 0.75rem 0;
+  }
+
+  .alert-item i {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .content-area {
+    padding: 0.75rem;
+  }
+
+  .progress-bar-label {
+    display: none;
+  }
+
+  .progress-bar-container {
+    height: 1rem;
+  }
+
+  .forecast-card .card-body {
+    padding: 1rem;
+  }
 }

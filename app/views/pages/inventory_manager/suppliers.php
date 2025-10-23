@@ -2,163 +2,272 @@
 $suppliers = [
     ["id"=>"S-1001","name"=>"ABC Electricals","contact"=>"0771234567","category"=>"Electrical","status"=>"Active"],
     ["id"=>"S-1002","name"=>"Battery World","contact"=>"0719876543","category"=>"Storage","status"=>"Active"],
-    ["id"=>"S-1003","name"=>"Wiring Co.","contact"=>"0724567890","category"=>"Accessories","status"=>"Inactive"]
+    ["id"=>"S-1003","name"=>"Wiring Co.","contact"=>"0724567890","category"=>"Accessories","status"=>"Inactive"],
+    ["id"=>"S-1004","name"=>"Solar Tech Ltd","contact"=>"0754321098","category"=>"Equipment","status"=>"Active"],
+    ["id"=>"S-1005","name"=>"Power Solutions","contact"=>"0798765432","category"=>"Electrical","status"=>"Inactive"]
 ];
 ?>
 
-<style>
-.main { display:flex; flex-direction:column; align-items:center; }
+<link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/inventory_manager/suppliers.css">
 
+<div class="content-area">
+    <!-- Page Header -->
+    <?php
+    $pageHeaderConfig = [
+        'title' => 'Suppliers Management',
+        'description' => 'Manage your solar equipment suppliers and vendors',
+        'show_back' => true,
+        'back_url' => URLROOT . '/inventorymanager/dashboard',
+        'back_label' => 'Back to Dashboard'
+    ];
+    $config = $pageHeaderConfig;
+    require APPROOT . '/views/inc/components/page_header.php';
+    ?>
 
-.table-container { width:900px; max-width:100%; background:whitesmoke; padding:20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
-.table-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
-.table-header h2 { font-size:20px; }
-table { width:100%; border-collapse:collapse; }
-th, td { text-align:left; padding:10px 12px; border-bottom:1px solid #eee; font-size:14px; }
-th { color:white; font-weight:600; }
-tr:hover { background:#f5f5f5; }
-.status { font-weight:600; font-size:13px; padding:4px 8px; border-radius:10px; }
-.active { color:#166534; background:#dcfce7; }
-.inactive { color:#92400e; background:#fef3c7; }
-
-.modal { display:none; position:fixed; z-index:5000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; }
-.modal.show { display:flex; }
-.modal-content { background:#fff; width:400px; max-width:90%; margin:auto; padding:20px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.2); }
-.modal-content h3 { margin-top:0; }
-.modal-buttons{ display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:20px;}
-button:hover{ opacity:0.9; }
-.toolbar { display:flex; flex-wrap:wrap; width:950px; max-width:100%; justify-content:space-between; align-items:center; margin-bottom:20px; gap:10px; }
-.toolbar input, .toolbar select { padding:8px; border:1px solid #ccc; border-radius:5px; flex:1; min-width:150px; }
-
-.cards-container {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  justify-content: center;
-  width: 900px;
-  max-width: 100%;
-}
-.card {
-  background: white;
-  flex: 1;
-  min-width: 150px;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  text-align: center;
-}
-.card h3 { margin: 0 0 10px 0; font-size: 16px; color: #555; }
-.card p { margin: 0; font-size: 20px; font-weight: 600; }
-</style>
-
-<div class="main">
-
-  <!-- Cards -->
-  <div class="cards-container">
-    <div class="card">
-      <h3>Total Suppliers</h3>
-      <p id="totalSuppliers">0</p>
-    </div>
-    <div class="card">
-      <h3>Active Suppliers</h3>
-      <p id="activeSuppliers">0</p>
-    </div>
-    <div class="card">
-      <h3>Inactive Suppliers</h3>
-      <p id="inactiveSuppliers">0</p>
-    </div>
-  </div>
-
-  <!-- Table -->
-  <div class="table-container">
-    <div class="table-header">
-      <h2>Suppliers</h2>
-      <button class="add-btn btn btn-primary btn-lg" onclick="showAddModal()">+ Add New Supplier</button>
+    <!-- Stats Cards -->
+    <div class="stats-grid mb-6">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-store"></i>
+            </div>
+            <div class="stat-content">
+                <p class="stat-label">Total Suppliers</p>
+                <p class="stat-value" id="totalSuppliers">0</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon success">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <p class="stat-label">Active Suppliers</p>
+                <p class="stat-value" id="activeSuppliers">0</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon warning">
+                <i class="fas fa-pause-circle"></i>
+            </div>
+            <div class="stat-content">
+                <p class="stat-label">Inactive Suppliers</p>
+                <p class="stat-value" id="inactiveSuppliers">0</p>
+            </div>
+        </div>
     </div>
 
-    <div class="toolbar">
-      <input type="text" id="searchInput" placeholder="Search by name or category...">
-
-      <select id="categoryFilter">
-        <option value="all">All Categories</option>
-      </select>
-
-      <select id="statusFilter">
-        <option value="all">All Status</option>
-        <option value="Active">Active</option>
-        <option value="Inactive">Inactive</option>
-      </select>
+    <!-- Filter Bar -->
+    <div class="card shadow-lg rounded-xl mb-4">
+        <div class="card-body">
+            <div class="toolbar">
+                <input type="text" id="searchInput" placeholder="Search by name or category..." class="form-control">
+                <select id="categoryFilter" class="form-control">
+                    <option value="all">All Categories</option>
+                </select>
+                <select id="statusFilter" class="form-control">
+                    <option value="all">All Status</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                </select>
+            </div>
+        </div>
     </div>
 
-    <table id="suppliersTable">
-      <thead>
-        <tr class="bg-primary">
-          <th>Supplier ID</th>
-          <th>Name</th>
-          <th>Contact</th>
-          <th>Category</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-    </table>
-  </div>
+    <!-- Table Container -->
+    <div class="card shadow-lg rounded-xl">
+        <div class="card-body">
+            <div class="table-header mb-4">
+                <h3 class="text-2xl font-semibold">Suppliers List</h3>
+                <button class="btn btn-primary rounded-lg" onclick="showAddModal()">
+                    <i class="fas fa-plus mr-2"></i>Add New Supplier
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-sm font-semibold text-secondary">Supplier ID</th>
+                            <th class="text-sm font-semibold text-secondary">Name</th>
+                            <th class="text-sm font-semibold text-secondary">Contact</th>
+                            <th class="text-sm font-semibold text-secondary">Category</th>
+                            <th class="text-sm font-semibold text-secondary">Status</th>
+                            <th class="text-sm font-semibold text-secondary">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- Add/Edit/Delete Modals -->
+<!-- Add Supplier Modal -->
 <div id="addModal" class="modal">
-  <div class="modal-content">
-    <h3>Add New Supplier</h3>
-    <label>Name:</label><br>
-    <input type="text" id="supplierName" style="width:100%; padding:6px;"><br><br>
-    <label>Contact:</label><br>
-    <input type="text" id="supplierContact" style="width:100%; padding:6px;"><br><br>
-    <label>Category:</label><br>
-    <input type="text" id="supplierCategory" style="width:100%; padding:6px;"><br><br>
-    <label>Status:</label><br>
-    <select id="supplierStatus" style="width:100%; padding:6px;">
-      <option value="Active">Active</option>
-      <option value="Inactive">Inactive</option>
-    </select>
-    <div class="modal-buttons">
-      <button class="add-btn btn btn-primary btn-sm" onclick="addSupplier()">Add</button>
-      <button class="delete-btn btn btn-primary btn-sm bg-secondary" onclick="closeAddModal()">Cancel</button>
+    <div class="modal-content">
+        <h3 class="text-2xl font-semibold mb-4">Add New Supplier</h3>
+        
+        <div class="card-body">
+            <?php
+            $inputConfig = [
+                'id' => 'supplierName',
+                'name' => 'name',
+                'label' => 'Supplier Name',
+                'type' => 'text',
+                'icon' => 'fas fa-building',
+                'value' => '',
+                'required' => true,
+                'wrapperClass' => 'mb-4'
+            ];
+            require APPROOT . '/views/inc/components/input_field.php';
+            ?>
+
+            <?php
+            $inputConfig = [
+                'id' => 'supplierContact',
+                'name' => 'contact',
+                'label' => 'Contact Number',
+                'type' => 'tel',
+                'icon' => 'fas fa-phone',
+                'value' => '',
+                'required' => true,
+                'wrapperClass' => 'mb-4'
+            ];
+            require APPROOT . '/views/inc/components/input_field.php';
+            ?>
+
+            <?php
+            $inputConfig = [
+                'id' => 'supplierCategory',
+                'name' => 'category',
+                'label' => 'Category',
+                'type' => 'text',
+                'icon' => 'fas fa-tags',
+                'value' => '',
+                'required' => true,
+                'wrapperClass' => 'mb-4'
+            ];
+            require APPROOT . '/views/inc/components/input_field.php';
+            ?>
+
+            <?php
+            $selectConfig = [
+                'id' => 'supplierStatus',
+                'name' => 'status',
+                'label' => 'Status',
+                'value' => 'Active',
+                'options' => [
+                    'Active' => 'Active',
+                    'Inactive' => 'Inactive'
+                ],
+                'required' => true,
+                'wrapperClass' => 'mb-4'
+            ];
+            require APPROOT . '/views/inc/components/select_field.php';
+            ?>
+        </div>
+
+        <div class="modal-buttons">
+            <button class="btn btn-primary btn-sm rounded-lg" onclick="addSupplier()">
+                <i class="fas fa-check mr-2"></i>Add Supplier
+            </button>
+            <button class="btn btn-secondary btn-sm rounded-lg" onclick="closeAddModal()">
+                <i class="fas fa-times mr-2"></i>Cancel
+            </button>
+        </div>
     </div>
-  </div>
 </div>
 
+<!-- Edit Supplier Modal -->
 <div id="editModal" class="modal">
-  <div class="modal-content">
-    <h3>Edit Supplier</h3>
-    <label>Name:</label><br>
-    <input type="text" id="editName" style="width:100%; padding:6px;"><br><br>
-    <label>Contact:</label><br>
-    <input type="text" id="editContact" style="width:100%; padding:6px;"><br><br>
-    <label>Category:</label><br>
-    <input type="text" id="editCategory" style="width:100%; padding:6px;"><br><br>
-    <label>Status:</label><br>
-    <select id="editStatus" style="width:100%; padding:6px;">
-      <option value="Active">Active</option>
-      <option value="Inactive">Inactive</option>
-    </select>
-    <div class="modal-buttons">
-      <button class="add-btn btn btn-primary btn-sm" id="saveEditBtn">Save</button>
-      <button class="delete-btn btn btn-primary btn-sm bg-secondary" onclick="closeEditModal()">Cancel</button>
+    <div class="modal-content">
+        <h3 class="text-2xl font-semibold mb-4">Edit Supplier</h3>
+        
+        <div class="card-body">
+            <?php
+            $inputConfig = [
+                'id' => 'editName',
+                'name' => 'name',
+                'label' => 'Supplier Name',
+                'type' => 'text',
+                'icon' => 'fas fa-building',
+                'value' => '',
+                'required' => true,
+                'wrapperClass' => 'mb-4'
+            ];
+            require APPROOT . '/views/inc/components/input_field.php';
+            ?>
+
+            <?php
+            $inputConfig = [
+                'id' => 'editContact',
+                'name' => 'contact',
+                'label' => 'Contact Number',
+                'type' => 'tel',
+                'icon' => 'fas fa-phone',
+                'value' => '',
+                'required' => true,
+                'wrapperClass' => 'mb-4'
+            ];
+            require APPROOT . '/views/inc/components/input_field.php';
+            ?>
+
+            <?php
+            $inputConfig = [
+                'id' => 'editCategory',
+                'name' => 'category',
+                'label' => 'Category',
+                'type' => 'text',
+                'icon' => 'fas fa-tags',
+                'value' => '',
+                'required' => true,
+                'wrapperClass' => 'mb-4'
+            ];
+            require APPROOT . '/views/inc/components/input_field.php';
+            ?>
+
+            <?php
+            $selectConfig = [
+                'id' => 'editStatus',
+                'name' => 'status',
+                'label' => 'Status',
+                'value' => 'Active',
+                'options' => [
+                    'Active' => 'Active',
+                    'Inactive' => 'Inactive'
+                ],
+                'required' => true,
+                'wrapperClass' => 'mb-4'
+            ];
+            require APPROOT . '/views/inc/components/select_field.php';
+            ?>
+        </div>
+
+        <div class="modal-buttons">
+            <button class="btn btn-primary btn-sm rounded-lg" id="saveEditBtn">
+                <i class="fas fa-check mr-2"></i>Save Changes
+            </button>
+            <button class="btn btn-secondary btn-sm rounded-lg" onclick="closeEditModal()">
+                <i class="fas fa-times mr-2"></i>Cancel
+            </button>
+        </div>
     </div>
-  </div>
 </div>
 
+<!-- Delete Supplier Modal -->
 <div id="deleteModal" class="modal">
-  <div class="modal-content">
-    <h3>Delete Supplier</h3>
-    <p id="deleteMessage">Are you sure you want to delete this supplier?</p>
-    <div class="modal-buttons">
-      <button class="delete-btn btn btn-primary btn-sm bg-error" id="confirmDeleteBtn">Delete</button>
-      <button class="add-btn btn btn-primary btn-sm bg-secondary" id="cancelDeleteBtn">Cancel</button>
+    <div class="modal-content">
+        <h3 class="text-2xl font-semibold mb-4">Delete Supplier</h3>
+        <p id="deleteMessage" class="text-secondary mb-6">Are you sure you want to delete this supplier?</p>
+        
+        <div class="modal-buttons">
+            <button class="btn btn-danger btn-sm rounded-lg" id="confirmDeleteBtn">
+                <i class="fas fa-trash mr-2"></i>Delete
+            </button>
+            <button class="btn btn-secondary btn-sm rounded-lg" id="cancelDeleteBtn">
+                <i class="fas fa-times mr-2"></i>Cancel
+            </button>
+        </div>
     </div>
-  </div>
 </div>
 
 <script>
@@ -177,9 +286,6 @@ function updateCards(){
   document.getElementById("inactiveSuppliers").innerText = inactive;
 }
 
-// Call initially
-updateCards();
-
 // Helper to update table and cards together
 function refreshTableAndCards(){
   filterSuppliers();
@@ -191,17 +297,26 @@ function renderTable(data){
   const tbody=document.getElementById("tableBody");
   tbody.innerHTML="";
   data.forEach(s=>{
-    const statusClass = s.status==="Active"?"active":"inactive";
+    const statusClass = s.status==="Active"?"badge-success":"badge-warning";
+    const statusIcon = s.status==="Active"?"fa-check-circle":"fa-pause-circle";
     tbody.innerHTML+=`
       <tr>
-        <td>${s.id}</td>
-        <td>${s.name}</td>
-        <td>${s.contact}</td>
-        <td>${s.category}</td>
-        <td><span class="status ${statusClass}">${s.status}</span></td>
-        <td>
-          <button class="edit-btn btn btn-primary btn-sm bg-success" onclick="editSupplier('${s.id}')">Edit</button>
-          <button class="delete-btn btn btn-primary btn-sm bg-error" onclick="deleteSupplier('${s.id}')">Delete</button>
+        <td class="text-sm font-semibold">${s.id}</td>
+        <td class="text-sm">${s.name}</td>
+        <td class="text-sm">${s.contact}</td>
+        <td class="text-sm">${s.category}</td>
+        <td class="text-sm">
+          <span class="badge ${statusClass}">
+            <i class="fas ${statusIcon} mr-1"></i>${s.status}
+          </span>
+        </td>
+        <td class="text-sm">
+          <button class="btn btn-primary btn-sm rounded-lg bg-success" onclick="editSupplier('${s.id}')">
+            <i class="fas fa-edit mr-1"></i>Edit
+          </button>
+          <button class="btn btn-primary btn-sm rounded-lg bg-error" onclick="deleteSupplier('${s.id}')">
+            <i class="fas fa-trash mr-1"></i>Delete
+          </button>
         </td>
       </tr>`;
   });
@@ -239,7 +354,7 @@ document.getElementById("searchInput").addEventListener("input",refreshTableAndC
 document.getElementById("categoryFilter").addEventListener("change",refreshTableAndCards);
 document.getElementById("statusFilter").addEventListener("change",refreshTableAndCards);
 
-// ---------- Add/Edit/Delete Modal Functions ----------
+// ---------- Modal Functions ----------
 function showAddModal(){ document.getElementById("addModal").classList.add("show"); }
 function closeAddModal(){ document.getElementById("addModal").classList.remove("show"); }
 function showEditModal(){ document.getElementById("editModal").classList.add("show"); }
@@ -260,6 +375,7 @@ function addSupplier(){
   refreshTableAndCards();
   closeAddModal();
   ["supplierName","supplierContact","supplierCategory"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("supplierStatus").value="Active";
 }
 
 function editSupplier(id){

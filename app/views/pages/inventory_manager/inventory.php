@@ -1,368 +1,260 @@
-<?php
-$items = $data['items'] ?? []; // ensure $items exists
+        <?php
+$items = $data['items'] ?? [];
 ?>
 
-<style>
-.main {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
+<link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/inventory_manager/inventory.css">
 
-.table-container {
-    width: 900px;
-    max-width: 100%;
-    background: whitesmoke;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
+<div class="content-area">
+    <!-- Page Header -->
+    <?php
+    $pageHeaderConfig = [
+        'title' => 'Inventory Management',
+        'description' => 'Manage your solar equipment inventory',
+    ];
+    $config = $pageHeaderConfig;
+    require APPROOT . '/views/inc/components/page_header.php';
+    ?>
 
-.table-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.table-header h2 {
-    font-size: 20px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th, td {
-    text-align: left;
-    padding: 10px 12px;
-    border-bottom: 1px solid #eee;
-    font-size: 14px;
-}
-
-th {
-    color: white;
-    font-weight: 600;
-}
-
-tr:hover {
-    background: #f5f5f5;
-}
-
-.status {
-    font-weight: 600;
-    font-size: 13px;
-    padding: 4px 8px;
-    border-radius: 10px;
-}
-
-.in-stock {
-    color: #166534;
-    background: #dcfce7;
-}
-
-.low-stock {
-    color: #92400e;
-    background: #fef3c7;
-}
-
-/* Modals */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 5000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    align-items: center;
-}
-
-.modal.show {
-    display: flex;
-}
-
-.modal-content {
-    background: #fff;
-    width: 400px;
-    max-width: 90%;
-    margin: auto;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
-
-.modal-content h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
-}
-
-.modal-buttons {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    margin-top: 20px;
-}
-
-/* Toolbar Inputs */
-.toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    width: 950px;
-    max-width: 100%;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    gap: 10px;
-}
-
-.toolbar input,
-.toolbar select {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    flex: 1;
-    min-width: 150px;
-}
-.card-body {
-    display: flex;
-    flex-direction: column;
-    gap: 20px; /* space between input fields */
-}
-
-
-
-</style>
-
-
-<div class="main">
-  <div class="table-container">
-    <div class="table-header">
-      <h2>Inventory</h2>
-      <button class="add-btn btn btn-primary btn-lg" onclick="showAddModal()">+ Add New Item</button>
-    </div>
-
-    <div class="toolbar">
-        <input type="text" id="searchInput" placeholder="Search by name or category...">
-        <select id="nameFilter"><option value="all">All Item Names</option></select>
-        <select id="categoryFilter"><option value="all">All Categories</option></select>
-        <select id="stockFilter">
-            <option value="all">All Stock</option>
-            <option value="in-stock">In Stock</option>
-            <option value="low-stock">Low Stock</option>
-        </select>
-    </div>
-
-    <table id="inventoryTable">
-      <thead>
-        <tr class="bg-primary">
-          <th>Item ID</th>
-          <th>Name</th>
-          <th>Category</th>
-          <th>Qty</th>
-          <th>Unit Price (Rs.)</th>
-          <th>Total Value (Rs.)</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-    </table>
-  </div>
-</div>
-<!-- ✅ Add Modal (componentized) -->
-<?php
-$addModalSections = [
-    [
-        'title' => 'Add New Item',
-        'fields' => [
-            [
-                'id' => 'itemName',
-                'name' => 'itemName',
-                'label' => 'Item Name',
-                'type' => 'text',
-                'icon' => 'fas fa-box',
-                'value' => $data['itemName'] ?? '',
-                'error' => $data['itemName_err'] ?? '',
-                'required' => true
-            ],
-            [
-                'id' => 'itemCategory',
-                'name' => 'itemCategory',
-                'label' => 'Category',
-                'type' => 'text',
-                'icon' => 'fas fa-tags',
-                'value' => $data['itemCategory'] ?? '',
-                'error' => $data['itemCategory_err'] ?? '',
-                'required' => true
-            ],
-            [
-                'id' => 'itemQty',
-                'name' => 'itemQty',
-                'label' => 'Quantity',
-                'type' => 'number',
-                'icon' => 'fas fa-layer-group',
-                'value' => $data['itemQty'] ?? '',
-                'error' => $data['itemQty_err'] ?? '',
-                'required' => true
-            ],
-            [
-                'id' => 'itemPrice',
-                'name' => 'itemPrice',
-                'label' => 'Unit Price (Rs.)',
-                'type' => 'number',
-                'icon' => 'fas fa-money-bill-wave',
-                'step' => '0.01',
-                'value' => $data['itemPrice'] ?? '',
-                'error' => $data['itemPrice_err'] ?? '',
-                'required' => true
-            ],
-        ]
-    ]
-];
-?>
-
-<div id="addModal" class="modal">
-  <div class="modal-content add">
-    <!-- Begin Form -->
-    <form id="addForm" method="POST" enctype="multipart/form-data" action="<?php echo URLROOT; ?>/inventorymanager/inventory">
-      <?php foreach ($addModalSections as $section): ?>
-        <h3><?php echo htmlspecialchars($section['title']); ?></h3>
+    <!-- Filter Bar -->
+    <div class="card shadow-lg rounded-xl mb-4">
         <div class="card-body">
-          <?php foreach ($section['fields'] as $field): ?>
-            <?php 
-            $inputConfig = $field; // pass the field directly to the input component
-            require APPROOT . '/views/inc/components/input_field.php'; 
-            ?>
-          <?php endforeach; ?>
-          <label for="itemPhoto">
-    <i class="fas fa-image"></i> Item Photo
-  </label>
-  <input type="file" id="itemPhoto" name="itemPhoto" accept="image/*">
+            <div class="toolbar">
+                <input type="text" id="searchInput" placeholder="Search by name or category..." class="form-control">
+                <select id="nameFilter" class="form-control">
+                    <option value="all">All Item Names</option>
+                </select>
+                <select id="categoryFilter" class="form-control">
+                    <option value="all">All Categories</option>
+                </select>
+                <select id="stockFilter" class="form-control">
+                    <option value="all">All Stock</option>
+                    <option value="in-stock">In Stock</option>
+                    <option value="low-stock">Low Stock</option>
+                </select>
+            </div>
         </div>
-      <?php endforeach; ?>
-
-      <div class="modal-buttons mt-3">
-        <button type="submit" class="add-btn btn btn-primary btn-sm" >Add</button>
-        <button type="button" class="delete-btn btn btn-secondary btn-sm" onclick="closeAddModal()">Cancel</button>
-      </div>
-    </form>
-    <!-- End Form -->
-  </div>
-</div>
-
-
-
-<!-- ✅ Edit Modal (using your component loop structure) -->
-<!-- Edit Modal -->
-<div id="editModal" class="modal">
-  <div class="modal-content edit">
-    <form id="editForm" method="POST" action="<?php echo URLROOT; ?>/inventorymanager/update_item">
-      <h3>Edit Item</h3>
-      
-      <div class="card-body">
-            <?php 
-        $inputConfig = [
-            'id' => 'editName',
-            'name' => 'itemName',
-            'label' => 'Item Name',
-            'type' => 'text',
-            'icon' => 'fas fa-box', // optional, you can pick any relevant icon
-            'value' => $data['itemName'] ?? '',
-            'error' => $data['itemName_err'] ?? '',
-            'required' => true
-        ]; 
-        require APPROOT . '/views/inc/components/input_field.php'; 
-        ?>
-      
-        <?php 
-        $inputConfig = [
-            'id' => 'editCategory',
-            'name' => 'itemCategory',
-            'label' => 'Category',
-            'type' => 'text',
-            'icon' => 'fas fa-tags', // optional icon
-            'value' => $data['itemCategory'] ?? '',
-            'error' => $data['itemCategory_err'] ?? '',
-            'required' => true
-        ]; 
-        require APPROOT . '/views/inc/components/input_field.php'; 
-        ?>
-        
-
-
-     <?php 
-            $inputConfig = [
-                'id' => 'editQty',
-                'name' => 'itemQty',
-                'label' => 'Quantity',
-                'type' => 'number',
-                'icon' => 'fas fa-layer-group', // optional, pick any relevant icon
-                'value' => $data['itemQty'] ?? '',
-                'error' => $data['itemQty_err'] ?? '',
-                'required' => true
-            ]; 
-            require APPROOT . '/views/inc/components/input_field.php'; 
-      ?>
-
-
-      <?php 
-            $inputConfig = [
-                'id' => 'editPrice',
-                'name' => 'itemPrice',
-                'label' => 'Unit Price (Rs.)',
-                'type' => 'number',
-                'icon' => 'fas fa-money-bill-wave', // optional, pick any icon you like
-                'value' => $data['itemPrice'] ?? '',
-                'error' => $data['itemPrice_err'] ?? '',
-                'required' => true,
-                'step' => '0.01' // preserves your decimal step
-            ]; 
-            require APPROOT . '/views/inc/components/input_field.php'; 
-       ?>
-
-      </div>
-                            
-
-      <!-- Hidden input for inventory ID -->
-      <input type="hidden" name="inventory_id" id="editInventoryId">
-
-      <div class="modal-buttons" style="margin-top:15px;">
-        <button type="submit" class="btn btn-primary btn-sm">Save</button>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="closeEditModal()">Cancel</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-
-<!-- Delete Modal (unchanged) -->
-<div id="deleteModal" class="modal">
-  <div class="modal-content delete">
-    <h3>Delete Item</h3>
-    <p id="deleteMessage">Are you sure you want to delete this item?</p>
-    <div class="modal-buttons">
-      <button class="delete-btn btn btn-primary btn-sm bg-error" id="confirmDeleteBtn">Delete</button>
-      <button class="add-btn btn btn-primary btn-sm bg-secondary" id="cancelDeleteBtn">Cancel</button>
     </div>
-  </div>
+
+    <!-- Table Container -->
+    <div class="card shadow-lg rounded-xl">
+        <div class="card-body">
+            <div class="table-header mb-4">
+                <h3 class="text-2xl font-semibold">Inventory Items</h3>
+                <button class="btn btn-primary rounded-lg" onclick="showAddModal()">
+                    <i class="fas fa-plus mr-2"></i>Add New Item
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-sm font-semibold text-secondary">Item ID</th>
+                            <th class="text-sm font-semibold text-secondary">Name</th>
+                            <th class="text-sm font-semibold text-secondary">Category</th>
+                            <th class="text-sm font-semibold text-secondary">Qty</th>
+                            <th class="text-sm font-semibold text-secondary">Unit Price (Rs.)</th>
+                            <th class="text-sm font-semibold text-secondary">Total Value (Rs.)</th>
+                            <th class="text-sm font-semibold text-secondary">Status</th>
+                            <th class="text-sm font-semibold text-secondary">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Item Modal -->
+<div id="addModal" class="modal">
+    <div class="modal-content">
+        <form id="addForm" method="POST" enctype="multipart/form-data" action="<?php echo URLROOT; ?>/inventorymanager/inventory">
+            <h3 class="text-2xl font-semibold mb-4">Add New Item</h3>
+            
+            <div class="card-body">
+                <?php
+                $inputConfig = [
+                    'id' => 'itemName',
+                    'name' => 'itemName',
+                    'label' => 'Item Name',
+                    'type' => 'text',
+                    'icon' => 'fas fa-box',
+                    'value' => $data['itemName'] ?? '',
+                    'error' => $data['itemName_err'] ?? '',
+                    'required' => true,
+                    'wrapperClass' => 'mb-4'
+                ];
+                require APPROOT . '/views/inc/components/input_field.php';
+                ?>
+
+                <?php
+                $inputConfig = [
+                    'id' => 'itemCategory',
+                    'name' => 'itemCategory',
+                    'label' => 'Category',
+                    'type' => 'text',
+                    'icon' => 'fas fa-tags',
+                    'value' => $data['itemCategory'] ?? '',
+                    'error' => $data['itemCategory_err'] ?? '',
+                    'required' => true,
+                    'wrapperClass' => 'mb-4'
+                ];
+                require APPROOT . '/views/inc/components/input_field.php';
+                ?>
+
+                <?php
+                $inputConfig = [
+                    'id' => 'itemQty',
+                    'name' => 'itemQty',
+                    'label' => 'Quantity',
+                    'type' => 'number',
+                    'icon' => 'fas fa-layer-group',
+                    'value' => $data['itemQty'] ?? '',
+                    'error' => $data['itemQty_err'] ?? '',
+                    'required' => true,
+                    'wrapperClass' => 'mb-4'
+                ];
+                require APPROOT . '/views/inc/components/input_field.php';
+                ?>
+
+                <?php
+                $inputConfig = [
+                    'id' => 'itemPrice',
+                    'name' => 'itemPrice',
+                    'label' => 'Unit Price (Rs.)',
+                    'type' => 'number',
+                    'icon' => 'fas fa-money-bill-wave',
+                    'step' => '0.01',
+                    'value' => $data['itemPrice'] ?? '',
+                    'error' => $data['itemPrice_err'] ?? '',
+                    'required' => true,
+                    'wrapperClass' => 'mb-4'
+                ];
+                require APPROOT . '/views/inc/components/input_field.php';
+                ?>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-2">
+                        <i class="fas fa-image mr-2"></i>Item Photo
+                    </label>
+                    <input type="file" id="itemPhoto" name="itemPhoto" accept="image/*" class="form-control">
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button type="submit" class="btn btn-primary btn-sm rounded-lg">
+                    <i class="fas fa-check mr-2"></i>Add Item
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm rounded-lg" onclick="closeAddModal()">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Item Modal -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <form id="editForm" method="POST" action="<?php echo URLROOT; ?>/inventorymanager/update_item">
+            <h3 class="text-2xl font-semibold mb-4">Edit Item</h3>
+            
+            <div class="card-body">
+                <?php
+                $inputConfig = [
+                    'id' => 'editName',
+                    'name' => 'itemName',
+                    'label' => 'Item Name',
+                    'type' => 'text',
+                    'icon' => 'fas fa-box',
+                    'value' => '',
+                    'required' => true,
+                    'wrapperClass' => 'mb-4'
+                ];
+                require APPROOT . '/views/inc/components/input_field.php';
+                ?>
+
+                <?php
+                $inputConfig = [
+                    'id' => 'editCategory',
+                    'name' => 'itemCategory',
+                    'label' => 'Category',
+                    'type' => 'text',
+                    'icon' => 'fas fa-tags',
+                    'value' => '',
+                    'required' => true,
+                    'wrapperClass' => 'mb-4'
+                ];
+                require APPROOT . '/views/inc/components/input_field.php';
+                ?>
+
+                <?php
+                $inputConfig = [
+                    'id' => 'editQty',
+                    'name' => 'itemQty',
+                    'label' => 'Quantity',
+                    'type' => 'number',
+                    'icon' => 'fas fa-layer-group',
+                    'value' => '',
+                    'required' => true,
+                    'wrapperClass' => 'mb-4'
+                ];
+                require APPROOT . '/views/inc/components/input_field.php';
+                ?>
+
+                <?php
+                $inputConfig = [
+                    'id' => 'editPrice',
+                    'name' => 'itemPrice',
+                    'label' => 'Unit Price (Rs.)',
+                    'type' => 'number',
+                    'icon' => 'fas fa-money-bill-wave',
+                    'step' => '0.01',
+                    'value' => '',
+                    'required' => true,
+                    'wrapperClass' => 'mb-4'
+                ];
+                require APPROOT . '/views/inc/components/input_field.php';
+                ?>
+            </div>
+
+            <input type="hidden" name="inventory_id" id="editInventoryId">
+
+            <div class="modal-buttons">
+                <button type="submit" class="btn btn-primary btn-sm rounded-lg">
+                    <i class="fas fa-check mr-2"></i>Save Changes
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm rounded-lg" onclick="closeEditModal()">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Item Modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h3 class="text-2xl font-semibold mb-4">Delete Item</h3>
+        <p id="deleteMessage" class="text-secondary mb-6">Are you sure you want to delete this item?</p>
+        
+        <div class="modal-buttons">
+            <button class="btn btn-danger btn-sm rounded-lg" id="confirmDeleteBtn">
+                <i class="fas fa-trash mr-2"></i>Delete
+            </button>
+            <button class="btn btn-secondary btn-sm rounded-lg" id="cancelDeleteBtn">
+                <i class="fas fa-times mr-2"></i>Cancel
+            </button>
+        </div>
+    </div>
 </div>
 
 <form id="deleteForm" method="POST" action="<?php echo URLROOT; ?>/inventorymanager/delete_item">
     <input type="hidden" name="inventory_id" id="deleteInventoryId">
 </form>
 
-
-
-
-
-
-
 <script>
-
 let items = <?php echo json_encode(array_map(function($i){
   return [
     'id'       => isset($i->inventory_id) ? (string)$i->inventory_id : (string)($i['inventory_id'] ?? ''),
@@ -372,14 +264,6 @@ let items = <?php echo json_encode(array_map(function($i){
     'price'    => (float)($i->unit_price ?? $i['unit_price'] ?? 0),
   ];
 }, $items), JSON_NUMERIC_CHECK); ?>;
-
-
-
-
-
-
-
-
 
 // ---------- Render Table ----------
 function renderTable(data) {
@@ -391,16 +275,24 @@ function renderTable(data) {
     const statusText = item.qty <= 5 ? "Low Stock" : "In Stock";
     const row = `
       <tr>
-        <td>${item.id}</td>
-        <td>${item.name}</td>
-        <td>${item.category}</td>
-        <td>${item.qty}</td>
-        <td>${item.price.toLocaleString()}</td>
-        <td>${total.toLocaleString()}</td>
-        <td><span class="status ${statusClass}">${statusText}</span></td>
-        <td>
-          <button class="edit-btn btn btn-primary btn-sm bg-success" onclick="editItem('${item.id}')">Edit</button>
-          <button class="delete-btn btn btn-primary btn-sm bg-error" onclick="deleteItem('${item.id}')">Delete</button>
+        <td class="text-sm font-semibold">${item.id}</td>
+        <td class="text-sm">${item.name}</td>
+        <td class="text-sm">${item.category}</td>
+        <td class="text-sm">${item.qty}</td>
+        <td class="text-sm">${item.price.toLocaleString()}</td>
+        <td class="text-sm">${total.toLocaleString()}</td>
+        <td class="text-sm">
+          <span class="badge ${statusClass === 'in-stock' ? 'badge-success' : 'badge-warning'}">
+            <i class="fas ${statusClass === 'in-stock' ? 'fa-check-circle' : 'fa-exclamation-circle'} mr-1"></i>${statusText}
+          </span>
+        </td>
+        <td class="text-sm">
+          <button class="btn btn-primary btn-sm rounded-lg bg-success" onclick="editItem('${item.id}')">
+            <i class="fas fa-edit mr-1"></i>Edit
+          </button>
+          <button class="btn btn-primary btn-sm rounded-lg bg-error" onclick="deleteItem('${item.id}')">
+            <i class="fas fa-trash mr-1"></i>Delete
+          </button>
         </td>
       </tr>
     `;
@@ -452,24 +344,13 @@ let currentEditItem=null, currentDeleteItemId=null;
 
 function showAddModal() { addModal.classList.add("show"); }
 function closeAddModal() { addModal.classList.remove("show"); }
-// function addItem() {
-//   const name=document.getElementById("itemName").value.trim();
-//   const category=document.getElementById("itemCategory").value.trim();
-//   const qty=parseInt(document.getElementById("itemQty").value);
-//   const price=parseFloat(document.getElementById("itemPrice").value);
-//   if(!name||!category||isNaN(qty)||isNaN(price)){ alert("Fill all fields correctly"); return; }
-//   items.push({id:"I-"+(items.length+1001), name, category, qty, price});
-//   populateFilters(); applyFilters();
-//   ["itemName","itemCategory","itemQty","itemPrice"].forEach(id=>document.getElementById(id).value="");
-//   closeAddModal();
-// }
 
 function editItem(id){
   const item = items.find(i => i.id == id);
   if (!item) return;
   currentEditItem = item;
 
-  document.getElementById("editInventoryId").value = item.id;  // <-- set ID
+  document.getElementById("editInventoryId").value = item.id;
   document.getElementById("editName").value = item.name;
   document.getElementById("editCategory").value = item.category;
   document.getElementById("editQty").value = item.qty;
@@ -480,44 +361,16 @@ function editItem(id){
 
 function closeEditModal(){ editModal.classList.remove("show"); currentEditItem=null; }
 
-// document.getElementById("saveEditBtn").addEventListener("click", ()=>{
-//   if(!currentEditItem)return;
-//   const name=document.getElementById("editName").value.trim();
-//   const category=document.getElementById("editCategory").value.trim();
-//   const qty=parseInt(document.getElementById("editQty").value);
-//   const price=parseFloat(document.getElementById("editPrice").value);
-//   if(!name||!category||isNaN(qty)||isNaN(price)){ alert("Fill all fields correctly"); return; }
-//   Object.assign(currentEditItem,{name,category,qty,price});
-//   populateFilters(); applyFilters();
-//   closeEditModal();
-// });
-
 function deleteItem(id){
-  //not 3 === works as intended
   const item=items.find(i=>i.id==id);
   currentDeleteItemId=id;
   document.getElementById("deleteMessage").innerText=`Are you sure you want to delete "${item.name}"?`;
   deleteModal.classList.add("show");
-
-
-
 }
-
-// document.getElementById("confirmDeleteBtn").addEventListener("click", ()=>{
-//   if(currentDeleteItemId){
-//     const idx=items.findIndex(i=>i.id===currentDeleteItemId);
-//     if(idx!==-1) items.splice(idx,1);
-//     populateFilters(); applyFilters();
-//     currentDeleteItemId=null;
-//     deleteModal.classList.remove("show");
-//   }
-// });
 
 document.getElementById("confirmDeleteBtn").addEventListener("click", () => {
     if(currentDeleteItemId){
-        // Set the hidden input value
         document.getElementById("deleteInventoryId").value = currentDeleteItemId;
-        // Submit the form (page will reload after deletion)
         document.getElementById("deleteForm").submit();
     }
 });
@@ -535,5 +388,4 @@ window.addEventListener("click", e=>{
 
 populateFilters();
 renderTable(items);
-</script>     
-
+</script>
