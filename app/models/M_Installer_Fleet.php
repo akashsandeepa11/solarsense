@@ -52,7 +52,7 @@ class M_Installer_Fleet
 
     public function get_verifications()
     {
-        $this->db->query("SELECT company_id AS companyId, company_name, address, contact, email, request_date, status FROM installer_company WHERE status = 'Pending'");
+        $this->db->query("SELECT company_id AS companyId, company_name, address, contact, email, request_date, status FROM installer_company");
         return $this->db->resultSet();
     }
 

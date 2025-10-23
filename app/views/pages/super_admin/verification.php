@@ -197,8 +197,8 @@
         <input type="text" id="searchBar" placeholder="Search by company name..." value="">
         <select id="statusFilter">
             <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="verified">Verified</option>
+            <option value="Pending">Pending</option>
+            <option value="Verified">Verified</option>
         </select>
     </div>
 
