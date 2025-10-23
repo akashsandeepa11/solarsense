@@ -106,17 +106,21 @@
 
         <!-- Page Header -->
         <?php
+        // Build buttons array based on role
+        $buttons = [];
+        if($data['user']['role'] === ROLE_INSTALLER_ADMIN) {
+            $buttons[] = [
+                'label' => 'Add Customer',
+                'url' => URLROOT . '/installeradmin/fleet/add_customer',
+                'icon' => 'fas fa-plus',
+                'class' => 'btn-primary btn-md'
+            ];
+        }
+        
         $config = [
             'title' => 'Fleet Dashboard',
             'description' => 'Overview of your client systems.',
-            'buttons' => [
-                [
-                    'label' => 'Add Customer',
-                    'url' => URLROOT . '/installeradmin/fleet/add_customer',
-                    'icon' => 'fas fa-plus',
-                    'class' => 'btn-primary btn-md'
-                ]
-            ]
+            'buttons' => $buttons
         ];
         include __DIR__ . '/../../inc/components/page_header.php';
         ?>
@@ -220,28 +224,36 @@
                     }
                 ]
             ],
-            'actions' => [
-                [
-                    'label' => 'View Details',
-                    'icon' => 'fas fa-eye',
-                    'url' => URLROOT . '/installeradmin/fleet/customer_details/{id}',
-                    'class' => 'btn-sm btn-info'
-                ],
-                [
-                    'label' => 'Edit',
-                    'icon' => 'fas fa-edit',
-                    'url' => URLROOT . '/installeradmin/fleet/edit_customer/{id}',
-                    'class' => 'btn-sm btn-primary'
-                ],
-                [
+            'actions' => [],
+            'empty_message' => 'No clients available'
+        ];
+        
+        // Build actions array - View Details always available
+        $config['actions'] = [
+            [
+                'label' => 'View Details',
+                'icon' => 'fas fa-eye',
+                'url' => URLROOT . '/installeradmin/fleet/customer_details/{id}',
+                'class' => 'btn-sm btn-info'
+            ]
+        ];
+        
+        // Add Edit and Remove actions only for Installer Admin
+        if($data['user']['role'] === ROLE_INSTALLER_ADMIN) {
+            $config['actions'][] = [
+                'label' => 'Edit',
+                'icon' => 'fas fa-edit',
+                'url' => URLROOT . '/installeradmin/fleet/edit_customer/{id}',
+                'class' => 'btn-sm btn-primary'
+            ];
+            $config['actions'][] = [
                 'label' => 'Remove',
                 'icon' => 'fas fa-trash',
                 'class' => 'btn-icon-danger',
                 'onclick' => 'onclick="openDeleteModal(' . '{id}' . ')"'
-                ],
-            ],
-            'empty_message' => 'No clients available'
-        ];
+            ];
+        }
+        
         include __DIR__ . '/../../inc/components/data_table.php';
 ?>
 
