@@ -168,13 +168,6 @@ class M_Installer_Fleet
                 WHERE user_id = :user_id
             ');
 
-            $this->db->bind(':address', $customerData['address']);
-            $this->db->bind(':contact', $customerData['contact']);
-            $this->db->bind(':nic', $customerData['nic']);
-            $this->db->bind(':district', $customerData['district']);
-            $this->db->bind(':ceb_account', $customerData['ceb_account']);
-            $this->db->bind(':user_id', $userId);
-
             $this->db->execute();
 
             // 3. Update solar_system table
@@ -189,14 +182,6 @@ class M_Installer_Fleet
                 WHERE user_id = :user_id
             ');
 
-            $this->db->bind(':capacity', $panelData['system_capacity']);
-            $this->db->bind(':tilt', $panelData['panel_tilt']);
-            $this->db->bind(':azimuth', $panelData['panel_azimuth']);
-            $this->db->bind(':panel_brand', $panelData['panel_brand']);
-            $this->db->bind(':inverter_brand', $panelData['inverter_brand']);
-            $this->db->bind(':installation_date', $panelData['installation_date']);
-            $this->db->bind(':user_id', $userId);
-
             $this->db->execute();
 
             // Handle CEB account if it's stored separately (adjust based on your schema)
@@ -206,7 +191,6 @@ class M_Installer_Fleet
             if (!empty($panelData['ceb_account'])) {
                 try {
                     $this->db->query('UPDATE solar_system SET ceb_account = :ceb_account WHERE user_id = :user_id');
-                    $this->db->bind(':ceb_account', $panelData['ceb_account']);
                     $this->db->bind(':user_id', $userId);
                     $this->db->execute();
                 } catch (Exception $e) {
