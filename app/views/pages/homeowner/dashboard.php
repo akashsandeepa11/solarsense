@@ -148,10 +148,6 @@ for ($i = 0; $i < 5; $i++) {
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <div class="content-area">
-    <!-- Power Cut Alert Banner -->
-    <?php if (isset($power_cut)): ?>
-    <?php require APPROOT . '/views/inc/components/homeowner_power_cut_banner.php'; ?>
-    <?php endif; ?>
 
     <!-- Page Header with Title and Upload Button -->
     <?php

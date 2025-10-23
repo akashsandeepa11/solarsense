@@ -122,7 +122,7 @@
                 </div>
                 <div class="col-md-4">
                     <div class="stat-mini-card">
-                        <div class="stat-number text-accent">$2,345</div>
+                        <div class="stat-number text-accent">Rs2,345</div>
                         <div class="stat-label">Savings (YTD)</div>
                     </div>
                 </div>
