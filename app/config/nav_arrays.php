@@ -19,6 +19,7 @@ $installer_admin_nav = [
     'MAIN' => [
         ['title' => 'Dashboard', 'url' => '/installeradmin/dashboard', 'icon' => 'fa-solid fa-gauge-high'],
         ['title' => 'Fleet', 'url' => '/installeradmin/fleet', 'icon' => 'fa-solid fa-solar-panel'],
+        ['title' => 'Managers', 'url' => '/installeradmin/managers', 'icon' => 'fa-solid fa-person-dots-from-line'],
         ['title' => 'Team', 'url' => '/installeradmin/team', 'icon' => 'fa-solid fa-users-gear'],
         ['title' => 'Reports', 'url' => '/installeradmin/reports', 'icon' => 'fa-solid fa-file-lines'],
     ],

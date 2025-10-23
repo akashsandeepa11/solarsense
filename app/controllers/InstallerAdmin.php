@@ -1093,6 +1093,223 @@
             redirect('installeradmin/team');
         }
 
+
+        public function managers($tab = 'operation_managers', $id = null){
+
+            if($id){
+                if($tab === 'operation_managers'){
+                    return $this->operation_managers_detail($id);
+                } elseif($tab === 'inventory_managers'){
+                    return $this->inventory_managers_detail($id);
+                }
+            }
+
+            if($tab === 'operation_managers'){
+               return $this->operation_managers();
+            } elseif($tab === 'inventory_managers'){
+                return $this->inventory_managers();
+            }
+            
+            
+            redirect('installeradmin/managers/operation_managers');
+        }
+
+        // --- Manager Management ---
+        public function operation_managers(){
+            // Sample data for Operation Managers
+            $sample_operation_managers = [
+                [
+                    'id' => 1,
+                    'name' => 'John Smith',
+                    'email' => 'john.smith@solarsense.com',
+                    'specialization' => 'Installation',
+                    'district' => 'Colombo',
+                    'status' => 'active',
+                    'pending_tasks' => 3,
+                    'performance' => 95
+                ],
+                [
+                    'id' => 2,
+                    'name' => 'Sarah Johnson',
+                    'email' => 'sarah.j@solarsense.com',
+                    'specialization' => 'Maintenance',
+                    'district' => 'Kandy',
+                    'status' => 'active',
+                    'pending_tasks' => 2,
+                    'performance' => 88
+                ],
+                [
+                    'id' => 3,
+                    'name' => 'Michael Brown',
+                    'email' => 'michael.b@solarsense.com',
+                    'specialization' => 'Repair',
+                    'district' => 'Galle',
+                    'status' => 'on leave',
+                    'pending_tasks' => 1,
+                    'performance' => 92
+                ],
+                [
+                    'id' => 4,
+                    'name' => 'Lisa Chen',
+                    'email' => 'lisa.chen@solarsense.com',
+                    'specialization' => 'Installation',
+                    'district' => 'Colombo',
+                    'status' => 'active',
+                    'pending_tasks' => 5,
+                    'performance' => 85
+                ]
+            ];
+
+            $data = [
+                'user' => $this->user,
+                'managerType' => 'operation_managers',
+                'managers' => $sample_operation_managers
+            ];
+           
+            $this->view('pages/installer_admin/managers_list', $data, layout: 'dashboard');
+        }
+
+        public function inventory_managers(){
+            // Sample data for Inventory Managers
+            $sample_inventory_managers = [
+                [
+                    'id' => 1,
+                    'name' => 'David Wilson',
+                    'email' => 'david.w@solarsense.com',
+                    'warehouse' => 'Main Warehouse - Colombo',
+                    'status' => 'active',
+                    'inventory_items' => 245,
+                    'low_stock' => 3,
+                    'efficiency' => 92
+                ],
+                [
+                    'id' => 2,
+                    'name' => 'Emma Davis',
+                    'email' => 'emma.d@solarsense.com',
+                    'warehouse' => 'Branch Warehouse - Kandy',
+                    'status' => 'active',
+                    'inventory_items' => 156,
+                    'low_stock' => 5,
+                    'efficiency' => 88
+                ],
+                [
+                    'id' => 3,
+                    'name' => 'James Miller',
+                    'email' => 'james.m@solarsense.com',
+                    'warehouse' => 'Branch Warehouse - Galle',
+                    'status' => 'away',
+                    'inventory_items' => 98,
+                    'low_stock' => 8,
+                    'efficiency' => 75
+                ]
+            ];
+
+            $data = [
+                'user' => $this->user,
+                'managerType' => 'inventory_managers',
+                'managers' => $sample_inventory_managers
+            ];
+           
+            $this->view('pages/installer_admin/managers_list', $data, layout: 'dashboard');
+        }
+
+        // Manager Detail View Methods
+        public function operation_managers_detail($managerId = null){
+            // Sample operation manager detail data
+            $sample_manager = [
+                'id' => $managerId ?? 1,
+                'name' => 'John Smith',
+                'email' => 'john.smith@solarsense.com',
+                'contact' => '+94 77 123 4567',
+                'nic' => '123456789V',
+                'address' => '45 Technical Lane, Colombo 3',
+                'district' => 'Colombo',
+                'specialization' => 'Installation',
+                'experience_years' => 8,
+                'availability' => 'Full-time',
+                'certifications' => 'Solar Panel Installation Cert, Electrical Safety Cert',
+                'status' => 'active',
+                'performance' => 95,
+                'pending_tasks' => 3,
+                'completed_tasks' => 125,
+                'monthly_tasks_completed' => 42,
+                'ontime_rate' => 89,
+                'quality_score' => 94,
+                'activities' => [
+                    [
+                        'title' => 'System Installation',
+                        'description' => 'Completed installation of 5.5 kWp system',
+                        'date' => 'Oct 20, 2025',
+                        'status' => 'completed',
+                        'details' => '5.5 kWp'
+                    ],
+                    [
+                        'title' => 'Panel Cleaning',
+                        'description' => 'Performed quarterly maintenance',
+                        'date' => 'Oct 18, 2025',
+                        'status' => 'completed',
+                        'details' => 'Maintenance'
+                    ]
+                ]
+            ];
+
+            $data = [
+                'user' => $this->user,
+                'managerType' => 'operation_managers',
+                'manager' => $sample_manager
+            ];
+
+            $this->view('pages/installer_admin/manager_details', $data, layout: 'dashboard');
+        }
+
+        public function inventory_managers_detail($managerId = null){
+            // Sample inventory manager detail data
+            $sample_manager = [
+                'id' => $managerId ?? 1,
+                'name' => 'David Wilson',
+                'email' => 'david.w@solarsense.com',
+                'contact' => '+94 77 234 5678',
+                'nic' => '987654321V',
+                'address' => '78 Warehouse Ave, Colombo 1',
+                'district' => 'Colombo',
+                'warehouse' => 'Main Warehouse - Colombo',
+                'status' => 'active',
+                'efficiency' => 92,
+                'low_stock' => 3,
+                'total_orders' => 156,
+                'inventory_items' => 245,
+                'low_stock_threshold' => 10,
+                'last_inventory_check' => 'Oct 21, 2025',
+                'stock_accuracy' => 96,
+                'fulfillment_rate' => 98,
+                'warehouse_efficiency' => 92,
+                'activities' => [
+                    [
+                        'title' => 'Stock Replenishment',
+                        'description' => 'Received 50 solar panels from supplier',
+                        'date' => 'Oct 20, 2025',
+                        'status' => 'completed',
+                        'details' => '50 units'
+                    ],
+                    [
+                        'title' => 'Inventory Check',
+                        'description' => 'Quarterly inventory verification',
+                        'date' => 'Oct 19, 2025',
+                        'status' => 'completed',
+                        'details' => '245 items'
+                    ]
+                ]
+            ];
+
+            $data = [
+                'user' => $this->user,
+                'managerType' => 'inventory_managers',
+                'manager' => $sample_manager
+            ];
+
+            $this->view('pages/installer_admin/manager_details', $data, layout: 'dashboard');
+        }
+
         public function profile(){
             $data = [
                 'user' => $this->user,
