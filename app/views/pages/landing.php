@@ -34,7 +34,7 @@
             </div>
 
             <div class="nav__buttons d-flex gap-2">
-                <a href="installer-registration.php" class="btn btn-primary-outline btn-sm">Installer Registration</a>
+                <a href="<?php echo URLROOT; ?>/auth/installer_registration" class="btn btn-secondary btn-sm">Installer Registration</a>
                 <a href="<?php echo URLROOT; ?>/auth/login" class="btn btn-primary btn-sm">Login</a>
             </div>
 
@@ -548,7 +548,7 @@
             <div class="installer-cta__content">
                 <h2>Are You a Solar Installer?</h2>
                 <p>Join Sri Lanka's fastest-growing network of solar professionals. Connect with qualified homeowners, manage your fleet, and streamline your operations.</p>
-                <a href="installer-registration.php" class="btn btn-lg">Register Your Company</a>
+                <a href="installer_registration.php" class="btn btn-lg">Register Your Company</a>
             </div>
         </div>
     </section>

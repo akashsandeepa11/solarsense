@@ -116,6 +116,14 @@
             
             $this->view('pages/common/notifications', $data, layout: 'dashboard');
         }
+
+        public function help(){
+            $data = [
+                'user' => $this->user,
+            ];
+
+            $this->view('pages/operation_manager/help', $data, 'dashboard');
+        }
         
         
     }

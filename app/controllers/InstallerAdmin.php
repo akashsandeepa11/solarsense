@@ -1100,6 +1100,14 @@
             
             $this->view('pages/installer_admin/profile', $data, layout: 'dashboard');
         }
+
+        public function help(){
+            $data = [
+                'user' => $this->user,
+            ];
+
+            $this->view('pages/installer_admin/help', $data, 'dashboard');
+        }
         
         
     }
