@@ -1,292 +1,412 @@
 
 
 <?php
-// Dummy task data
 $tasks = [
-    [
-        "title" => "Inverter Fault Detected",
-        "customer" => "John Doe",
-        "address" => "123 Main Street",
-        "date" => "2025-09-01",
-        "assighned_date" => "- ",
-        "priority" => "", // Initially no priority
-        "agent" => "",    // Initially no agent
-        "panelId" => "P-1001",
-        "notes" => "Inverter shutting down frequently",
-        "status" => "unassigned"
-    ],
-    [
-        "title" => "Install Solar Battery",
-        "customer" => "Sarah Smith",
-        "address" => "45 Green Lane",
-        "date" => "2025-08-30",
-        "assighned_date" => "- ",
-        "priority" => "",
-        "agent" => "",
-        "panelId" => "P-1002",
-        "notes" => "New battery installation",
-        "status" => "unassigned"
-    ],
-    [
-        "title" => "Routine Maintenance",
-        "customer" => "Michael Lee",
-        "address" => "78 Oak Road",
-        "date" => "2025-08-29",
-        "assighned_date" => "- ",
-        "priority" => "",
-        "agent" => "",
-        "panelId" => "P-1003",
-        "notes" => "Quarterly checkup",
-        "status" => "unassigned"
-    ]
+    ["id"=>"T-1001","title"=>"Inverter Fault Detected","customer"=>"John Doe","address"=>"123 Main Street","date"=>"2025-09-01","panelId"=>"P-1001","notes"=>"Inverter shutting down frequently","priority"=>"High","agent"=>"Agent A","status"=>"assigned"],
+    ["id"=>"T-1002","title"=>"Install Solar Battery","customer"=>"Sarah Smith","address"=>"45 Green Lane","date"=>"2025-08-30","panelId"=>"P-1002","notes"=>"New battery installation","priority"=>"Medium","agent"=>"","status"=>"unassigned"],
+    ["id"=>"T-1003","title"=>"Routine Maintenance","customer"=>"Michael Lee","address"=>"78 Oak Road","date"=>"2025-08-29","panelId"=>"P-1003","notes"=>"Quarterly checkup","priority"=>"Low","agent"=>"Agent B","status"=>"assigned"],
+    ["id"=>"T-1004","title"=>"Panel Cleaning","customer"=>"Emily Davis","address"=>"56 Sunny Avenue","date"=>"2025-09-05","panelId"=>"P-1004","notes"=>"Quarterly panel cleaning required","priority"=>"Low","agent"=>"","status"=>"unassigned"],
+    ["id"=>"T-1005","title"=>"Wiring Inspection","customer"=>"Robert Wilson","address"=>"89 Power Lane","date"=>"2025-09-08","panelId"=>"P-1005","notes"=>"Annual wiring inspection","priority"=>"High","agent"=>"Agent C","status"=>"assigned"]
 ];
-
-// Dummy agent list
 $agents = ["Agent A", "Agent B", "Agent C"];
 ?>
 
+<link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/operation_manager/maintenance.css">
 
+<div class="content-area">
+    <!-- Page Header -->
+    <?php
+    $pageHeaderConfig = [
+        'title' => 'Maintenance Task Management',
+        'description' => 'Assign and track solar equipment maintenance tasks',
+        'show_back' => true,
+        'back_url' => URLROOT . '/operationmanager/dashboard',
+        'back_label' => 'Back to Dashboard'
+    ];
+    $config = $pageHeaderConfig;
+    require APPROOT . '/views/inc/components/page_header.php';
+    ?>
 
-<style>
-
-.main { display: flex; flex-direction: column; align-items: center; }
-.task-counter { display: flex; justify-content: space-between; width: 800px; max-width: 100%; margin-bottom: 20px; gap: 15px; }
-.counter-card { flex: 1; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; }
-.counter-card h4 { margin: 0 0 10px; font-size: 16px; color: #555; font-weight: 600; }
-.counter-card p { margin: 0; font-size: 24px; font-weight: bold; }
-
-.toolbar { display: flex; flex-wrap: wrap; width: 800px; max-width: 100%; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px; }
-.toolbar input, .toolbar select { padding: 8px; border: 1px solid #ccc; border-radius: 5px; flex: 1; min-width: 150px; }
-
-.task-list { display: flex; flex-direction: column; align-items: center; gap: 15px; }
-
-.task-card { width: 800px; max-width: 100%; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); border-left: 5px solid #ccc; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: inherit; transition: box-shadow 0.2s; }
-.task-card:hover { box-shadow: 0 6px 15px rgba(0,0,0,0.15); transform: translateY(-3px); }
-
-.task-info h3 { margin: 0 0 5px; font-size: 18px; }
-.task-info p { margin: 2px 0; font-size: 14px; color: #555; }
-
-.priority { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; margin-left: 5px; }
-.high { background: #fee2e2; color: #b91c1c; border-left-color: #b91c1c; }
-.medium { background: #fef3c7; color: #92400e; border-left-color: #f59e0b; }
-.low { background: #dcfce7; color: #166534; border-left-color: #22c55e; }
-
-.task-buttons button { margin-left: 10px; padding: 6px 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 13px; transition: background 0.2s; }
-.view-btn { background-color: #3b82f6; color: white; }
-.view-btn:hover { background-color: #2563eb; }
-.assign-btn { background-color: #16a34a; color: white; }
-.assign-btn:hover { background-color: #15803d; }
-
-.modal { display: block; opacity: 0; pointer-events: none; position: fixed; z-index: 5000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); transition: opacity 0.3s ease; }
-.modal.show { opacity: 1; pointer-events: auto; }
-.modal-content { background-color: #fff; margin: 10% auto; padding: 20px; border-radius: 10px; width: 400px; max-width: 90%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transform: translateY(-20px); transition: transform 0.3s ease; }
-.modal.show .modal-content { transform: translateY(0); }
-.close-btn { float: right; font-size: 18px; cursor: pointer; color: #555; }
-.close-btn:hover { color: black; }
-.confirmBtns { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
-
-.assign-select { width: 48%; padding: 5px; margin-top: 10px; border-radius: 5px; border: 1px solid #ccc; }
-.agent { font-size: 12px; color: #444; margin-left: 5px; font-weight: bold; }
-</style>
-
-<div class="main">
-
-    <div class="task-counter">
-        <div class="counter-card"><h4>Unassigned</h4><p id="unassignedCount">0</p></div>
-        <div class="counter-card"><h4>Assigned</h4><p id="doneCount">0</p></div>
+    <!-- Stats Grid -->
+    <div class="stats-grid mb-6">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-tasks"></i>
+            </div>
+            <div class="stat-content">
+                <p class="stat-label">Total Tasks</p>
+                <p class="stat-value" id="totalTasks">0</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon success">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <p class="stat-label">Assigned Tasks</p>
+                <p class="stat-value" id="assignedTasks">0</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon warning">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <p class="stat-label">Unassigned Tasks</p>
+                <p class="stat-value" id="unassignedTasks">0</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon error">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-content">
+                <p class="stat-label">High Priority</p>
+                <p class="stat-value" id="highPriorityTasks">0</p>
+            </div>
+        </div>
     </div>
 
-    <div class="toolbar">
-        <input type="text" id="searchBar" placeholder="Search tasks...">
-        <select id="priorityFilter">
-            <option value="all">All Priorities</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
-        </select>
-        <select id="statusFilter">
-            <option value="all">All Status</option>
-            <option value="unassigned">Unassigned</option>
-            <option value="pending">Assigned</option>
-        </select>
-        <select id="sortOption">
-            <option value="priority">Sort by: Priority</option>
-            <option value="date">Sort by: Date</option>
-            <option value="customer">Sort by: Customer</option>
-        </select>
+    <!-- Filter Bar -->
+    <div class="card shadow-lg rounded-xl mb-4">
+        <div class="card-body">
+            <div class="toolbar">
+                <input type="text" id="searchInput" placeholder="Search by title or customer..." class="form-control">
+                <select id="priorityFilter" class="form-control">
+                    <option value="all">All Priorities</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+                <select id="statusFilter" class="form-control">
+                    <option value="all">All Status</option>
+                    <option value="assigned">Assigned</option>
+                    <option value="unassigned">Unassigned</option>
+                </select>
+            </div>
+        </div>
     </div>
 
-    <div class="task-list" id="taskList"></div>
+    <!-- Table Container -->
+    <div class="card shadow-lg rounded-xl">
+        <div class="card-body">
+            <div class="table-header mb-4">
+                <h3 class="text-2xl font-semibold">Maintenance Tasks</h3>
+                <button class="btn btn-primary rounded-lg" onclick="showAddModal()">
+                    <i class="fas fa-plus mr-2"></i>Create New Task
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-sm font-semibold text-secondary">Task ID</th>
+                            <th class="text-sm font-semibold text-secondary">Title</th>
+                            <th class="text-sm font-semibold text-secondary">Customer</th>
+                            <th class="text-sm font-semibold text-secondary">Priority</th>
+                            <th class="text-sm font-semibold text-secondary">Agent</th>
+                            <th class="text-sm font-semibold text-secondary">Status</th>
+                            <th class="text-sm font-semibold text-secondary">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- View Modal -->
-<div id="taskModal" class="modal">
+<!-- Add Task Modal -->
+<div id="addModal" class="modal">
     <div class="modal-content">
-        <span class="close-btn" id="closeModal">&times;</span>
-        <h2 id="modalTitle"></h2>
-        <p><strong>Customer:</strong> <span id="modalCustomer"></span></p>
-        <p><strong>Address:</strong> <span id="modalAddress"></span></p>
-        <p><strong>Date Assigned:</strong> <span id="modalDate"></span></p>
-        <p><strong>Panel ID:</strong> <span id="modalPanel"></span></p>
-        <p><strong>Notes:</strong> <span id="modalNotes"></span></p>
+        <h3 class="text-2xl font-semibold mb-4">Create New Task</h3>
+        
+        <div class="card-body">
+            <?php
+            $inputConfig = [
+                'id' => 'taskTitle',
+                'name' => 'title',
+                'label' => 'Task Title',
+                'type' => 'text',
+                'icon' => 'fas fa-heading',
+                'value' => '',
+                'required' => true,
+                'wrapperClass' => 'mb-4'
+            ];
+            require APPROOT . '/views/inc/components/input_field.php';
+            ?>
+
+            <?php
+            $inputConfig = [
+                'id' => 'customerName',
+                'name' => 'customer',
+                'label' => 'Customer Name',
+                'type' => 'text',
+                'icon' => 'fas fa-user',
+                'value' => '',
+                'required' => true,
+                'wrapperClass' => 'mb-4'
+            ];
+            require APPROOT . '/views/inc/components/input_field.php';
+            ?>
+
+            <?php
+            $inputConfig = [
+                'id' => 'customerAddress',
+                'name' => 'address',
+                'label' => 'Address',
+                'type' => 'text',
+                'icon' => 'fas fa-map-marker-alt',
+                'value' => '',
+                'required' => true,
+                'wrapperClass' => 'mb-4'
+            ];
+            require APPROOT . '/views/inc/components/input_field.php';
+            ?>
+
+            <?php
+            $inputConfig = [
+                'id' => 'panelId',
+                'name' => 'panelId',
+                'label' => 'Panel ID',
+                'type' => 'text',
+                'icon' => 'fas fa-microchip',
+                'value' => '',
+                'required' => true,
+                'wrapperClass' => 'mb-4'
+            ];
+            require APPROOT . '/views/inc/components/input_field.php';
+            ?>
+
+            <?php
+            $selectConfig = [
+                'id' => 'prioritySelect',
+                'name' => 'priority',
+                'label' => 'Priority',
+                'value' => 'Medium',
+                'options' => [
+                    'High' => 'High',
+                    'Medium' => 'Medium',
+                    'Low' => 'Low'
+                ],
+                'required' => true,
+                'wrapperClass' => 'mb-4'
+            ];
+            require APPROOT . '/views/inc/components/select_field.php';
+            ?>
+        </div>
+
+        <div class="modal-buttons">
+            <button class="btn btn-primary btn-sm rounded-lg" onclick="addTask()">
+                <i class="fas fa-check mr-2"></i>Create Task
+            </button>
+            <button class="btn btn-secondary btn-sm rounded-lg" onclick="closeAddModal()">
+                <i class="fas fa-times mr-2"></i>Cancel
+            </button>
+        </div>
     </div>
 </div>
 
-<!-- Assign Modal -->
+<!-- Assign Task Modal -->
 <div id="assignModal" class="modal">
     <div class="modal-content">
-        <span class="close-btn" id="closeAssignModal">&times;</span>
-        <h3>Assign Task</h3>
-        <p>Choose a priority and assign an agent:</p>
-        <select id="assignPriority" class="assign-select">
-            <option value="">Select Priority</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
-        </select>
-        <select id="assignAgent" class="assign-select">
-            <option value="">Select Agent</option>
-            <?php foreach($agents as $agent): ?>
-            <option value="<?php echo $agent; ?>"><?php echo $agent; ?></option>
-            <?php endforeach; ?>
-        </select>
-        <div class="confirmBtns">
-            <button class="btn btn-secondary" id="cancelAssign">Cancel</button>
-            <button class="btn btn-primary" id="confirmAssign">Assign</button>
+        <h3 class="text-2xl font-semibold mb-4">Assign Task</h3>
+        
+        <div class="card-body">
+            <p class="mb-4 text-secondary">Assign this task to an agent:</p>
+            
+            <?php
+            $selectConfig = [
+                'id' => 'assignAgent',
+                'name' => 'agent',
+                'label' => 'Select Agent',
+                'value' => '',
+                'options' => array_combine($agents, $agents),
+                'required' => true,
+                'wrapperClass' => 'mb-4'
+            ];
+            require APPROOT . '/views/inc/components/select_field.php';
+            ?>
+        </div>
+
+        <div class="modal-buttons">
+            <button class="btn btn-primary btn-sm rounded-lg" id="confirmAssignBtn">
+                <i class="fas fa-check mr-2"></i>Assign
+            </button>
+            <button class="btn btn-secondary btn-sm rounded-lg" onclick="closeAssignModal()">
+                <i class="fas fa-times mr-2"></i>Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Task Modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h3 class="text-2xl font-semibold mb-4">Delete Task</h3>
+        <p id="deleteMessage" class="text-secondary mb-6">Are you sure you want to delete this task?</p>
+        
+        <div class="modal-buttons">
+            <button class="btn btn-danger btn-sm rounded-lg" id="confirmDeleteBtn">
+                <i class="fas fa-trash mr-2"></i>Delete
+            </button>
+            <button class="btn btn-secondary btn-sm rounded-lg" id="cancelDeleteBtn">
+                <i class="fas fa-times mr-2"></i>Cancel
+            </button>
         </div>
     </div>
 </div>
 
 <script>
-const tasks = <?php echo json_encode($tasks); ?>;
-let selectedTask = null;
+let tasks = <?php echo json_encode($tasks); ?>;
+let agents = <?php echo json_encode($agents); ?>;
+let currentAssignTask = null;
+let currentDeleteTaskId = null;
 
-const taskList = document.getElementById("taskList");
-const searchBar = document.getElementById("searchBar");
-const priorityFilter = document.getElementById("priorityFilter");
-const statusFilter = document.getElementById("statusFilter");
-const sortOption = document.getElementById("sortOption");
+// ---------- Cards Update ----------
+function updateCards(){
+  const total = tasks.length;
+  const assigned = tasks.filter(t=>t.status==="assigned").length;
+  const unassigned = tasks.filter(t=>t.status==="unassigned").length;
+  const highPriority = tasks.filter(t=>t.priority==="High").length;
 
-// View modal elements
-const taskModal = document.getElementById("taskModal");
-const closeModal = document.getElementById("closeModal");
-const modalTitle = document.getElementById("modalTitle");
-const modalCustomer = document.getElementById("modalCustomer");
-const modalAddress = document.getElementById("modalAddress");
-const modalDate = document.getElementById("modalDate");
-const modalPanel = document.getElementById("modalPanel");
-const modalNotes = document.getElementById("modalNotes");
-
-// Assign modal elements
-const assignModal = document.getElementById("assignModal");
-const closeAssignModal = document.getElementById("closeAssignModal");
-const cancelAssign = document.getElementById("cancelAssign");
-const confirmAssign = document.getElementById("confirmAssign");
-const assignPriority = document.getElementById("assignPriority");
-const assignAgent = document.getElementById("assignAgent");
-
-function renderTasks(){
-    taskList.innerHTML = "";
-
-    let filteredTasks = tasks.filter(task=>{
-        const matchesSearch = task.title.toLowerCase().includes(searchBar.value.toLowerCase()) ||
-                              task.customer.toLowerCase().includes(searchBar.value.toLowerCase());
-        const matchesPriority = priorityFilter.value==="all" || task.priority===priorityFilter.value;
-        const matchesStatus = statusFilter.value==="all" || task.status===statusFilter.value;
-        return matchesSearch && matchesPriority && matchesStatus;
-    });
-
-    if(sortOption.value==="date") filteredTasks.sort((a,b)=>new Date(b.date)-new Date(a.date));
-    else if(sortOption.value==="customer") filteredTasks.sort((a,b)=>a.customer.localeCompare(b.customer));
-    else if(sortOption.value==="priority"){
-        const order={"high":1,"medium":2,"low":3,"":4};
-        filteredTasks.sort((a,b)=>order[a.priority]-order[b.priority]);
-    }
-
-    document.getElementById("unassignedCount").textContent = tasks.filter(t=>t.status==="unassigned").length;
-    document.getElementById("doneCount").textContent = tasks.filter(t=>t.status==="pending").length;
-
-    filteredTasks.forEach(task=>{
-        const card = document.createElement("div");
-        card.className = `task-card ${task.priority}`;
-        card.innerHTML = `
-            <div class="task-info">
-                <h3>${task.title}</h3>
-                <p>Customer: ${task.customer}</p>
-                <p>Address: ${task.address}</p>
-                <p>Assigned: ${task.assighned_date}</p>
-            </div>
-            <div class="task-buttons">
-                <span class="priority ${task.priority}">${task.priority?task.priority.charAt(0).toUpperCase()+task.priority.slice(1):"None"}</span>
-                <span class="agent">${task.agent?task.agent:"Unassigned"}</span>
-                <button class="view-btn">View</button>
-                ${!task.priority && !task.agent?'<button class="assign-btn">Assign</button>':''}
-            </div>
-        `;
-
-        // View button
-        card.querySelector(".view-btn").addEventListener("click",()=>{
-            modalTitle.textContent = task.title;
-            modalCustomer.textContent = task.customer;
-            modalAddress.textContent = task.address;
-            modalDate.textContent = task.assighned_date;
-            modalPanel.textContent = task.panelId;
-            modalNotes.textContent = task.notes;
-            taskModal.classList.add("show");
-        });
-
-        // Assign button
-        const assignBtn = card.querySelector(".assign-btn");
-        if(assignBtn){
-            assignBtn.addEventListener("click", ()=>{
-                selectedTask = task;
-                assignPriority.value = task.priority || "";
-                assignAgent.value = task.agent || "";
-                assignModal.classList.add("show");
-            });
-        }
-
-        taskList.appendChild(card);
-    });
+  document.getElementById("totalTasks").innerText = total;
+  document.getElementById("assignedTasks").innerText = assigned;
+  document.getElementById("unassignedTasks").innerText = unassigned;
+  document.getElementById("highPriorityTasks").innerText = highPriority;
 }
 
-// View modal events
-closeModal.addEventListener("click", ()=>taskModal.classList.remove("show"));
-window.addEventListener("click", e=>{ if(e.target===taskModal) taskModal.classList.remove("show"); });
+// Helper to update table and cards together
+function refreshTableAndCards(){
+  filterTasks();
+  updateCards();
+}
 
-// Assign modal events
-closeAssignModal.addEventListener("click", ()=>assignModal.classList.remove("show"));
-cancelAssign.addEventListener("click", ()=>assignModal.classList.remove("show"));
-window.addEventListener("click", e=>{ if(e.target===assignModal) assignModal.classList.remove("show"); });
+// ---------- Render Table ----------
+function renderTable(data){
+  const tbody=document.getElementById("tableBody");
+  tbody.innerHTML="";
+  data.forEach(t=>{
+    const priorityClass = t.priority==="High"?"badge-error":t.priority==="Medium"?"badge-warning":"badge-success";
+    const priorityIcon = t.priority==="High"?"fa-exclamation-circle":t.priority==="Medium"?"fa-minus-circle":"fa-check-circle";
+    tbody.innerHTML+=`
+      <tr>
+        <td class="text-sm font-semibold">${t.id}</td>
+        <td class="text-sm">${t.title}</td>
+        <td class="text-sm">${t.customer}</td>
+        <td class="text-sm">
+          <span class="badge ${priorityClass}">
+            <i class="fas ${priorityIcon} mr-1"></i>${t.priority}
+          </span>
+        </td>
+        <td class="text-sm">${t.agent||'Unassigned'}</td>
+        <td class="text-sm">
+          <span class="badge ${t.status==="assigned"?"badge-success":"badge-warning"}">
+            <i class="fas ${t.status==="assigned"?"fa-check-circle":"fa-clock"} mr-1"></i>${t.status===`assigned`?"Assigned":"Unassigned"}
+          </span>
+        </td>
+        <td class="text-sm">
+          <button class="btn btn-primary btn-sm rounded-lg bg-success" onclick="assignTask('${t.id}')">
+            <i class="fas fa-user-plus mr-1"></i>Assign
+          </button>
+          <button class="btn btn-primary btn-sm rounded-lg bg-error" onclick="deleteTask('${t.id}')">
+            <i class="fas fa-trash mr-1"></i>Delete
+          </button>
+        </td>
+      </tr>`;
+  });
+}
 
-confirmAssign.addEventListener("click", ()=>{
-    if(selectedTask){
-        if(assignPriority.value && assignAgent.value){
-            selectedTask.priority = assignPriority.value;
-            selectedTask.agent = assignAgent.value;
-            selectedTask.status = "pending";
+refreshTableAndCards();
 
-             // Update the assignment date to today
-            const today = new Date();
-            selectedTask.assighned_date = today.getFullYear() + "-" + 
-                                String(today.getMonth()+1).padStart(2,"0") + "-" +
-                                String(today.getDate()).padStart(2,"0");
-                                
-            renderTasks();
-            assignModal.classList.remove("show");
-        } else {
-            alert("Please select both priority and agent before assigning.");
-        }
-    }
+// ---------- Filtering ----------
+function filterTasks(){
+  const searchTerm=document.getElementById("searchInput").value.toLowerCase();
+  const priority=document.getElementById("priorityFilter").value;
+  const status=document.getElementById("statusFilter").value;
+
+  let filtered = tasks.filter(t=>{
+    return (t.title.toLowerCase().includes(searchTerm) || t.customer.toLowerCase().includes(searchTerm)) &&
+           (priority==="all" || t.priority===priority) &&
+           (status==="all" || t.status===status);
+  });
+  renderTable(filtered);
+}
+
+document.getElementById("searchInput").addEventListener("input",refreshTableAndCards);
+document.getElementById("priorityFilter").addEventListener("change",refreshTableAndCards);
+document.getElementById("statusFilter").addEventListener("change",refreshTableAndCards);
+
+// ---------- Modal Functions ----------
+function showAddModal(){ document.getElementById("addModal").classList.add("show"); }
+function closeAddModal(){ document.getElementById("addModal").classList.remove("show"); }
+function showAssignModal(){ document.getElementById("assignModal").classList.add("show"); }
+function closeAssignModal(){ document.getElementById("assignModal").classList.remove("show"); currentAssignTask=null; }
+
+function addTask(){
+  const title=document.getElementById("taskTitle").value.trim();
+  const customer=document.getElementById("customerName").value.trim();
+  const address=document.getElementById("customerAddress").value.trim();
+  const panelId=document.getElementById("panelId").value.trim();
+  const priority=document.getElementById("prioritySelect").value;
+  if(!title||!customer||!address||!panelId){ alert("Fill all fields"); return; }
+  const id="T-"+(tasks.length+1001);
+  const date=new Date().toISOString().split('T')[0];
+  tasks.push({id,title,customer,address,date,panelId,notes:"",priority,agent:"",status:"unassigned"});
+  refreshTableAndCards();
+  closeAddModal();
+  ["taskTitle","customerName","customerAddress","panelId"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("prioritySelect").value="Medium";
+}
+
+function assignTask(id){
+  const task=tasks.find(t=>t.id===id);
+  if(!task) return;
+  currentAssignTask=task;
+  document.getElementById("assignAgent").value=task.agent||"";
+  showAssignModal();
+}
+
+document.getElementById("confirmAssignBtn").addEventListener("click",()=>{
+  if(!currentAssignTask) return;
+  const agent=document.getElementById("assignAgent").value;
+  if(!agent){ alert("Select an agent"); return; }
+  currentAssignTask.agent=agent;
+  currentAssignTask.status="assigned";
+  refreshTableAndCards();
+  closeAssignModal();
 });
 
-// Filters & search
-searchBar.addEventListener("input", renderTasks);
-priorityFilter.addEventListener("change", renderTasks);
-statusFilter.addEventListener("change", renderTasks);
-sortOption.addEventListener("change", renderTasks);
+function deleteTask(id){
+  const t=tasks.find(x=>x.id===id);
+  if(!t) return;
+  currentDeleteTaskId=id;
+  document.getElementById("deleteMessage").innerText=`Are you sure you want to delete task "${t.title}" for ${t.customer}?`;
+  document.getElementById("deleteModal").classList.add("show");
+}
 
-// Initial render
-renderTasks();
+document.getElementById("confirmDeleteBtn").addEventListener("click",()=>{
+  if(currentDeleteTaskId){
+    tasks=tasks.filter(x=>x.id!==currentDeleteTaskId);
+    refreshTableAndCards();
+    currentDeleteTaskId=null;
+    document.getElementById("deleteModal").classList.remove("show");
+  }
+});
+document.getElementById("cancelDeleteBtn").addEventListener("click",()=>{
+  currentDeleteTaskId=null;
+  document.getElementById("deleteModal").classList.remove("show");
+});
+
+// Close modals on click outside
+window.addEventListener("click",e=>{
+  if(e.target===document.getElementById("addModal")) closeAddModal();
+  if(e.target===document.getElementById("assignModal")) closeAssignModal();
+  if(e.target===document.getElementById("deleteModal")){
+    currentDeleteTaskId=null;
+    document.getElementById("deleteModal").classList.remove("show");
+  }
+});
 </script>
 
