@@ -83,33 +83,6 @@ $products = $data['products'] ?? [
         'description' => 'Smart solar system controller with LCD display and mobile app integration.',
         'image' => 'solar_battery.png',
         'category' => 'inverters'
-    ],
-    [
-        'id' => 10,
-        'title' => 'Solar Pool Pump',
-        'company' => 'AquaSolar',
-        'price' => 449.99,
-        'description' => 'Energy-efficient solar pool pump with variable speed control and timer function.',
-        'image' => 'solar_battery.png',
-        'category' => 'accessories'
-    ],
-    [
-        'id' => 11,
-        'title' => 'Solar String Lights',
-        'company' => 'FairyGlow',
-        'price' => 39.99,
-        'description' => '100 LED waterproof string lights with 8 lighting modes and auto on/off.',
-        'image' => 'solar_battery.png',
-        'category' => 'lighting'
-    ],
-    [
-        'id' => 12,
-        'title' => 'MPPT Charge Controller',
-        'company' => 'PowerMax Systems',
-        'price' => 249.99,
-        'description' => '60A MPPT solar charge controller with advanced battery protection and monitoring.',
-        'image' => 'solar_battery.png',
-        'category' => 'inverters'
     ]
 ];
 ?>
