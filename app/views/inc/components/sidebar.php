@@ -41,10 +41,10 @@ foreach ($navigation_links as $section => $items): ?>
 
     <!-- Footer Links -->
     <div>
-        <a href="#" class="sidebar-nav-link text-decoration-none hover:no-underline">
+        <!-- <a href="#" class="sidebar-nav-link text-decoration-none hover:no-underline">
             <i class="fa-solid fa-circle-question"></i>
             <span>Help</span>
-        </a>
+        </a> -->
         <a href="<?php echo URLROOT?>/auth/logout" class="sidebar-nav-link text-error text-decoration-none hover:no-underline">
             <i class="fa-solid fa-arrow-right-from-bracket"></i>
             <span>Logout</span>
