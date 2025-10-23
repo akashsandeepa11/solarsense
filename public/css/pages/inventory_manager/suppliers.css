@@ -1,5 +1,5 @@
 /*
- * Quotation Management Page CSS
+ * Suppliers Management Page CSS
  * Modern SolarSense theme styling
  */
 
@@ -54,10 +54,6 @@
 
 .stat-icon.warning {
   background: #f59e0b;
-}
-
-.stat-icon.error {
-  background: #ef4444;
 }
 
 .stat-content {
@@ -261,16 +257,6 @@
 .badge-warning {
   background: #fef3c7;
   color: #92400e;
-}
-
-.badge-error {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.badge-info {
-  background: #dbeafe;
-  color: #0c4a6e;
 }
 
 /* ===== MODAL STYLING ===== */

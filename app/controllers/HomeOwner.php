@@ -67,11 +67,17 @@
             $this->view('pages/homeowner/profile', $data, 'dashboard');
         }
 
+        public function help(){
+            $data = [
+                'user' => $this->user,
+            ];
+            $this->view('pages/homeowner/help', $data, 'dashboard');
+        }
+            
         public function reports(){
             $data = [
                 'user' => $this->user,
             ];
-
             $this->view('pages/homeowner/reports', $data, 'dashboard');
         }
 
