@@ -26,6 +26,8 @@
  *   - form_method (string, optional): Form method (GET, POST)
  *   - auto_submit (bool, optional): Auto-submit on filter change (default: false)
  *   - reset_on_clear (bool, optional): Show reset button (default: true)
+ *   - result_count (bool, optional): Show result count (default: false)
+ *   - result_count_id (string, optional): ID for result count span (default: 'resultCount')
  */
 
 if (!isset($config)) {
@@ -39,6 +41,8 @@ $formAction = $config['form_action'] ?? '#';
 $formMethod = $config['form_method'] ?? 'GET';
 $autoSubmit = $config['auto_submit'] ?? false;
 $resetOnClear = $config['reset_on_clear'] ?? true;
+$resultCount = $config['result_count'] ?? false;
+$resultCountId = $config['result_count_id'] ?? 'resultCount';
 $hasContent = $search || !empty($filters);
 $formId = 'filter-form-' . uniqid();
 ?>
@@ -257,6 +261,20 @@ $formId = 'filter-form-' . uniqid();
                     </div>
                 </div>
             <?php endforeach; ?>
+
+            <?php if ($resultCount): ?>
+                <div class="col-md-<?php echo count($filters) > 0 ? '2' : '3'; ?>" style="display: flex; flex-direction: column; justify-content: flex-end;">
+                    <div class="form-group">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-flex align-items-center" style="height: 38px;">
+                            <span class="text-secondary text-sm">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                <span id="<?php echo htmlspecialchars($resultCountId); ?>">0</span> results found
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
 
             <?php if ((!empty($buttons) && !$autoSubmit) || $resetOnClear): ?>
                 <div class="col-md-<?php echo count($filters) > 0 ? '2' : '3'; ?>" style="display: flex; flex-direction: column; justify-content: flex-end;">
