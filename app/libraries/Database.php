@@ -70,10 +70,37 @@
             return $this->statement->fetch(PDO::FETCH_OBJ);
         }
 
+        public function single_assoc(){
+            $this->execute();
+            return $this->statement->fetch(PDO::FETCH_ASSOC);
+        }  
+
         public function rowCount(){
-            return $this->rowCount();
+            return $this->statement->rowCount();
         }
 
-    }
+
+// Start a transaction
+public function beginTransaction() {
+    return $this->dbh->beginTransaction();
+}
+
+// Commit a transaction
+public function commit() {
+    return $this->dbh->commit();
+}
+
+// Roll back a transaction
+public function rollBack() {
+    return $this->dbh->rollBack();
+}
+
+// Get the last inserted ID
+public function lastInsertId() {
+    return $this->dbh->lastInsertId();
+}
+
+
+}
 
 ?>

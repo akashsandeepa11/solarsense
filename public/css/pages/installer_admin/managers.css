@@ -1,0 +1,608 @@
+.status-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot.bg-success {
+  background-color: #22c55e !important;
+}
+
+.status-dot.bg-warning {
+  background-color: #f59e0b !important;
+}
+
+.status-dot.bg-error {
+  background-color: #ef4444 !important;
+}
+
+.status-dot.bg-secondary {
+  background-color: #9ca3af !important;
+}
+
+.status-dot.bg-info {
+  background-color: #06b6d4 !important;
+}
+
+/* Manager Details Section */
+.manager-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.manager-name {
+  font-size: 0.95rem;
+  color: #212121;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.manager-email {
+  font-size: 0.85rem;
+  color: #6b7280;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Manager Tabs */
+.managers-tabs {
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.tabs-container {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid #e5e7eb;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.tab-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 3px solid transparent;
+  color: #6b7280;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.tab-item:hover {
+  color: #fe9630;
+  background-color: rgba(254, 150, 48, 0.05);
+  border-bottom-color: rgba(254, 150, 48, 0.2);
+}
+
+.tab-item.active {
+  color: #fe9630;
+  border-bottom-color: #fe9630;
+}
+
+.tab-item i {
+  font-size: 1rem;
+}
+
+/* Badge Styling */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-primary {
+  background-color: #dbeafe;
+  color: #0c4a6e;
+}
+
+.badge-success {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.badge-warning {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.badge-danger {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.badge-info {
+  background-color: #cffafe;
+  color: #164e63;
+}
+
+/* Avatar Image */
+img[alt*="Manager"],
+img[alt*="manager"] {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e5e7eb;
+}
+
+/* Data Table Row Hover */
+.data-table tbody tr:hover {
+  background-color: rgba(254, 150, 48, 0.03);
+  transition: background-color 0.2s ease;
+}
+
+/* Status Indicator Alignment */
+.d-flex.align-center {
+  display: flex;
+  align-items: center;
+}
+
+.mr-2 {
+  margin-right: 0.5rem;
+}
+
+.gap-3 {
+  gap: 0.75rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .tab-item {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .manager-name {
+    font-size: 0.9rem;
+  }
+
+  .manager-email {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .managers-tabs {
+    margin-bottom: 1rem;
+  }
+
+  .tabs-container {
+    gap: 0;
+    overflow-x: auto;
+  }
+
+  .tab-item {
+    padding: 0.6rem 0.9rem;
+    font-size: 0.85rem;
+    min-width: fit-content;
+  }
+
+  .tab-item i {
+    font-size: 0.9rem;
+  }
+
+  .manager-name {
+    font-size: 0.85rem;
+  }
+
+  .manager-email {
+    font-size: 0.75rem;
+  }
+
+  img[alt*="Manager"],
+  img[alt*="manager"] {
+    width: 36px;
+    height: 36px;
+  }
+
+  .badge {
+    padding: 0.2rem 0.6rem;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .managers-tabs {
+    margin-bottom: 0.8rem;
+  }
+
+  .tab-item {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .tab-item span {
+    display: none;
+  }
+
+  .manager-name {
+    font-size: 0.8rem;
+  }
+
+  .manager-email {
+    font-size: 0.7rem;
+  }
+
+  img[alt*="Manager"],
+  img[alt*="manager"] {
+    width: 32px;
+    height: 32px;
+  }
+
+  .badge {
+    padding: 0.15rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  .status-dot {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+/* Animation for Tab Switching */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tab-content {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Filter Bar Integration */
+.filter-bar {
+  margin-bottom: 1.5rem;
+}
+
+/* Summary Cards Grid */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Page Header Integration */
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.page-header-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.page-header-description {
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+/* Action Buttons */
+/* .btn-sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8rem;
+} */
+
+/* .btn-primary {
+  background-color: #fe9630;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #e88324;
+}
+
+.btn-info {
+  background-color: #06b6d4;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-info:hover {
+  background-color: #0891b2;
+} */
+
+/* .btn-icon-danger {
+  background-color: transparent;
+  color: #ef4444;
+  border: 1px solid #ef4444;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+}
+
+.btn-icon-danger:hover {
+  background-color: #ef4444;
+  color: white;
+} */
+
+/* Modal Styling */
+.confirmation-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.confirmation-modal.show {
+  display: flex;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  max-width: 400px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state-message {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state-subtext {
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+/* Data Table Styling */
+.managers-table {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.table-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.table-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.table-empty-state {
+  padding: 3rem 2rem;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table thead {
+  background-color: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.data-table th {
+  padding: 1rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.data-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 0.875rem;
+  color: #1f2937;
+}
+
+.data-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.data-table tbody tr:hover {
+  background-color: rgba(254, 150, 48, 0.03);
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Action Buttons Container */
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  text-decoration: none;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn.btn-sm {
+  padding: 0.375rem 0.75rem;
+}
+
+.btn.btn-info {
+  background-color: #06b6d4;
+  color: white;
+}
+
+.btn.btn-info:hover {
+  background-color: #0891b2;
+}
+
+.btn.btn-primary {
+  background-color: #fe9630;
+  color: white;
+}
+
+.btn.btn-primary:hover {
+  background-color: #e88324;
+}
+
+.btn.btn-icon-danger {
+  background-color: transparent;
+  color: #ef4444;
+  border: 1px solid #ef4444;
+}
+
+.btn.btn-icon-danger:hover {
+  background-color: #ef4444;
+  color: white;
+}
+
+.btn i {
+  font-size: 0.875rem;
+} */
+
+/* Responsive Table */
+/* @media (max-width: 1024px) {
+  .data-table th,
+  .data-table td {
+    padding: 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .action-buttons {
+    gap: 0.25rem;
+  }
+
+  .btn {
+    padding: 0.3rem 0.6rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .table-header {
+    padding: 1rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 0.6rem;
+    font-size: 0.75rem;
+  }
+
+  .data-table th {
+    font-size: 0.7rem;
+  }
+
+  .manager-name {
+    font-size: 0.8rem;
+  }
+
+  .manager-email {
+    font-size: 0.7rem;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  .btn i {
+    font-size: 0.75rem;
+  }
+} */
+
+@media (max-width: 576px) {
+  .managers-table {
+    overflow-x: auto;
+  }
+
+  .data-table {
+    min-width: 600px;
+  }
+
+  .table-header h3 {
+    font-size: 1rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 0.5rem;
+    font-size: 0.65rem;
+  }
+
+  .manager-name {
+    font-size: 0.75rem;
+  }
+
+  .manager-email {
+    font-size: 0.65rem;
+  }
+
+  .badge {
+    padding: 0.1rem 0.4rem;
+    font-size: 0.6rem;
+  }
+}

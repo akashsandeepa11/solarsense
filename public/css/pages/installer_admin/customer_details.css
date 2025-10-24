@@ -1,0 +1,442 @@
+/* =============================================================================
+   Customer Details Page Styles
+   ============================================================================= */
+
+.customer-details-container {
+  padding: 2rem;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* Header Section */
+.customer-header {
+  background: #ffffff;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.customer-header h1 {
+  margin: 0;
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #212121;
+}
+
+.customer-header p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background-color: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  text-decoration: none;
+}
+
+.btn-back:hover {
+  background-color: #e5e7eb;
+  color: #fe9630;
+}
+
+/* Customer Profile Section */
+.customer-profile-header {
+  text-align: center;
+}
+
+.customer-avatar-large {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  margin: 0 auto;
+  border: 4px solid #22c55e;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6;
+}
+
+.customer-avatar-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.customer-profile-header h2 {
+  margin: 0;
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #212121;
+}
+
+.customer-type-badge {
+  margin: 0.5rem 0;
+}
+
+.customer-status-badge {
+  display: inline-block;
+}
+
+/* Info Grid */
+.customer-info-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.info-item {
+  padding-bottom: 1rem;
+}
+
+.info-item:not(:last-child) {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.info-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+}
+
+.info-value {
+  margin: 0;
+  font-size: 1rem;
+  color: #212121;
+  font-weight: 500;
+}
+
+/* Solar System Info Section */
+.solar-system-info {
+  padding-top: 1.5rem;
+}
+
+.solar-system-info h3 {
+  margin-bottom: 1rem;
+}
+
+/* Stats Mini Cards */
+.stats-grid {
+  display: flex;
+  gap: 1rem;
+}
+
+.stat-mini-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.stat-mini-card:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Card Styling */
+.card {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.card-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #ffffff;
+}
+
+.card-footer {
+  padding: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+}
+
+.card-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #212121;
+}
+
+.border-top {
+  border-top: 1px solid #e5e7eb;
+}
+
+.pt-6 {
+  padding-top: 1.5rem;
+}
+
+/* Performance Metrics */
+.metric-item {
+  display: block;
+}
+
+.metric-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.metric-value {
+  font-size: 1rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 0.5rem;
+  background-color: #e5e7eb;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  transition: width 0.3s ease-in-out;
+  border-radius: 9999px;
+}
+
+/* Service List */
+.service-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.service-item {
+  transition: background-color 0.2s ease-in-out;
+}
+
+.service-item:hover {
+  background-color: #f9fafb;
+}
+
+.service-title {
+  margin: 0;
+  font-size: 1rem;
+  color: #212121;
+}
+
+.service-agent {
+  margin: 0;
+}
+
+.service-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-completed {
+  background-color: #d1fae5;
+  color: #047857;
+}
+
+.status-scheduled {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.service-date,
+.service-cost {
+  margin: 0;
+}
+
+/* Badge Styles */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #ffffff;
+  border: none;
+}
+
+/* Button Styles */
+.flex-1 {
+  flex: 1;
+}
+
+/* Utility Classes */
+
+/* Responsive Design */
+
+/* Large screens - 2 column layout */
+@media (min-width: 1200px) {
+  .col-md-5 {
+    flex: 0 0 calc(41.666% - 12px);
+    max-width: calc(41.666% - 12px);
+  }
+
+  .col-md-7 {
+    flex: 0 0 calc(58.333% - 12px);
+    max-width: calc(58.333% - 12px);
+  }
+}
+
+/* Medium screens - 2 column layout */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .col-md-5 {
+    flex: 0 0 calc(50% - 12px);
+    max-width: calc(50% - 12px);
+  }
+
+  .col-md-7 {
+    flex: 0 0 calc(50% - 12px);
+    max-width: calc(50% - 12px);
+  }
+
+  .stats-grid {
+    flex-direction: column;
+  }
+
+  .stat-mini-card {
+    flex: 1;
+  }
+}
+
+/* Small screens */
+@media (max-width: 767px) {
+  .customer-details-container {
+    padding: 1rem;
+  }
+
+  .row {
+    flex-direction: column;
+  }
+
+  .col-md-5,
+  .col-md-7 {
+    flex: 1 1 100%;
+    max-width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+    margin-bottom: 1rem;
+  }
+
+  .row.gap-6 .col-md-5,
+  .row.gap-6 .col-md-7 {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .customer-avatar-large {
+    width: 100px;
+    height: 100px;
+  }
+
+  .customer-profile-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .customer-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .service-item {
+    padding: 1rem !important;
+  }
+
+  .d-flex {
+    flex-direction: column;
+  }
+
+  .gap-6 {
+    gap: 1rem;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .customer-details-container {
+    padding: 0.5rem;
+  }
+
+  .card-body,
+  .card-header,
+  .card-footer {
+    padding: 1rem;
+  }
+
+  .customer-avatar-large {
+    width: 80px;
+    height: 80px;
+  }
+
+  .customer-profile-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .stat-mini-card {
+    padding: 1rem;
+  }
+
+  .info-item {
+    padding-bottom: 0.75rem;
+  }
+
+  .metric-item {
+    margin-bottom: 1rem;
+  }
+
+  .service-item {
+    padding: 1rem !important;
+  }
+
+  .service-title {
+    font-size: 0.95rem;
+  }
+
+  .btn-sm {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+  }
+}

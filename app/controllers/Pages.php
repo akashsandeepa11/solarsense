@@ -12,5 +12,10 @@
         public function landing(){
             $this->view('pages/landing');
         }
+
+        // Render 404 page
+        public function error404(){
+            $this->view('pages/404');
+        }
     }
 ?>  

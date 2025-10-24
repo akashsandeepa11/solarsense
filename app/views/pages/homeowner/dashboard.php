@@ -2,8 +2,8 @@
 // --- PHP Setup for Dummy Data ---
 // In a real controller, this data would be fetched from the database.
 
-// --- NEW: Define the solar tariff rate ---
-define('SOLAR_TARIFF_RATE_LKR', 37.50); // Example: LKR 37.50 per kWh exported
+// --- Define the solar tariff rate ---
+define('SOLAR_TARIFF_RATE_LKR', 37.50); // LKR 37.50 per kWh exported
 
 // User Info
 $user_name = "Akash Sandeepa";
@@ -26,12 +26,36 @@ $daily_forecast = [
 $grid_export_kwh = 310;
 $monthly_income_lkr = $grid_export_kwh * SOLAR_TARIFF_RATE_LKR;
 
-$summary_cards = [
-    ['label' => 'Total Solar Generation', 'value' => '450 kWh', 'icon' => 'fas fa-solar-panel'],
-    ['label' => 'Grid Export', 'value' => $grid_export_kwh . ' kWh', 'icon' => 'fas fa-arrow-up-from-grid-line'],
-    ['label' => 'Grid Import', 'value' => '85 kWh', 'icon' => 'fas fa-arrow-down-to-grid-line'],
-    // --- NEW CARD ---
-    ['label' => 'Monthly Income', 'value' => 'LKR ' . number_format($monthly_income_lkr), 'icon' => 'fas fa-coins'],
+// Stat Cards for Key Metrics (using stat_card component)
+$stat_metrics = [
+    [
+        'label' => 'Total Solar Generation',
+        'value' => '450 kWh',
+        'icon' => 'fas fa-solar-panel',
+        'color' => 'primary',
+        'trend' => ['direction' => 'up', 'percentage' => 12]
+    ],
+    [
+        'label' => 'Grid Export',
+        'value' => $grid_export_kwh . ' kWh',
+        'icon' => 'fas fa-arrow-up',
+        'color' => 'success',
+        'trend' => ['direction' => 'up', 'percentage' => 8]
+    ],
+    [
+        'label' => 'Grid Import',
+        'value' => '85 kWh',
+        'icon' => 'fas fa-arrow-down',
+        'color' => 'warning',
+        'trend' => ['direction' => 'down', 'percentage' => 5]
+    ],
+    [
+        'label' => 'Monthly Income',
+        'value' => 'LKR ' . number_format($monthly_income_lkr),
+        'icon' => 'fas fa-coins',
+        'color' => 'accent',
+        'trend' => ['direction' => 'up', 'percentage' => 15]
+    ],
 ];
 
 // System Health & Financials
@@ -67,12 +91,54 @@ for ($i = 0; $i < count($performance_chart_data['actual_generation']); $i++) {
     }
 }
 
-
 // Recent Faults & Alerts
 $recent_alerts = [
     ['date' => 'July 15th', 'description' => 'Performance 15% below expected for weather conditions.'],
     ['date' => 'June 28th', 'description' => 'High grid import detected during peak sun hours.'],
+    ['date' => 'June 22nd', 'description' => 'Inverter efficiency lower than usual. Schedule maintenance.'],
 ];
+
+// Quick Action Buttons
+$quick_actions = [
+    [
+        'label' => 'Request Maintenance',
+        'url' => URLROOT . '/homeowner/service',
+        'icon' => 'fas fa-wrench',
+        'class' => 'btn-secondary'
+    ],
+    [
+        'label' => 'View Accessories Store',
+        'url' => URLROOT . '/homeowner/shop',
+        'icon' => 'fas fa-shopping-cart',
+        'class' => 'btn-secondary'
+    ],
+    [
+        'label' => 'Download Report',
+        'url' => URLROOT . '/homeowner/dashboard/report',
+        'icon' => 'fas fa-file-pdf',
+        'class' => 'btn-secondary'
+    ],
+];
+
+// Chart Filter Options - Month and Date Range
+$currentMonth = isset($_GET['month']) ? (int)$_GET['month'] : date('m');
+$currentYear = isset($_GET['year']) ? (int)$_GET['year'] : date('Y');
+$startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
+$endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t');
+
+// Months array for dropdown
+$months = [
+    1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April',
+    5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August',
+    9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December'
+];
+
+// Generate year options (current year and 4 previous years)
+$years = [];
+for ($i = 0; $i < 5; $i++) {
+    $year = date('Y') - $i;
+    $years[$year] = $year;
+}
 
 ?>
 
@@ -82,37 +148,93 @@ $recent_alerts = [
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <div class="content-area">
-    <!-- Power Cut Alert Banner -->
-    <?php if (isset($power_cut)): ?>
-    <?php require APPROOT . '/views/inc/components/homeowner_power_cut_banner.php'; ?>
-    <?php endif; ?>
 
-    <!-- Header Section -->
-    <div class="d-flex justify-between align-center mb-6">
-        <div>
-            <h1 class="text-4xl font-bold">Good Morning, <?php echo $user_name; ?>!</h1>
-            <p class="text-secondary">Here's your solar performance overview.</p>
-        </div>
-        <div>
-            <a href="#" class="btn btn-primary rounded-lg">+ Upload New SMS</a>
-        </div>
-    </div>
+    <!-- Page Header with Title and Upload Button -->
+    <?php
+    $pageHeaderConfig = [
+        'title' => 'Good Morning, ' . $user_name . '!',
+        'description' => 'Here\'s your solar performance overview.',
+        'buttons' => [
+            [
+                'label' => '+ Upload New SMS',
+                'url' => URLROOT . '/homeowner/dashboard/uploadsms',
+                'icon' => 'fas fa-cloud-upload-alt',
+                'class' => 'btn-primary'
+            ]
+        ]
+    ];
+    $config = $pageHeaderConfig;
+    require APPROOT . '/views/inc/components/page_header.php';
+    ?>
 
-    <!-- Monthly Performance Summary Cards -->
-    <div class="row">
-        <?php foreach($summary_cards as $card): ?>
-            <?php require APPROOT . '/views/inc/components/summary_card.php'; ?>
-        <?php endforeach; ?>
-    </div>
+    <!-- Key Metrics - Using Stat Card Component -->
+    <?php
+    $statConfig = [
+        'stats' => $stat_metrics,
+        'columns' => 4
+    ];
+    $config = $statConfig;
+    require APPROOT . '/views/inc/components/stat_card.php';
+    ?>
 
     <!-- Main Grid: Charts, Health, and Financials -->
     <div class="row">
         <!-- Left Column -->
         <div class="col-lg-8">
+            <!-- Chart Filter Component -->
+            <?php
+            $filterConfig = [
+                'filters' => [
+                    [
+                        'id' => 'monthFilter',
+                        'name' => 'month',
+                        'label' => 'Month',
+                        'options' => array_map(function($num, $name) use ($currentMonth) {
+                            return [
+                                'value' => $num,
+                                'label' => $name,
+                                'selected' => $currentMonth == $num
+                            ];
+                        }, array_keys($months), $months)
+                    ],
+                    [
+                        'id' => 'yearFilter',
+                        'name' => 'year',
+                        'label' => 'Year',
+                        'options' => array_map(function($year) use ($currentYear) {
+                            return [
+                                'value' => $year,
+                                'label' => $year,
+                                'selected' => $currentYear == $year
+                            ];
+                        }, array_keys($years))
+                    ]
+                ],
+                'buttons' => [
+                    [
+                        'label' => 'Apply Filters',
+                        'icon' => 'fas fa-filter',
+                        'class' => 'btn-primary',
+                        'type' => 'submit'
+                    ]
+                ],
+                'form_method' => 'GET',
+                'auto_submit' => true,
+                'reset_on_clear' => true
+            ];
+            $config = $filterConfig;
+            require APPROOT . '/views/inc/components/filter_bar.php';
+            ?>
+
             <!-- Main Performance Chart -->
-            <div class="card shadow-lg rounded-xl h-100">
+            <div class="card shadow-lg rounded-xl">
                 <div class="card-body">
-                    <h3 class="card-title text-2xl font-semibold mb-4">Performance: Actual vs. Expected</h3>
+                    <h3 class="card-title text-2xl font-semibold mb-4">
+                        Performance: Actual vs. Expected
+                        <span class="text-sm text-secondary font-normal">
+                            (<?php echo $months[$currentMonth]; ?> <?php echo $currentYear; ?>)
+                        </span>
+                    </h3>
                     <div class="chart-container">
                         <canvas id="performanceComparisonChart"></canvas>
                     </div>
@@ -182,9 +304,13 @@ $recent_alerts = [
         <div class="col-lg-4">
             <div class="card shadow-lg rounded-xl h-100">
                 <div class="card-body d-flex flex-column justify-around gap-2">
-                    <a href="#" class="btn btn-secondary btn-lg btn-block">Request Maintenance</a>
-                    <a href="#" class="btn btn-secondary btn-lg btn-block">View Accessories Store</a>
-                    <a href="#" class="btn btn-secondary btn-lg btn-block">Download Report</a>
+                    <?php foreach ($quick_actions as $action): ?>
+                        <a href="<?php echo htmlspecialchars($action['url']); ?>" 
+                           class="btn <?php echo htmlspecialchars($action['class']); ?> btn-lg btn-block">
+                            <i class="<?php echo htmlspecialchars($action['icon']); ?> mr-2"></i>
+                            <?php echo htmlspecialchars($action['label']); ?>
+                        </a>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>

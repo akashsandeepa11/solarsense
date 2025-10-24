@@ -1,0 +1,84 @@
+.customer-profile-container {
+  max-width: 800px;
+  margin: auto;
+}
+.card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+.profile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.profile-avatar i {
+  font-size: 150px;
+  color: #555;
+}
+.profile-info h2 {
+  margin: 0;
+}
+.profile-info p {
+  margin: 5px 0;
+}
+
+.btn-primary {
+  background: #007bff;
+  color: #fff;
+}
+.btn-secondary {
+  background: #6c757d;
+  color: #fff;
+}
+.profile-section h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+}
+.profile-item {
+  position: relative;
+  margin-bottom: 15px;
+}
+.edit-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: gray;
+}
+.edit-icon:hover {
+  color: #007bff;
+}
+
+/* for image upoload */
+.user-image {
+  border-radius: 50%;
+  width: 150px;
+  height: 150px;
+  background-color: #007bff;
+}
+#photo {
+  border-radius: 50%;
+  width: 150px;
+  height: 150px;
+}
+#file {
+  display: none;
+}
+#uploadbtn {
+  position: absolute;
+  height: 30px;
+  width: 30px;
+  padding: 6px;
+  border-radius: 50%; /* makes it circular */
+  cursor: pointer;
+  color: #fff;
+  transform: translateX(-90%);
+  margin-top: 100px;
+  box-shadow: 2px 4px 4px rgba(0, 0, 0, 0.86); /* corrected rgba format */
+  background-color: rgba(173, 172, 172, 0.8); /* corrected rgba format */
+}
