@@ -49,7 +49,7 @@ $operation_manager_nav = [
 $inventory_manager_nav = [
     'MAIN' => [
         ['title' => 'Inventory', 'url' => '/inventorymanager/inventory', 'icon' => 'fa-solid fa-boxes-stacked'],
-        ['title' => 'Suppliers', 'url' => '/inventorymanager/suppliers', 'icon' => 'fa-solid fa-truck-fast'],
+        // ['title' => 'Suppliers', 'url' => '/inventorymanager/suppliers', 'icon' => 'fa-solid fa-truck-fast'],
         ['title' => 'Reports', 'url' => '/inventorymanager/reports', 'icon' => 'fa-solid fa-file-lines'],
     ],
     'PERSONAL' => [

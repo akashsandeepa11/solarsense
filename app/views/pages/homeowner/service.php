@@ -141,7 +141,7 @@ $serviceHistory = [
                         <p class="text-secondary text-sm mb-1">Support Contact</p>
                         <p class="text-lg font-semibold">
                             <i class="fas fa-phone text-success mr-1"></i>
-                            +94 11 2 xxx xxx
+                            076 416 4347
                         </p>
                     </div>
                 </div>
@@ -160,9 +160,7 @@ $serviceHistory = [
                         <a href="#" class="btn btn-secondary btn-sm w-100 rounded-lg">
                             <i class="fas fa-envelope mr-2"></i>Email Us
                         </a>
-                        <a href="#" class="btn btn-secondary btn-sm w-100 rounded-lg">
-                            <i class="fas fa-comments mr-2"></i>Live Chat
-                        </a>
+
                     </div>
                 </div>
             </div>
