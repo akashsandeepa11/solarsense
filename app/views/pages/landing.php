@@ -332,7 +332,7 @@
                     </div>
                     <p class="testimonial__text">"SolarSense made finding the right installer so easy. The analytics dashboard helps me track my savings every month!"</p>
                     <div class="testimonial__metric">
-                        <span class="metric-value">₹45,000</span>
+                        <span class="metric-value">LKR 45,000</span>
                         <span class="metric-label">Saved This Year</span>
                     </div>
                 </div>

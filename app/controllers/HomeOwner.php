@@ -178,7 +178,7 @@
                     'company' => 'HotWater Solutions',
                     'price' => 699.99,
                     'description' => '200L solar water heater with intelligent temperature control and backup heating.',
-                    'image' => 'solar_battery.png',
+                    'image' => 'solar_water_heater.jpg',
                     'category' => 'heaters'
                 ],
                 [
@@ -187,45 +187,10 @@
                     'company' => 'SecureVision',
                     'price' => 199.99,
                     'description' => 'Wireless security camera with solar charging, night vision, and mobile app control.',
-                    'image' => 'solar_battery.png',
+                    'image' => 'solar_camera.jpg',
                     'category' => 'security'
                 ],
-                [
-                    'id' => 9,
-                    'title' => 'Solar System Controller',
-                    'company' => 'SmartControl Tech',
-                    'price' => 299.99,
-                    'description' => 'Smart solar system controller with LCD display and mobile app integration.',
-                    'image' => 'solar_battery.png',
-                    'category' => 'inverters'
-                ],
-                [
-                    'id' => 10,
-                    'title' => 'Solar Pool Pump',
-                    'company' => 'AquaSolar',
-                    'price' => 449.99,
-                    'description' => 'Energy-efficient solar pool pump with variable speed control and timer function.',
-                    'image' => 'solar_battery.png',
-                    'category' => 'accessories'
-                ],
-                [
-                    'id' => 11,
-                    'title' => 'Solar String Lights',
-                    'company' => 'FairyGlow',
-                    'price' => 39.99,
-                    'description' => '100 LED waterproof string lights with 8 lighting modes and auto on/off.',
-                    'image' => 'solar_battery.png',
-                    'category' => 'lighting'
-                ],
-                [
-                    'id' => 12,
-                    'title' => 'MPPT Charge Controller',
-                    'company' => 'PowerMax Systems',
-                    'price' => 249.99,
-                    'description' => '60A MPPT solar charge controller with advanced battery protection and monitoring.',
-                    'image' => 'solar_battery.png',
-                    'category' => 'inverters'
-                ]
+                
             ];
         }
 

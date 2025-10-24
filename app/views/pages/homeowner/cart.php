@@ -17,7 +17,7 @@ $cartItems = [
         'id' => 1,
         'title' => 'Premium Solar Battery',
         'company' => 'SolarTech Solutions',
-        'price' => 899.99,
+        'price' => 292496.75,
         'quantity' => 1,
         'image' => 'solar_battery.png'
     ],
@@ -25,7 +25,7 @@ $cartItems = [
         'id' => 5,
         'title' => 'Portable Solar Power Bank',
         'company' => 'MobilePower Plus',
-        'price' => 59.99,
+        'price' => 42246.75,
         'quantity' => 2,
         'image' => 'portable_solar_powerbank.png'
     ],
@@ -33,7 +33,7 @@ $cartItems = [
         'id' => 3,
         'title' => 'Solar Garden Lamp Set',
         'company' => 'GreenLight Solutions',
-        'price' => 129.99,
+        'price' => 19496.75,
         'quantity' => 1,
         'image' => 'solar_graden_lamp_set.png'
     ]
@@ -41,6 +41,8 @@ $cartItems = [
 ?>
 
 <div class="shop-container">
+
+    <!-- <h2 style="margin-bottom: 20px;">Your Shopping Cart</h2> -->
 
     <div class="cart-grid">
         <div class="cart-items">
@@ -53,7 +55,7 @@ $cartItems = [
                     <div class="cart-product-info">
                         <h4><?php echo $item['title']; ?></h4>
                         <p class="cart-product-company"><?php echo $item['company']; ?></p>
-                        <p class="cart-product-price">$<?php echo number_format($item['price'],2); ?></p>
+                        <p class="cart-product-price">Rs.<?php echo number_format($item['price'],2); ?></p>
 
                         <div class="cart-actions">
                             <label>
@@ -71,7 +73,7 @@ $cartItems = [
         <div class="cart-summary">
             <h3>Order Summary</h3>
             <p>Items: <span id="summary-count"><?php echo array_sum(array_column($cartItems,'quantity')); ?></span></p>
-            <p>Total: $<span id="summary-total"><?php echo number_format(array_sum(array_map(fn($i)=>$i['price']*$i['quantity'],$cartItems)),2); ?></span></p>
+            <p>Total: Rs.<span id="summary-total"><?php echo number_format(array_sum(array_map(fn($i)=>$i['price']*$i['quantity'],$cartItems)),2); ?></span></p>
             <button class="btn btn-primary checkout-btn">Proceed to Checkout</button>
         </div>
     </div>
