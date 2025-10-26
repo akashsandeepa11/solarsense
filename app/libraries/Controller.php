@@ -21,5 +21,27 @@
                     die("Layout '{$layout}' not found.");
                 }
             }
+
+            /**
+             * Require authentication in controller methods
+             */
+            protected function requireAuth() {
+                requireAuth();
+            }
+
+            /**
+             * Require specific role(s) in controller methods
+             * @param array|string $allowedRoles
+             */
+            protected function requireRole($allowedRoles) {
+                requireRole($allowedRoles);
+            }
+
+            /**
+             * Block authenticated users (for login/register pages)
+             */
+            protected function blockIfAuthenticated() {
+                blockIfAuthenticated();
+            }
         }
     ?>

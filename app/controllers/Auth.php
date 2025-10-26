@@ -9,33 +9,51 @@
         }
 
         public function createUserSession($user) {
-            $_SESSION['user_id'] = $user->id;
+            $_SESSION['user_id'] = $user->user_id; // Changed from $user->id to $user->user_id
             $_SESSION['user_email'] = $user->email;
             $_SESSION['user_type'] = $user->type;
             $_SESSION['user_name'] = $user->full_name;
 
+            // DEBUG
+            error_log("DEBUG: User type is: " . $user->type);
+            error_log("DEBUG: About to redirect...");
+
             //create switch case for redirecting based on user type
             switch($user->type) {
                 case ROLE_HOMEOWNER:
-                    redirect('homeowner/dashboard');
+                    error_log("DEBUG: Redirecting homeowner to HomeOwner/dashboard");
+                    redirect('HomeOwner/dashboard');
+                    exit; // Force exit after redirect
                     break;
                 case ROLE_INSTALLER_ADMIN:
-                    redirect('installeradmin/dashboard');
+                    error_log("DEBUG: Redirecting installer admin");
+                    redirect('InstallerAdmin/dashboard');
+                    exit;
                     break;
                 case ROLE_OPERATION_MANAGER:
-                    redirect('operationmanager/dashboard');
+                    error_log("DEBUG: Redirecting operation manager");
+                    redirect('OperationManager/dashboard');
+                    exit;
                     break;
                 case ROLE_INVENTORY_MANAGER:
-                    redirect('inventorymanager/inventory');
+                    error_log("DEBUG: Redirecting inventory manager");
+                    redirect('InventoryManager/inventory');
+                    exit;
                     break;
                 case ROLE_SERVICE_AGENT:
-                    redirect('serviceagent/tasks');
+                    error_log("DEBUG: Redirecting service agent");
+                    redirect('ServiceAgent/tasks');
+                    exit;
                     break;
                 case ROLE_SUPER_ADMIN:
-                    redirect('superadmin/dashboard');
+                    error_log("DEBUG: Redirecting super admin");
+                    redirect('SuperAdmin/dashboard');
+                    exit;
                     break;
                 default:
+                    error_log("DEBUG: User type not recognized, redirecting to login");
                     redirect('auth/login');
+                    exit;
                     break;
             }
         }
@@ -60,6 +78,9 @@
         }
         
         public function login(){
+            // Block authenticated users from accessing login page
+            $this->blockIfAuthenticated();
+            
             if($_SERVER["REQUEST_METHOD"]=='POST'){
 
                 $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
@@ -123,13 +144,19 @@
         }
 
         public function installer_registration(){
+            // Block authenticated users from accessing registration page
+            $this->blockIfAuthenticated();
+            
             $data = [];
             $this->view('pages/auth/installer_registration', $data, layout: "main");
         }
 
         public function installerRegistrationHandler() {
-    // Check if form is submitted (POST request)
-    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            // Block authenticated users from accessing registration page
+            $this->blockIfAuthenticated();
+            
+            // Check if form is submitted (POST request)
+            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         // Sanitize and collect form inputs
         $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);

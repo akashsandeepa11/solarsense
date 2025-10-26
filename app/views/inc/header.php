@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo SITENAME; ?> - <?php echo $data['user']['role']??''; ?></title>
+    <title><?php echo SITENAME; ?></title>
     
     <!-- Local fonts are loaded via CSS @font-face; no external font CDNs used -->
     <!-- Font Awesome for icons -->
@@ -16,5 +16,8 @@
     
 </head>
 <body>
+    <!-- Loading Spinner -->
+    <?php include __DIR__ . '/components/loading_spinner.php'; ?>
+    
     <!-- Display Toast Messages -->
     <?php displayToast(); ?>

@@ -8,8 +8,11 @@
 
     // Load Configarations
     require_once "config/config.php";
-    // Load Constatnts
+    // Load Constatnts (MUST be loaded before RouteProtection_Helper)
     require_once 'config/constants.php';
+    
+    // Load Route Protection Helper (after constants are defined)
+    require_once 'helpers/RouteProtection_Helper.php';
     
     // Load libraries
     require_once "libraries/Controller.php";

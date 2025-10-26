@@ -72,7 +72,7 @@ class M_Installer_Fleet
             $this->db->bind(':company_id', $companyId);
             $company = $this->db->single_assoc();
 
-            var_dump($company);
+            // var_dump($company);
 
             if (!$company) {
                 throw new Exception("Company not found.");
