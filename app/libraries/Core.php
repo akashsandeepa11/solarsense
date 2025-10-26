@@ -6,6 +6,11 @@
         protected $params = [];
 
         public function __construct(){
+            // Start session if not already started
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            
             $url = $this->getURL();
 
             // If controller segment provided, ensure the controller file exists
@@ -20,6 +25,9 @@
                     return;
                 }
             }
+
+            // Check route protection BEFORE instantiating controller
+            protectRoute($this->currentController);
 
             // Require the controller file
             require_once __DIR__ . '/../controllers/' . $this->currentController . '.php';

@@ -17,5 +17,10 @@
         public function error404(){
             $this->view('pages/404');
         }
+
+        // Render 403 Forbidden page
+        public function error403(){
+            $this->view('pages/403');
+        }
     }
 ?>  
