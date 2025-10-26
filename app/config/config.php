@@ -10,8 +10,11 @@
     // APPROOT 
     define("APPROOT", dirname(dirname(__FILE__))); 
     // URLROOT - dynamic for both local and hosted environments
-    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' 
-        || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+    // Check if using HTTPS (also check for proxy headers used by Render/cloud platforms)
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
+        || $_SERVER['SERVER_PORT'] == 443
+        || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+        ? "https://" : "http://";
     $domain = $_SERVER['HTTP_HOST'];
     
     // Check if running locally or on hosted server
