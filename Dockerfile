@@ -22,18 +22,17 @@ RUN echo '<Directory /var/www/html/public>\n\
     Require all granted\n\
 </Directory>' >> /etc/apache2/apache2.conf
 
-# Configure Apache to listen on PORT environment variable (Render requirement)
-RUN sed -i 's/Listen 80/Listen ${PORT:-80}/g' /etc/apache2/ports.conf
-RUN sed -i 's/<VirtualHost \*:80>/<VirtualHost *:${PORT:-80}>/g' /etc/apache2/sites-available/000-default.conf
+# Configure Apache ports - remove the static Listen directive
+RUN sed -i '/Listen 80/d' /etc/apache2/ports.conf
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html
 
 # Expose port (Render will set PORT env variable)
-EXPOSE ${PORT:-80}
+EXPOSE 80
 
-# Start Apache with PORT substitution
-CMD sed -i "s/Listen 80/Listen $PORT/g" /etc/apache2/ports.conf && \
+# Start Apache with dynamic PORT
+CMD echo "Listen $PORT" >> /etc/apache2/ports.conf && \
     sed -i "s/<VirtualHost \*:80>/<VirtualHost *:$PORT>/g" /etc/apache2/sites-available/000-default.conf && \
     apache2-foreground
 
