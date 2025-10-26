@@ -2,10 +2,24 @@
         class Controller{
             // To load the model
             public function model($model){
-                require_once dirname(__DIR__) . '/models/' . $model . '.php';
-
-                // Instantiate the model and pass it to the controller
-                return new $model();
+                // Convert model name to match file naming convention (lowercase or exact match)
+                $modelFile = dirname(__DIR__) . '/models/' . $model . '.php';
+                
+                // Try exact case first
+                if (file_exists($modelFile)) {
+                    require_once $modelFile;
+                    return new $model();
+                }
+                
+                // Try lowercase version (common convention: m_auth.php, m_pages.php)
+                $modelFileLower = dirname(__DIR__) . '/models/' . strtolower($model) . '.php';
+                if (file_exists($modelFileLower)) {
+                    require_once $modelFileLower;
+                    return new $model();
+                }
+                
+                // If still not found, throw error
+                die("Model file not found: {$model}.php or " . strtolower($model) . ".php");
             }
 
             public function view($view, $data = [], $layout = 'main') {
