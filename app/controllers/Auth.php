@@ -83,7 +83,7 @@
             
             if($_SERVER["REQUEST_METHOD"]=='POST'){
 
-                $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+                $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
                 $data = [
                     'email' => trim($_POST['email']),
@@ -159,7 +159,7 @@
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         // Sanitize and collect form inputs
-        $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+        $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
         $data = [
             'companyName'      => trim($_POST['companyName'] ?? ''),
