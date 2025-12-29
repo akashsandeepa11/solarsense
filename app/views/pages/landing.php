@@ -5,7 +5,14 @@
     <title>SolarSense - Your Solar Journey, Simplified</title>
     <link rel="stylesheet" href="<?php echo URLROOT; ?>/public/css/landing.css">
     <style>
-        
+        .form-control {
+            height: 40px !important;
+            min-height: 40px !important;
+            max-height: 40px !important;
+            padding: 0.4rem 0.75rem !important;
+            line-height: 1.2 !important;
+            box-sizing: border-box !important;
+        }
     </style>
 </head>
 <body>
@@ -399,9 +406,9 @@
             <div class="container">
                 <div class="quotation-container">
                     <div class="quotation-header">
-                        <span class="quotation-badge"><i class="fas fa-solar-panel"></i> Instant Estimator</span>
-                        <h2>Build Your Custom Solar Quotation</h2>
-                        <p>Walk through four quick steps to estimate your investment, projected savings, and connect with a verified installer.</p>
+                        <span class="quotation-badge"><i class="fas fa-solar-panel"></i> Free Estimate</span>
+                        <h2>Get Your Solar Quote</h2>
+                        <p>Answer 3 simple questions. Get your estimate in 60 seconds.</p>
                     </div>
 
                     <div class="quotation-progress">
@@ -411,116 +418,191 @@
                         </div>
                         <div class="progress-step" data-step="2">
                             <div class="progress-circle">2</div>
-                            <div class="progress-label">System Specs</div>
+                            <div class="progress-label">Your Electricity Use</div>
                         </div>
                         <div class="progress-step" data-step="3">
                             <div class="progress-circle">3</div>
-                            <div class="progress-label">Installation</div>
+                            <div class="progress-label">Your Home Details</div>
                         </div>
                         <div class="progress-step" data-step="4">
                             <div class="progress-circle">4</div>
-                            <div class="progress-label">Confirm</div>
+                            <div class="progress-label">Your Quote</div>
                         </div>
                     </div>
 
                     <div class="quotation-content">
                         <div class="quotation-step active" data-step="1">
-                            <h3>Choose a Trusted Installer</h3>
-                            <p class="step-intro">Compare curated partners with proven track records in residential and commercial deployments.</p>
+                            <h3>Who should we connect you with?</h3>
+                            <p class="step-intro">Choose an installer to get your quote. All listed companies are verified and trusted by SolarSense.</p>
+                            <p class="form-helper" style="margin-bottom: 1rem;">You can change this later.</p>
                             <div class="installer-options" id="installer-options"></div>
                         </div>
 
                         <div class="quotation-step" data-step="2">
-                            <h3>Configure Your Solar System</h3>
-                            <p class="step-intro">Select the system size and components that best match your energy goals.</p>
-                            <div class="specs-grid">
+                            <h3>Tell us about your electricity usage</h3>
+                            <p class="step-intro">We'll use this to recommend the right system size for you.</p>
+                            
+                            <div class="form-row">
                                 <div class="form-group">
-                                    <label class="form-label" for="capacity">System Capacity (kW)</label>
-                                    <select id="capacity" class="form-control">
-                                        <option value="3">3 kW &mdash; Compact Home</option>
-                                        <option value="5" selected>5 kW &mdash; Standard Home</option>
-                                        <option value="7">7 kW &mdash; Large Home</option>
-                                        <option value="10">10 kW &mdash; Business</option>
+                                    <label class="form-label" for="bill-amount">How much is your monthly electricity bill?</label>
+                                    <select id="bill-amount" class="form-control" style="height:40px !important; min-height:40px !important; max-height:40px !important; padding:0.4rem 0.75rem !important; box-sizing:border-box;">
+                                        <option value="low">Less than Rs. 15,000</option>
+                                        <option value="medium" selected>Rs. 15,000 – Rs. 30,000</option>
+                                        <option value="high">Rs. 30,000 – Rs. 45,000</option>
+                                        <option value="very-high">Over Rs. 45,000</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label" for="panel-type">Panel Type</label>
-                                    <select id="panel-type" class="form-control">
-                                        <option value="mono" selected>Monocrystalline &mdash; Highest Efficiency</option>
-                                        <option value="poly">Polycrystalline &mdash; Best Value</option>
-                                        <option value="thin">Thin-Film &mdash; Lightweight</option>
+                                    <label class="form-label" for="usage-pattern">When do you use most electricity?</label>
+                                    <select id="usage-pattern" class="form-control" style="height:40px !important; min-height:40px !important; max-height:40px !important; padding:0.4rem 0.75rem !important; box-sizing:border-box;">
+                                        <option value="day">Mostly during the day (home, shop, or remote work)</option>
+                                        <option value="balanced" selected>About the same all day</option>
+                                        <option value="night">Mostly at night</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row" style="margin-top: 1.25rem;">
+                                <div class="form-group">
+                                    <label class="form-label" for="backup-needs">Do you want electricity during power cuts?</label>
+                                    <select id="backup-needs" class="form-control" style="height:40px !important; min-height:40px !important; max-height:40px !important; padding:0.4rem 0.75rem !important; box-sizing:border-box;">
+                                        <option value="none" selected>No, I'm fine without</option>
+                                        <option value="essentials">Yes, for essentials (lights, fans, router)</option>
+                                        <option value="full">Yes, I want full home backup</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label" for="inverter-type">Inverter Type</label>
-                                    <select id="inverter-type" class="form-control">
-                                        <option value="string" selected>String Inverter</option>
-                                        <option value="micro">Micro Inverter</option>
-                                        <option value="hybrid">Hybrid Inverter</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label" for="battery">Battery Storage</label>
-                                    <select id="battery" class="form-control">
-                                        <option value="none" selected>No Battery</option>
-                                        <option value="5">5 kWh Battery</option>
-                                        <option value="10">10 kWh Battery</option>
-                                        <option value="15">15 kWh Battery</option>
+                                    <label class="form-label" for="preference">What matters most to you?</label>
+                                    <select id="preference" class="form-control" style="height:40px !important; min-height:40px !important; max-height:40px !important; padding:0.4rem 0.75rem !important; box-sizing:border-box;">
+                                        <option value="value" selected>Save money now (standard panels)</option>
+                                        <option value="performance">Maximum performance (premium panels)</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
 
                         <div class="quotation-step" data-step="3">
-                            <h3>Installation Details</h3>
-                            <p class="step-intro">Tell us more about your site so we can tailor mounting, monitoring, and warranty coverage.</p>
-                            <div class="specs-grid">
+                            <h3>A few details about your home</h3>
+                            <p class="step-intro">Almost done! This helps us finalize your quote.</p>
+                            
+                            <div class="form-row">
                                 <div class="form-group">
-                                    <label class="form-label" for="roof-type">Roof Type</label>
-                                    <select id="roof-type" class="form-control">
+                                    <label class="form-label" for="roof-type">What type of roof do you have?</label>
+                                    <select id="roof-type" class="form-control" style="height:40px !important; min-height:40px !important; max-height:40px !important; padding:0.4rem 0.75rem !important; box-sizing:border-box;">
                                         <option value="tile" selected>Tile Roof</option>
-                                        <option value="metal">Metal Roof</option>
-                                        <option value="flat">Flat Roof</option>
+                                        <option value="metal">Metal (Zinc or Calicut)</option>
+                                        <option value="flat">Flat Concrete</option>
                                     </select>
+                                    <p class="form-helper">If you're not sure, our installer will confirm this later.</p>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label" for="monitoring">Monitoring System</label>
-                                    <select id="monitoring" class="form-control">
-                                        <option value="basic" selected>Standard Monitoring</option>
-                                        <option value="advanced">Advanced Monitoring &amp; Alerts</option>
+                                    <label class="form-label" for="smart-features">Want an app to track your savings?</label>
+                                    <select id="smart-features" class="form-control" style="height:40px !important; min-height:40px !important; max-height:40px !important; padding:0.4rem 0.75rem !important; box-sizing:border-box;">
+                                        <option value="basic" selected>No thanks, basic is fine</option>
+                                        <option value="advanced">Yes, with app & alerts (+Rs. 27k one-time)</option>
                                     </select>
                                 </div>
-                                <div class="form-group">
-                                    <label class="form-label" for="warranty">Warranty Period</label>
-                                    <select id="warranty" class="form-control">
-                                        <option value="10" selected>10 Years</option>
-                                        <option value="15">15 Years</option>
-                                        <option value="25">25 Years</option>
-                                    </select>
+                            </div>
+
+                            <div class="appliance-section" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0;">
+                                <label class="form-label">Which of these do you use regularly?</label>
+                                <p style="font-size: 0.85rem; color: #64748b; margin: 0 0 1rem 0;">Select all that apply — helps us fine-tune your system size</p>
+                                <script>
+                                    function updateCardStyle(card, isChecked) {
+                                        var icon = card.querySelector("i");
+                                        var textSpan = card.querySelector("span");
+                                        if (isChecked) {
+                                            card.style.borderColor = "#fe9630";
+                                            card.style.background = "rgba(254, 150, 48, 0.1)";
+                                            if (icon) icon.style.color = "#fe9630";
+                                            if (textSpan) textSpan.style.color = "#fe9630";
+                                        } else {
+                                            card.style.borderColor = "#e2e8f0";
+                                            card.style.background = "#f8fafc";
+                                            if (icon) icon.style.color = "#94a3b8";
+                                            if (textSpan) textSpan.style.color = "#475569";
+                                        }
+                                    }
+
+                                    function toggleAppliance(card, value) {
+                                        var checkbox = card.querySelector('input[type="checkbox"]');
+                                        if (!checkbox) return;
+                                        checkbox.checked = !checkbox.checked;
+                                        updateCardStyle(card, checkbox.checked);
+
+                                        // If "None" is selected, deselect all others
+                                        if (value === 'none' && checkbox.checked) {
+                                            var allCards = document.querySelectorAll('.appliance-card');
+                                            allCards.forEach(function(otherCard) {
+                                                var otherCheckbox = otherCard.querySelector('input[type="checkbox"]');
+                                                if (otherCheckbox && otherCheckbox.value !== 'none') {
+                                                    otherCheckbox.checked = false;
+                                                    updateCardStyle(otherCard, false);
+                                                }
+                                            });
+                                        }
+                                        // If any appliance is selected, deselect "None"
+                                        else if (value !== 'none' && checkbox.checked) {
+                                            var noneCard = document.querySelector('.appliance-card input[value="none"]');
+                                            if (noneCard && noneCard.checked) {
+                                                noneCard.checked = false;
+                                                updateCardStyle(noneCard.closest('.appliance-card'), false);
+                                            }
+                                        }
+                                    }
+                                </script>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.75rem;">
+                                    <div class="appliance-card" onclick="toggleAppliance(this, 'ac')" style="cursor: pointer; padding: 1rem 0.5rem; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; text-align: center; transition: all 0.2s;">
+                                        <input type="checkbox" name="appliances" value="ac" style="display:none;">
+                                        <i class="fas fa-snowflake" style="font-size: 1.4rem; color: #94a3b8; display: block; margin-bottom: 0.5rem;"></i>
+                                        <span style="font-size: 0.85rem; color: #475569;">Air conditioner</span>
+                                    </div>
+                                    <div class="appliance-card" onclick="toggleAppliance(this, 'heater')" style="cursor: pointer; padding: 1rem 0.5rem; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; text-align: center; transition: all 0.2s;">
+                                        <input type="checkbox" name="appliances" value="heater" style="display:none;">
+                                        <i class="fas fa-fire" style="font-size: 1.4rem; color: #94a3b8; display: block; margin-bottom: 0.5rem;"></i>
+                                        <span style="font-size: 0.85rem; color: #475569;">Water heater</span>
+                                    </div>
+                                    <div class="appliance-card" onclick="toggleAppliance(this, 'washer')" style="cursor: pointer; padding: 1rem 0.5rem; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; text-align: center; transition: all 0.2s;">
+                                        <input type="checkbox" name="appliances" value="washer" style="display:none;">
+                                        <i class="fas fa-tshirt" style="font-size: 1.4rem; color: #94a3b8; display: block; margin-bottom: 0.5rem;"></i>
+                                        <span style="font-size: 0.85rem; color: #475569;">Washing machine</span>
+                                    </div>
+                                    <div class="appliance-card" onclick="toggleAppliance(this, 'cooker')" style="cursor: pointer; padding: 1rem 0.5rem; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; text-align: center; transition: all 0.2s;">
+                                        <input type="checkbox" name="appliances" value="cooker" style="display:none;">
+                                        <i class="fas fa-utensils" style="font-size: 1.4rem; color: #94a3b8; display: block; margin-bottom: 0.5rem;"></i>
+                                        <span style="font-size: 0.85rem; color: #475569;">Electric cooker</span>
+                                    </div>
+                                    <div class="appliance-card" onclick="toggleAppliance(this, 'none')" style="cursor: pointer; padding: 1rem 0.5rem; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; text-align: center; transition: all 0.2s;">
+                                        <input type="checkbox" name="appliances" value="none" style="display:none;">
+                                        <i class="fas fa-ban" style="font-size: 1.4rem; color: #94a3b8; display: block; margin-bottom: 0.5rem;"></i>
+                                        <span style="font-size: 0.85rem; color: #475569;">None of these</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="quotation-step" data-step="4">
-                            <h3>Review Your Quotation</h3>
+                            <h3>Your Personalized Solar Quote</h3>
+                            <p class="step-intro">Based on your answers, here's what we recommend:</p>
                             <div class="confirmation-summary" id="confirmation-summary"></div>
                             <div class="price-summary" id="price-summary"></div>
                             <div class="customer-form">
+                                <p class="form-section-title">Where should we send your detailed quote?</p>
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label class="form-label" for="customer-name">Full Name</label>
-                                        <input id="customer-name" type="text" class="form-control" placeholder="Enter your name">
+                                        <label class="form-label" for="customer-name">Your Name</label>
+                                        <input id="customer-name" type="text" class="form-control" placeholder="e.g. Kamal Perera" style="height:40px !important; padding:0.4rem 0.75rem !important; box-sizing:border-box;">
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label" for="customer-email">Email Address</label>
-                                        <input id="customer-email" type="email" class="form-control" placeholder="name@example.com">
+                                        <input id="customer-email" type="email" class="form-control" placeholder="e.g. kamal@email.com" style="height:40px !important; padding:0.4rem 0.75rem !important; box-sizing:border-box;">
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="customer-phone">Phone Number</label>
-                                    <input id="customer-phone" type="tel" class="form-control" placeholder="07X XXX XXXX">
+                                    <input id="customer-phone" type="tel" class="form-control" placeholder="e.g. 077 123 4567" style="height:40px !important; padding:0.4rem 0.75rem !important; box-sizing:border-box;">
                                 </div>
-                                <p class="form-helper">We share these details only with your selected installer.</p>
+                                <p class="form-helper">Your details are only shared with your selected installer.</p>
                             </div>
                         </div>
 
@@ -536,7 +618,7 @@
 
                     <div class="quotation-footer" id="quotation-footer">
                         <button type="button" class="btn btn-primary-outline" id="prev-step-btn">&larr; Back</button>
-                        <button type="button" class="btn btn-primary" id="next-step-btn">Next Step</button>
+                        <button type="button" class="btn btn-primary" id="next-step-btn">Continue</button>
                     </div>
                 </div>
             </div>

@@ -2,6 +2,31 @@ let animatedObserver = null;
 const animatedSelectors =
   ".features__item, .step, .fade-in, .testimonial, .installer-card";
 
+// Global function for appliance card toggle (used by onclick handlers)
+function toggleAppliance(card, value) {
+  const checkbox = card.querySelector('input[type="checkbox"]');
+  if (!checkbox) return;
+
+  // Toggle checkbox
+  checkbox.checked = !checkbox.checked;
+
+  // Update visual state
+  const icon = card.querySelector("i");
+  const textSpan = card.querySelector("span");
+
+  if (checkbox.checked) {
+    card.style.borderColor = "#fe9630";
+    card.style.background = "rgba(254, 150, 48, 0.1)";
+    if (icon) icon.style.color = "#fe9630";
+    if (textSpan) textSpan.style.color = "#fe9630";
+  } else {
+    card.style.borderColor = "#e2e8f0";
+    card.style.background = "#f8fafc";
+    if (icon) icon.style.color = "#94a3b8";
+    if (textSpan) textSpan.style.color = "#475569";
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   initializeHeaderInteractions();
   initializeScrollAnimations();
@@ -312,6 +337,8 @@ const quotationState = {
   roofType: "tile",
   monitoring: "basic",
   warranty: "10",
+  usagePattern: "balanced",
+  heavyLoads: [],
 };
 
 function initializeQuotationCalculator() {
@@ -349,7 +376,7 @@ function setupQuotationEventListeners() {
   }
 
   const specControls = document.querySelectorAll(
-    "#capacity, #panel-type, #inverter-type, #battery, #roof-type, #monitoring, #warranty"
+    "#bill-amount, #usage-pattern, #backup-needs, #preference, #roof-type, #smart-features"
   );
   specControls.forEach((control) => {
     control.addEventListener("change", () => {
@@ -365,6 +392,35 @@ function setupQuotationEventListeners() {
     trigger.addEventListener("click", (event) => {
       event.preventDefault();
       scrollToQuotation();
+    });
+  });
+
+  // Appliance checkbox card interactions - click on card to toggle
+  document.querySelectorAll(".checkbox-card").forEach((card) => {
+    card.addEventListener("click", function (e) {
+      e.preventDefault();
+      const checkbox = this.querySelector('input[type="checkbox"]');
+      if (!checkbox) return;
+
+      // Toggle the checkbox
+      checkbox.checked = !checkbox.checked;
+
+      // Update visual state
+      const content = this.querySelector(".checkbox-card__content");
+      if (checkbox.checked) {
+        content.style.borderColor = "#fe9630";
+        content.style.background = "rgba(254, 150, 48, 0.1)";
+        content.style.color = "#fe9630";
+        const icon = content.querySelector("i");
+        if (icon) icon.style.color = "#fe9630";
+      } else {
+        content.style.borderColor = "#e2e8f0";
+        content.style.background = "#f8fafc";
+        content.style.color = "#475569";
+        const icon = content.querySelector("i");
+        if (icon) icon.style.color = "#94a3b8";
+      }
+      updateStateFromInputs();
     });
   });
 }
@@ -437,9 +493,8 @@ function initializeInstallerDirectory() {
             <div class="installer-card__name">${installer.name}</div>
             <div class="installer-card__rating">
               <i class="fas fa-star"></i>
-              <span>${installer.rating.toFixed(1)} · ${
-        installer.installs
-      } installs</span>
+              <span>${installer.rating.toFixed(1)} · ${installer.installs
+        } installs</span>
             </div>
           </div>
           <span class="installer-card__badge">
@@ -447,17 +502,16 @@ function initializeInstallerDirectory() {
             Verified
           </span>
         </div>
-        <p class="installer-card__bio">Serving ${
-          installer.district.charAt(0).toUpperCase() +
-          installer.district.slice(1)
+        <p class="installer-card__bio">Serving ${installer.district.charAt(0).toUpperCase() +
+        installer.district.slice(1)
         } district · ${installer.years}+ years experience</p>
         <div class="installer-card__services">
           ${installer.services
-            .map(
-              (service) =>
-                `<span class="service-tag">${formatLabel(service)}</span>`
-            )
-            .join("")}
+          .map(
+            (service) =>
+              `<span class="service-tag">${formatLabel(service)}</span>`
+          )
+          .join("")}
         </div>
         <div class="installer-card__actions">
           <a href="#quotation-section" class="btn btn-primary btn-sm quote-trigger">Request Quote</a>
@@ -512,14 +566,13 @@ function loadInstallerOptions() {
     card.innerHTML = `
       <div class="installer-card-head">
         <span class="rating"><i class="fas fa-star"></i> ${installer.rating.toFixed(
-          1
-        )}</span>
+      1
+    )}</span>
         <span class="installer-option__meta">${installer.reviews} reviews</span>
       </div>
       <div class="installer-option__name">${installer.name}</div>
-      <div class="installer-option__meta">${installer.experience} • ${
-      installer.region
-    }</div>
+      <div class="installer-option__meta">${installer.experience} • ${installer.region
+      }</div>
       <div class="installer-option__price">
         <span>Average rate</span>
         <span>Rs ${(installer.baseRate / 1000).toFixed(0)}k / kW</span>
@@ -614,9 +667,9 @@ function updateNavigationState() {
   }
 
   if (currentStep === 4) {
-    nextBtn.textContent = "Confirm & Submit Request";
+    nextBtn.textContent = "Get My Quote";
   } else {
-    nextBtn.textContent = "Next Step";
+    nextBtn.textContent = "Continue";
   }
 
   if (currentStep >= 5) {
@@ -629,17 +682,51 @@ function updateNavigationState() {
 }
 
 function updateStateFromInputs() {
-  quotationState.capacity = document.getElementById("capacity")?.value || "5";
-  quotationState.panelType =
-    document.getElementById("panel-type")?.value || "mono";
-  quotationState.inverterType =
-    document.getElementById("inverter-type")?.value || "string";
-  quotationState.battery = document.getElementById("battery")?.value || "none";
+  // Mapping Logic
+  // 1. Bill Amount -> Capacity
+  const billAmount = document.getElementById("bill-amount")?.value || "medium";
+  const billMap = {
+    low: "3", // < 15k
+    medium: "5", // 15-30k
+    high: "7", // 30-45k
+    "very-high": "10", // > 45k
+  };
+  quotationState.capacity = billMap[billAmount];
+
+  // 2. Usage Pattern
+  quotationState.usagePattern = document.getElementById("usage-pattern")?.value || "balanced";
+
+  // 3. Backup Needs -> Battery & Inverter
+  const backupNeeds = document.getElementById("backup-needs")?.value || "none";
+  if (backupNeeds === "none") {
+    quotationState.battery = "none";
+    quotationState.inverterType = "string";
+  } else if (backupNeeds === "essentials") {
+    quotationState.battery = "5";
+    quotationState.inverterType = "hybrid";
+  } else {
+    // full
+    quotationState.battery = "10";
+    quotationState.inverterType = "hybrid";
+  }
+
+  // 4. Preference -> Panel Type
+  const preference = document.getElementById("preference")?.value || "value";
+  quotationState.panelType = preference === "value" ? "poly" : "mono";
+
+  // 5. Installation
   quotationState.roofType =
     document.getElementById("roof-type")?.value || "tile";
-  quotationState.monitoring =
-    document.getElementById("monitoring")?.value || "basic";
-  quotationState.warranty = document.getElementById("warranty")?.value || "10";
+
+  const smartFeatures = document.getElementById("smart-features")?.value || "basic";
+  quotationState.monitoring = smartFeatures;
+  quotationState.warranty = smartFeatures === "advanced" ? "25" : "10";
+
+  // 6. Heavy Loads (Appliances)
+  const applianceCheckboxes = document.querySelectorAll('input[name="appliances"]:checked');
+  quotationState.heavyLoads = Array.from(applianceCheckboxes)
+    .map(cb => cb.value)
+    .filter(v => v !== "none");
 }
 
 function calculatePrice() {
@@ -685,40 +772,148 @@ function renderConfirmation() {
   const state = quotationState;
   const installerName = selectedInstaller ? selectedInstaller.name : "-";
 
+  // Build benefit-focused recommendation (no technical specs)
+  let benefitText = "Your system will cover your daily electricity needs";
+
+  if (state.battery !== "none") {
+    benefitText += ", power essential appliances during outages";
+  }
+
+  benefitText += ", and maximize your solar savings.";
+
+  // Usage pattern benefit
+  const usageBenefit = {
+    "day": "With most of your usage during the day, you'll get the best value from direct solar power.",
+    "night": "Battery storage ensures you save even when using electricity at night.",
+    "balanced": "Your balanced usage means consistent savings around the clock."
+  };
+
+  // Appliance benefit
+  const applianceNames = {
+    "ac": "air conditioner",
+    "heater": "water heater",
+    "washer": "washing machine",
+    "cooker": "electric cooker"
+  };
+  const applianceList = state.heavyLoads.map(a => applianceNames[a]).filter(Boolean);
+  const applianceBenefit = applianceList.length > 0
+    ? `We've sized this to comfortably power your ${applianceList.join(" and ")}.`
+    : "";
+
+  // Calculate key numbers
+  const pricing = calculatePrice();
+  const capacity = Number(state.capacity);
+  const monthlyGeneration = capacity * 4.5 * 30;
+  const tariff = 35;
+  const monthlySavings = Math.round(monthlyGeneration * tariff);
+  const annualSavings = monthlySavings * 12;
+  const paybackYears = pricing ? Math.max(pricing.total / annualSavings, 0).toFixed(1) : "-";
+  const totalInvestment = pricing ? formatCurrency(pricing.total) : "-";
+
+  // Confidence indicator
+  const hasAllInputs = state.heavyLoads.length > 0 || state.heavyLoads.includes("none");
+  const confidenceLevel = hasAllInputs ? "High" : "Medium";
+  const confidenceColor = hasAllInputs ? "#22c55e" : "#f59e0b";
+
+  const appDesc = state.monitoring === "advanced" ? "Premium app & alerts" : "Basic monitoring";
+
   summaryEl.innerHTML = `
-    <div class="summary-section">
-      <div class="summary-title">Installer</div>
-      <div class="summary-item"><strong>Company</strong><span>${installerName}</span></div>
-      <div class="summary-item"><strong>Region</strong><span>${
-        selectedInstaller?.region || "--"
-      }</span></div>
+    <div class="recommendation-card" style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: none; padding: 1.5rem; border-radius: 16px; margin-bottom: 1.5rem;">
+      <div class="recommendation-header" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+        <i class="fas fa-sun" style="color: #fe9630; font-size: 1.25rem;"></i>
+        <span style="font-weight: 600; color: #1e293b;">Your Solar Solution</span>
+      </div>
+      <p style="color: #475569; line-height: 1.6; margin: 0;">${benefitText}</p>
+      <p style="color: #64748b; font-size: 0.9rem; margin-top: 0.75rem; margin-bottom: 0;">${usageBenefit[state.usagePattern] || ""} ${applianceBenefit}</p>
     </div>
-    <div class="summary-section" style="margin-top:1.25rem;">
-      <div class="summary-title">System Specification</div>
-      <div class="summary-item"><strong>Capacity</strong><span>${
-        state.capacity
-      } kW</span></div>
-      <div class="summary-item"><strong>Panel Type</strong><span>${formatLabel(
-        state.panelType
-      )}</span></div>
-      <div class="summary-item"><strong>Inverter</strong><span>${formatLabel(
-        state.inverterType
-      )}</span></div>
-      <div class="summary-item"><strong>Battery</strong><span>${
-        state.battery === "none" ? "No battery" : `${state.battery} kWh`
-      }</span></div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+      <div style="background: #f8fafc; padding: 1rem; border-radius: 12px; text-align: center;">
+        <p style="font-size: 0.8rem; color: #64748b; margin: 0 0 0.25rem 0;">Total Investment</p>
+        <p style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0;">${totalInvestment}</p>
+      </div>
+      <div style="background: #f0fdf4; padding: 1rem; border-radius: 12px; text-align: center;">
+        <p style="font-size: 0.8rem; color: #64748b; margin: 0 0 0.25rem 0;">Monthly Savings</p>
+        <p style="font-size: 1.25rem; font-weight: 700; color: #22c55e; margin: 0;">${formatCurrency(monthlySavings)}</p>
+      </div>
+      <div style="background: #eff6ff; padding: 1rem; border-radius: 12px; text-align: center;">
+        <p style="font-size: 0.8rem; color: #64748b; margin: 0 0 0.25rem 0;">Payback Period</p>
+        <p style="font-size: 1.25rem; font-weight: 700; color: #3b82f6; margin: 0;">${paybackYears} yrs</p>
+      </div>
     </div>
-    <div class="summary-section" style="margin-top:1.25rem;">
-      <div class="summary-title">Installation Preferences</div>
-      <div class="summary-item"><strong>Roof Type</strong><span>${formatLabel(
-        state.roofType
-      )}</span></div>
-      <div class="summary-item"><strong>Monitoring</strong><span>${formatLabel(
-        state.monitoring
-      )}</span></div>
-      <div class="summary-item"><strong>Warranty</strong><span>${
-        state.warranty
-      } years</span></div>
+
+    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+      <span style="font-size: 0.85rem; color: #64748b;">Estimate Confidence:</span>
+      <span style="font-size: 0.85rem; font-weight: 600; color: ${confidenceColor};">${confidenceLevel}</span>
+    </div>
+
+    <div style="background: #f8fafc; padding: 1rem; border-radius: 12px; margin-bottom: 1rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <p style="font-weight: 600; color: #1e293b; margin: 0;">Installed by ${installerName}</p>
+          <p style="font-size: 0.85rem; color: #64748b; margin: 0.25rem 0 0 0;">Coverage: ${selectedInstaller?.region || "--"}</p>
+        </div>
+        <i class="fas fa-check-circle" style="color: #22c55e; font-size: 1.5rem;"></i>
+      </div>
+    </div>
+
+    <details style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 1rem;">
+      <summary style="padding: 1rem; cursor: pointer; font-weight: 500; color: #475569; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>View cost breakdown</span>
+        <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: #94a3b8;"></i>
+      </summary>
+      <div style="padding: 0 1rem 1rem 1rem; border-top: 1px solid #e2e8f0;">
+        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9;">
+          <span style="color: #64748b;">System & Installation</span>
+          <span style="color: #1e293b;">${pricing ? formatCurrency(pricing.adjustedBase) : "-"}</span>
+        </div>
+        ${pricing && pricing.batteryCost > 0 ? `
+        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9;">
+          <span style="color: #64748b;">Battery Backup</span>
+          <span style="color: #1e293b;">${formatCurrency(pricing.batteryCost)}</span>
+        </div>` : ""}
+        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9;">
+          <span style="color: #64748b;">Roof Mounting</span>
+          <span style="color: #1e293b;">${pricing ? formatCurrency(pricing.roofCost) : "-"}</span>
+        </div>
+        ${pricing && pricing.monitoringCost > 0 ? `
+        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9;">
+          <span style="color: #64748b;">Smart Monitoring</span>
+          <span style="color: #1e293b;">${formatCurrency(pricing.monitoringCost)}</span>
+        </div>` : ""}
+        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+          <span style="color: #64748b;">Taxes & Fees</span>
+          <span style="color: #1e293b;">${pricing ? formatCurrency(pricing.tax) : "-"}</span>
+        </div>
+      </div>
+    </details>
+
+    <details style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 1rem;">
+      <summary style="padding: 1rem; cursor: pointer; font-weight: 500; color: #475569; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>What's included</span>
+        <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: #94a3b8;"></i>
+      </summary>
+      <div style="padding: 0 1rem 1rem 1rem; border-top: 1px solid #e2e8f0;">
+        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9;">
+          <span style="color: #64748b;">Roof Mounting</span>
+          <span style="color: #1e293b;">${formatLabel(state.roofType)} compatible</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9;">
+          <span style="color: #64748b;">Mobile App</span>
+          <span style="color: #1e293b;">${appDesc}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+          <span style="color: #64748b;">Warranty</span>
+          <span style="color: #1e293b;">${state.warranty} years</span>
+        </div>
+      </div>
+    </details>
+
+    <div style="background: #fef3c7; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem;">
+      <p style="font-size: 0.85rem; color: #92400e; margin: 0;">
+        <i class="fas fa-lightbulb" style="margin-right: 0.5rem;"></i>
+        <strong>Want a more accurate quote?</strong> Our installer will verify appliance types & roof details during the site visit.
+      </p>
     </div>
   `;
 }
@@ -726,55 +921,8 @@ function renderConfirmation() {
 function displayPriceSummary() {
   const priceCard = document.getElementById("price-summary");
   if (!priceCard) return;
-
-  const pricing = calculatePrice();
-  if (!pricing) {
-    priceCard.innerHTML = "";
-    return;
-  }
-
-  const capacity = Number(quotationState.capacity);
-  const monthlyGeneration = capacity * 4.5 * 30; // kWh per month
-  const tariff = 35; // Rs per kWh
-  const monthlySavings = Math.round(monthlyGeneration * tariff);
-  const annualSavings = monthlySavings * 12;
-  const paybackYears = Math.max(pricing.total / annualSavings, 0).toFixed(1);
-
-  priceCard.innerHTML = `
-    <h4>Investment Snapshot</h4>
-    <div class="price-breakdown">
-      <div class="price-item"><span>System & Components</span><span>${formatCurrency(
-        pricing.adjustedBase
-      )}</span></div>
-      <div class="price-item"><span>Battery Storage</span><span>${formatCurrency(
-        pricing.batteryCost
-      )}</span></div>
-      <div class="price-item"><span>Roof & Mounting</span><span>${formatCurrency(
-        pricing.roofCost
-      )}</span></div>
-      <div class="price-item"><span>Monitoring</span><span>${formatCurrency(
-        pricing.monitoringCost
-      )}</span></div>
-      <div class="price-item"><span>Extended Warranty</span><span>${formatCurrency(
-        pricing.warrantyCost
-      )}</span></div>
-      <div class="price-item"><span>Taxes & Levies (est.)</span><span>${formatCurrency(
-        pricing.tax
-      )}</span></div>
-    </div>
-    <div class="price-total"><span>Total Estimated Investment</span><span>${formatCurrency(
-      pricing.total
-    )}</span></div>
-    <div class="savings-info">
-      <div class="savings-row"><span>Projected monthly savings</span><span>${formatCurrency(
-        monthlySavings
-      )}</span></div>
-      <div class="savings-row"><span>Projected annual savings</span><span>${formatCurrency(
-        annualSavings
-      )}</span></div>
-      <div class="savings-row"><span>Estimated payback period</span><span>${paybackYears} years</span></div>
-    </div>
-  `;
+  // All pricing content is now rendered in renderConfirmation() for a cleaner, consolidated view
+  priceCard.innerHTML = "";
 }
 
 function validateContactDetails() {
