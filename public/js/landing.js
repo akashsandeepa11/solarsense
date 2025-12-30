@@ -815,7 +815,7 @@ function renderConfirmation() {
   const confidenceLevel = hasAllInputs ? "High" : "Medium";
   const confidenceColor = hasAllInputs ? "#22c55e" : "#f59e0b";
 
-  const appDesc = state.monitoring === "advanced" ? "Premium app & alerts" : "Basic monitoring";
+  const appDesc = state.monitoring === "advanced" ? "Premium tracking & alerts" : "Standard included";
 
   summaryEl.innerHTML = `
     <div class="recommendation-card" style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: none; padding: 1.5rem; border-radius: 16px; margin-bottom: 1.5rem;">
@@ -899,7 +899,7 @@ function renderConfirmation() {
           <span style="color: #1e293b;">${formatLabel(state.roofType)} compatible</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9;">
-          <span style="color: #64748b;">Mobile App</span>
+          <span style="color: #64748b;">Smart Tracking</span>
           <span style="color: #1e293b;">${appDesc}</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">

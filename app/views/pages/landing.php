@@ -587,30 +587,30 @@
                             <div class="confirmation-summary" id="confirmation-summary"></div>
                             <div class="price-summary" id="price-summary"></div>
                             <div class="customer-form">
-                                <p class="form-section-title">Where should we send your detailed quote?</p>
+                                <p class="form-section-title">How can the installer reach you?</p>
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label class="form-label" for="customer-name">Your Name</label>
                                         <input id="customer-name" type="text" class="form-control" placeholder="e.g. Kamal Perera" style="height:40px !important; padding:0.4rem 0.75rem !important; box-sizing:border-box;">
                                     </div>
                                     <div class="form-group">
-                                        <label class="form-label" for="customer-email">Email Address</label>
-                                        <input id="customer-email" type="email" class="form-control" placeholder="e.g. kamal@email.com" style="height:40px !important; padding:0.4rem 0.75rem !important; box-sizing:border-box;">
+                                        <label class="form-label" for="customer-phone">Phone Number</label>
+                                        <input id="customer-phone" type="tel" class="form-control" placeholder="e.g. 077 123 4567" style="height:40px !important; padding:0.4rem 0.75rem !important; box-sizing:border-box;">
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label" for="customer-phone">Phone Number</label>
-                                    <input id="customer-phone" type="tel" class="form-control" placeholder="e.g. 077 123 4567" style="height:40px !important; padding:0.4rem 0.75rem !important; box-sizing:border-box;">
+                                    <label class="form-label" for="customer-email">Email Address</label>
+                                    <input id="customer-email" type="email" class="form-control" placeholder="e.g. kamal@email.com" style="height:40px !important; padding:0.4rem 0.75rem !important; box-sizing:border-box;">
                                 </div>
-                                <p class="form-helper">Your details are only shared with your selected installer.</p>
+                                <p class="form-helper">Only your contact details are shared with your selected installer so they can reach out to you.</p>
                             </div>
                         </div>
 
                         <div class="quotation-step" data-step="5">
                             <div class="success-message">
                                 <div class="success-icon"><i class="fas fa-check-circle"></i></div>
-                                <h3>Quotation Request Sent</h3>
-                                <p>We have sent your details to <span id="success-installer"></span>. Expect a tailored proposal and follow-up call within one business day.</p>
+                                <h3>Request Submitted!</h3>
+                                <p>We've shared your contact details with <span id="success-installer"></span>. They will reach out to you within one business day to discuss your solar needs and provide a personalized quote.</p>
                                 <button type="button" class="btn btn-primary" id="start-over-btn">Start a New Quote</button>
                             </div>
                         </div>
