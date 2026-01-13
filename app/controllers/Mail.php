@@ -2,7 +2,6 @@
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require 'vendor/autoload.php';
 
 class Mail extends Controller
 {
@@ -12,10 +11,15 @@ class Mail extends Controller
     {
         $this->mailModel = $this->model('M_Mail');
     }
-    public function testview()
+
+    public function preview()
     {
-        $data = ['username' => 'Admin', 'password' => 'Pass123'];
-        $this->view('email_verification', $data);
+        $data = [
+            'username' => 'testuser',
+            'password' => '123456'
+        ];
+
+        $this->view('pages/auth/email_verification', $data);
     }
 
     public function sendWelcomeEmail($email, $username, $password)
@@ -25,20 +29,27 @@ class Mail extends Controller
         try {
             // Server settings
             $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com';
+            $mail->Host = $_ENV['MAIL_HOST'];
+            $mail->Username = $_ENV['MAIL_USERNAME'];
+            $mail->Password = $_ENV['MAIL_PASSWORD'];
+            $mail->Port = $_ENV['MAIL_PORT'];
+
+
             $mail->SMTPAuth = true;
-            $mail->Username = 'aindiramanayake@gmail.com';
-            $mail->Password = 'your-app-password'; // Use App Password, not main password
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = 587;
 
             // Recipients
-            $mail->setFrom('aindiramanayake@gmail.com', 'SolarSense Admin');
+            $mail->setFrom($_ENV['MAIL_USERNAME'], $_ENV['MAIL_FROM_NAME']);
             $mail->addAddress($email);
 
             // Content
             $mail->isHTML(true);
             $mail->Subject = 'Your Account Credentials - SolarSense';
+
+            // debug
+            $mail->SMTPDebug = 2;
+            $mail->Debugoutput = 'html';
+
 
             // Pass data to the view/template
             $data = [
@@ -48,7 +59,7 @@ class Mail extends Controller
 
             // Capture the view output to use as the email body
             ob_start();
-            require APPROOT . '../app/views/pages/auth/email_verification.php';
+            require APPROOT . '/views/pages/auth/email_verification.php';
             $body = ob_get_clean();
 
             $mail->Body = $body;
@@ -59,4 +70,16 @@ class Mail extends Controller
             return false;
         }
     }
+
+    public function testSend()
+    {
+        $result = $this->sendWelcomeEmail(
+            'aindiramanayake@gmail.com',
+            'testuser',
+            '123456'
+        );
+
+        echo $result ? 'Email sent successfully' : 'Email failed';
+    }
+
 }
