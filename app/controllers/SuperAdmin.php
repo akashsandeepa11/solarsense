@@ -1,5 +1,7 @@
 <?php
 
+require_once APPROOT . '/controllers/Mail.php';
+
 class SuperAdmin extends Controller
 {
 
@@ -62,15 +64,16 @@ class SuperAdmin extends Controller
             return $this->delete_customer();
         }
 
-        
+
     }
-    
-    public function reports(){
+
+    public function reports()
+    {
         $data = [
             'user' => $this->user,
         ];
 
-        $this->view('pages/super_admin/reports', $data,  'dashboard');
+        $this->view('pages/super_admin/reports', $data, 'dashboard');
     }
 
     public function add_installer_verification(): void
@@ -167,22 +170,38 @@ class SuperAdmin extends Controller
     }
 
     // --- Notifications ---
-    public function notifications(){
+    public function notifications()
+    {
         $data = [
             'user' => $this->user,
         ];
-        
+
         $this->view('pages/common/notifications', $data, layout: 'dashboard');
     }
-    
+
+    // function to verify customer
     public function verify_company($companyId)
     {
-        $companyId = (int) $companyId;
-        $this->fleetModel->verify_company($companyId);
-        setToast('Request Submitted Successfully', 'success');
-        redirect('superadmin/verification');
+        $result = $this->fleetModel->verify_company((int) $companyId); //calling verify_company from model M_Installer_Fleet
 
+        if (!$result) {
+            setToast('Verification failed', 'error');
+            redirect('super_admin/verification');
+            return;
+        }
+
+        // Send email
+        $mail = new Mail();
+        $mail->sendWelcomeEmail(
+            $result['email'],       // email
+            $result['email'],       // username
+            $result['password']     // PLAINTEXT password
+        );
+
+        setToast('Company verified & credentials emailed', 'success');
+        redirect('super_admin/verification');
     }
+
 
     public function verification()
     {

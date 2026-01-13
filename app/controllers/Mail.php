@@ -12,16 +12,6 @@ class Mail extends Controller
         $this->mailModel = $this->model('M_Mail');
     }
 
-    public function preview()
-    {
-        $data = [
-            'username' => 'testuser',
-            'password' => '123456'
-        ];
-
-        $this->view('pages/auth/email_verification', $data);
-    }
-
     public function sendWelcomeEmail($email, $username, $password)
     {
         $mail = new PHPMailer(true);
