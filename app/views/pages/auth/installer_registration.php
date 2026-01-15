@@ -238,11 +238,11 @@ $buttonIcon = 'fas fa-paper-plane';
                                     class="fas fa-address-book text-primary mr-2"></i>Contact Information</h3>
                             <div class="row">
                                 <div class="col-md-6 form-group">
-                                    <?php $inputConfig = ['id' => 'email', 'name' => 'email', 'label' => 'Company Email Address', 'type' => 'email', 'icon' => 'fas fa-envelope', 'value' => $data['email'] ?? '', 'error' => $data['email_err'] ?? '', 'required' => true];
+                                    <?php $inputConfig = ['id' => 'contact_number', 'name' => 'contact_number', 'label' => 'Contact Number', 'type' => 'text', 'icon' => 'fas fa-file-invoice', 'value' => $data['contact_number'] ?? '', 'error' => $data['contact_number_err'] ?? '', 'required' => true];
                                     require APPROOT . '/views/inc/components/input_field.php'; ?>
                                 </div>
                                 <div class="col-md-6 form-group">
-                                    <?php $inputConfig = ['id' => 'contact_number', 'name' => 'contact_number', 'label' => 'Contact Number', 'type' => 'text', 'icon' => 'fas fa-file-invoice', 'value' => $data['contact_number'] ?? '', 'error' => $data['contact_number_err'] ?? '', 'required' => true];
+                                    <?php $inputConfig = ['id' => 'email', 'name' => 'email', 'label' => 'Company Email Address', 'type' => 'email', 'icon' => 'fas fa-envelope', 'value' => $data['email'] ?? '', 'error' => $data['email_err'] ?? '', 'required' => true];
                                     require APPROOT . '/views/inc/components/input_field.php'; ?>
                                 </div>
                             </div>
