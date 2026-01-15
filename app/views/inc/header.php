@@ -10,8 +10,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     
     <!-- Your Custom CSS (loads last to override Tailwind if needed) -->
-    <link rel="stylesheet" href="<?php echo URLROOT; ?>/public/css/main.css">
-    <link rel="stylesheet" href="<?php echo URLROOT; ?>/public/css/components/toast_styles.css">
+    <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/main.css">
+    <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/components/toast_styles.css">
 
     
 </head>

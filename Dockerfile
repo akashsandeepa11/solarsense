@@ -22,6 +22,10 @@ RUN echo '<Directory /var/www/html/public>\n\
     Require all granted\n\
 </Directory>' >> /etc/apache2/apache2.conf
 
+# Create symbolic link for /public to access assets correctly
+# This allows URLs like /public/css/main.css to work even though document root is /public
+RUN ln -s /var/www/html/public /var/www/html/public/public
+
 # Configure Apache ports - remove the static Listen directive
 RUN sed -i '/Listen 80/d' /etc/apache2/ports.conf
 
