@@ -813,105 +813,104 @@ function renderConfirmation() {
   // Confidence indicator
   const hasAllInputs = state.heavyLoads.length > 0 || state.heavyLoads.includes("none");
   const confidenceLevel = hasAllInputs ? "High" : "Medium";
-  const confidenceColor = hasAllInputs ? "#22c55e" : "#f59e0b";
 
   const appDesc = state.monitoring === "advanced" ? "Premium tracking & alerts" : "Standard included";
 
   summaryEl.innerHTML = `
-    <div class="recommendation-card" style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: none; padding: 1.5rem; border-radius: 16px; margin-bottom: 1.5rem;">
-      <div class="recommendation-header" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-        <i class="fas fa-sun" style="color: #fe9630; font-size: 1.25rem;"></i>
-        <span style="font-weight: 600; color: #1e293b;">Your Solar Solution</span>
+    <div class="quote-recommendation">
+      <div class="quote-recommendation__header">
+        <i class="fas fa-sun"></i>
+        <span>Your Solar Solution</span>
       </div>
-      <p style="color: #475569; line-height: 1.6; margin: 0;">${benefitText}</p>
-      <p style="color: #64748b; font-size: 0.9rem; margin-top: 0.75rem; margin-bottom: 0;">${usageBenefit[state.usagePattern] || ""} ${applianceBenefit}</p>
+      <p class="quote-recommendation__text">${benefitText}</p>
+      <p class="quote-recommendation__subtext">${usageBenefit[state.usagePattern] || ""} ${applianceBenefit}</p>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
-      <div style="background: #f8fafc; padding: 1rem; border-radius: 12px; text-align: center;">
-        <p style="font-size: 0.8rem; color: #64748b; margin: 0 0 0.25rem 0;">Total Investment</p>
-        <p style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0;">${totalInvestment}</p>
+    <div class="quote-metrics">
+      <div class="quote-metric quote-metric--investment">
+        <p class="quote-metric__label">Total Investment</p>
+        <p class="quote-metric__value quote-metric__value--dark">${totalInvestment}</p>
       </div>
-      <div style="background: #f0fdf4; padding: 1rem; border-radius: 12px; text-align: center;">
-        <p style="font-size: 0.8rem; color: #64748b; margin: 0 0 0.25rem 0;">Monthly Savings</p>
-        <p style="font-size: 1.25rem; font-weight: 700; color: #22c55e; margin: 0;">${formatCurrency(monthlySavings)}</p>
+      <div class="quote-metric quote-metric--savings">
+        <p class="quote-metric__label">Monthly Savings</p>
+        <p class="quote-metric__value quote-metric__value--green">${formatCurrency(monthlySavings)}</p>
       </div>
-      <div style="background: #eff6ff; padding: 1rem; border-radius: 12px; text-align: center;">
-        <p style="font-size: 0.8rem; color: #64748b; margin: 0 0 0.25rem 0;">Payback Period</p>
-        <p style="font-size: 1.25rem; font-weight: 700; color: #3b82f6; margin: 0;">${paybackYears} yrs</p>
+      <div class="quote-metric quote-metric--payback">
+        <p class="quote-metric__label">Payback Period</p>
+        <p class="quote-metric__value quote-metric__value--blue">${paybackYears} yrs</p>
       </div>
     </div>
 
-    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-      <span style="font-size: 0.85rem; color: #64748b;">Estimate Confidence:</span>
-      <span style="font-size: 0.85rem; font-weight: 600; color: ${confidenceColor};">${confidenceLevel}</span>
+    <div class="quote-confidence">
+      <span class="quote-confidence__label">Estimate Confidence:</span>
+      <span class="quote-confidence__value ${hasAllInputs ? 'quote-confidence__value--high' : 'quote-confidence__value--medium'}">${confidenceLevel}</span>
     </div>
 
-    <div style="background: #f8fafc; padding: 1rem; border-radius: 12px; margin-bottom: 1rem;">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
+    <div class="quote-installer">
+      <div class="quote-installer__content">
         <div>
-          <p style="font-weight: 600; color: #1e293b; margin: 0;">Installed by ${installerName}</p>
-          <p style="font-size: 0.85rem; color: #64748b; margin: 0.25rem 0 0 0;">Coverage: ${selectedInstaller?.region || "--"}</p>
+          <p class="quote-installer__name">Installed by ${installerName}</p>
+          <p class="quote-installer__region">Coverage: ${selectedInstaller?.region || "--"}</p>
         </div>
-        <i class="fas fa-check-circle" style="color: #22c55e; font-size: 1.5rem;"></i>
+        <i class="fas fa-check-circle quote-installer__check"></i>
       </div>
     </div>
 
-    <details style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 1rem;">
-      <summary style="padding: 1rem; cursor: pointer; font-weight: 500; color: #475569; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+    <details class="quote-details">
+      <summary class="quote-details__summary">
         <span>View cost breakdown</span>
-        <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: #94a3b8;"></i>
+        <i class="fas fa-chevron-down"></i>
       </summary>
-      <div style="padding: 0 1rem 1rem 1rem; border-top: 1px solid #e2e8f0;">
-        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9;">
-          <span style="color: #64748b;">System & Installation</span>
-          <span style="color: #1e293b;">${pricing ? formatCurrency(pricing.adjustedBase) : "-"}</span>
+      <div class="quote-details__content">
+        <div class="quote-details__row">
+          <span class="quote-details__label">System & Installation</span>
+          <span class="quote-details__value">${pricing ? formatCurrency(pricing.adjustedBase) : "-"}</span>
         </div>
         ${pricing && pricing.batteryCost > 0 ? `
-        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9;">
-          <span style="color: #64748b;">Battery Backup</span>
-          <span style="color: #1e293b;">${formatCurrency(pricing.batteryCost)}</span>
+        <div class="quote-details__row">
+          <span class="quote-details__label">Battery Backup</span>
+          <span class="quote-details__value">${formatCurrency(pricing.batteryCost)}</span>
         </div>` : ""}
-        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9;">
-          <span style="color: #64748b;">Roof Mounting</span>
-          <span style="color: #1e293b;">${pricing ? formatCurrency(pricing.roofCost) : "-"}</span>
+        <div class="quote-details__row">
+          <span class="quote-details__label">Roof Mounting</span>
+          <span class="quote-details__value">${pricing ? formatCurrency(pricing.roofCost) : "-"}</span>
         </div>
         ${pricing && pricing.monitoringCost > 0 ? `
-        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9;">
-          <span style="color: #64748b;">Smart Monitoring</span>
-          <span style="color: #1e293b;">${formatCurrency(pricing.monitoringCost)}</span>
+        <div class="quote-details__row">
+          <span class="quote-details__label">Smart Monitoring</span>
+          <span class="quote-details__value">${formatCurrency(pricing.monitoringCost)}</span>
         </div>` : ""}
-        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
-          <span style="color: #64748b;">Taxes & Fees</span>
-          <span style="color: #1e293b;">${pricing ? formatCurrency(pricing.tax) : "-"}</span>
+        <div class="quote-details__row">
+          <span class="quote-details__label">Taxes & Fees</span>
+          <span class="quote-details__value">${pricing ? formatCurrency(pricing.tax) : "-"}</span>
         </div>
       </div>
     </details>
 
-    <details style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 1rem;">
-      <summary style="padding: 1rem; cursor: pointer; font-weight: 500; color: #475569; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+    <details class="quote-details">
+      <summary class="quote-details__summary">
         <span>What's included</span>
-        <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: #94a3b8;"></i>
+        <i class="fas fa-chevron-down"></i>
       </summary>
-      <div style="padding: 0 1rem 1rem 1rem; border-top: 1px solid #e2e8f0;">
-        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9;">
-          <span style="color: #64748b;">Roof Mounting</span>
-          <span style="color: #1e293b;">${formatLabel(state.roofType)} compatible</span>
+      <div class="quote-details__content">
+        <div class="quote-details__row">
+          <span class="quote-details__label">Roof Mounting</span>
+          <span class="quote-details__value">${formatLabel(state.roofType)} compatible</span>
         </div>
-        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9;">
-          <span style="color: #64748b;">Smart Tracking</span>
-          <span style="color: #1e293b;">${appDesc}</span>
+        <div class="quote-details__row">
+          <span class="quote-details__label">Smart Tracking</span>
+          <span class="quote-details__value">${appDesc}</span>
         </div>
-        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
-          <span style="color: #64748b;">Warranty</span>
-          <span style="color: #1e293b;">${state.warranty} years</span>
+        <div class="quote-details__row">
+          <span class="quote-details__label">Warranty</span>
+          <span class="quote-details__value">${state.warranty} years</span>
         </div>
       </div>
     </details>
 
-    <div style="background: #fef3c7; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem;">
-      <p style="font-size: 0.85rem; color: #92400e; margin: 0;">
-        <i class="fas fa-lightbulb" style="margin-right: 0.5rem;"></i>
+    <div class="quote-tip">
+      <p class="quote-tip__text">
+        <i class="fas fa-lightbulb"></i>
         <strong>Want a more accurate quote?</strong> Our installer will verify appliance types & roof details during the site visit.
       </p>
     </div>

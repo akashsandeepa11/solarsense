@@ -495,13 +495,7 @@
                                     </select>
                                     <p class="form-helper">If you're not sure, our installer will confirm this later.</p>
                                 </div>
-                                <div class="form-group">
-                                    <label class="form-label" for="smart-features">Want an app to track your savings?</label>
-                                    <select id="smart-features" class="form-control" style="height:40px !important; min-height:40px !important; max-height:40px !important; padding:0.4rem 0.75rem !important; box-sizing:border-box;">
-                                        <option value="basic" selected>No thanks, basic is fine</option>
-                                        <option value="advanced">Yes, with app & alerts (+Rs. 27k one-time)</option>
-                                    </select>
-                                </div>
+
                             </div>
 
                             <div class="appliance-section" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0;">

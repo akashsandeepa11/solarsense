@@ -1754,3 +1754,226 @@ input.form-control {
     gap: 1rem;
   }
 }
+
+/* ============================================
+   Quote Summary Styles (Step 4)
+   ============================================ */
+
+/* Recommendation Card */
+.quote-recommendation {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border: none;
+  padding: 1.5rem;
+  border-radius: 16px;
+  margin-bottom: 1.5rem;
+}
+
+.quote-recommendation__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.quote-recommendation__header i {
+  color: #fe9630;
+  font-size: 1.25rem;
+}
+
+.quote-recommendation__header span {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.quote-recommendation__text {
+  color: #475569;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.quote-recommendation__subtext {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0;
+}
+
+/* Metrics Grid */
+.quote-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.quote-metric {
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.quote-metric--investment {
+  background: #f8fafc;
+}
+
+.quote-metric--savings {
+  background: #f0fdf4;
+}
+
+.quote-metric--payback {
+  background: #eff6ff;
+}
+
+.quote-metric__label {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0 0 0.25rem 0;
+}
+
+.quote-metric__value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.quote-metric__value--dark {
+  color: #1e293b;
+}
+
+.quote-metric__value--green {
+  color: #22c55e;
+}
+
+.quote-metric__value--blue {
+  color: #3b82f6;
+}
+
+/* Confidence Indicator */
+.quote-confidence {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.quote-confidence__label {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.quote-confidence__value {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.quote-confidence__value--high {
+  color: #22c55e;
+}
+
+.quote-confidence__value--medium {
+  color: #f59e0b;
+}
+
+/* Installer Info Box */
+.quote-installer {
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.quote-installer__content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.quote-installer__name {
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.quote-installer__region {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0.25rem 0 0 0;
+}
+
+.quote-installer__check {
+  color: #22c55e;
+  font-size: 1.5rem;
+}
+
+/* Details/Accordion */
+.quote-details {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.quote-details__summary {
+  padding: 1rem;
+  cursor: pointer;
+  font-weight: 500;
+  color: #475569;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.quote-details__summary i {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.quote-details__content {
+  padding: 0 1rem 1rem 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.quote-details__row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.quote-details__row:last-child {
+  border-bottom: none;
+}
+
+.quote-details__label {
+  color: #64748b;
+}
+
+.quote-details__value {
+  color: #1e293b;
+}
+
+/* Tip Box */
+.quote-tip {
+  background: #fef3c7;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.quote-tip__text {
+  font-size: 0.85rem;
+  color: #92400e;
+  margin: 0;
+}
+
+.quote-tip__text i {
+  margin-right: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .quote-metrics {
+    grid-template-columns: 1fr;
+  }
+}
