@@ -365,6 +365,16 @@ const SOLAR_CONFIG = {
 
     // Annual degradation rate of solar panels
     annualDegradation: 0.005,  // 0.5% per year
+
+    // Usage pattern multipliers - affects how much solar generation is self-consumed
+    // Day: Best direct solar utilization
+    // Balanced: Average utilization (baseline)
+    // Night: More grid dependency, less direct solar use
+    usageMultiplier: {
+      day: 0.9,
+      balanced: 1.0,
+      night: 0.8,
+    },
   },
 
   // ─────────────────────────────────────────────
@@ -867,8 +877,9 @@ function calculatePrice() {
 /**
  * Calculate monthly and annual savings
  * Uses SOLAR_CONFIG.savings parameters
+ * Applies usage pattern multiplier for realistic savings estimate
  */
-function calculateSavings(capacity) {
+function calculateSavings(capacity, usagePattern = "balanced") {
   const cfg = SOLAR_CONFIG.savings;
 
   // Daily generation = capacity × peak sun hours × performance ratio
@@ -877,8 +888,9 @@ function calculateSavings(capacity) {
   // Monthly generation (30 days average)
   const monthlyGeneration = dailyGeneration * 30;
 
-  // Monthly savings = generation × tariff rate
-  const monthlySavings = Math.round(monthlyGeneration * cfg.electricityTariff);
+  // Monthly savings = generation × tariff rate × usage multiplier
+  const multiplier = cfg.usageMultiplier[usagePattern] || 1.0;
+  const monthlySavings = Math.round(monthlyGeneration * cfg.electricityTariff * multiplier);
 
   // Annual savings
   const annualSavings = monthlySavings * 12;
@@ -929,7 +941,7 @@ function renderConfirmation() {
   // Calculate key numbers using config-based functions
   const pricing = calculatePrice();
   const capacity = Number(state.capacity);
-  const savings = calculateSavings(capacity);
+  const savings = calculateSavings(capacity, state.usagePattern);
   const paybackYears = pricing ? (pricing.total / savings.annualSavings).toFixed(1) : "-";
   const totalInvestment = pricing ? formatCurrency(pricing.total) : "-";
   const monthlySavings = savings.monthlySavings;

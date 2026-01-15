@@ -104,7 +104,7 @@ System Cost     = 85,000 × 5 × 1.0 × 1.0 × 1.0  = Rs 425,000
 
 ### Formula
 ```
-Monthly Savings = Daily Generation × 30 days × Electricity Rate
+Monthly Savings = Daily Generation × 30 days × Electricity Rate × Usage Multiplier
 ```
 
 Where:
@@ -120,16 +120,36 @@ Daily Generation = Capacity × Peak Sun Hours × Performance Ratio
 | **Peak Sun Hours** | 4.5 hrs | Average in Sri Lanka |
 | **Performance Ratio** | 0.80 (80%) | Real-world efficiency |
 | **Electricity Rate** | Rs 32/kWh | Average CEB tariff |
+| **Usage Multiplier** | 0.8 - 1.0 | Based on day/night usage pattern |
+
+### Usage Pattern Multipliers
+
+| Usage Pattern | Multiplier | Explanation |
+|---------------|------------|-------------|
+| **Day** | 0.9 (90%) | Most usage during daytime = best direct solar utilization |
+| **Balanced** | 1.0 (100%) | Even usage = baseline savings |
+| **Night** | 0.8 (80%) | Most usage at night = more grid dependency, less direct solar use |
 
 ### Calculation
 
+**Example: 5kW system with Balanced usage**
 ```
 Daily Generation = 5 kW × 4.5 hrs × 0.80
                  = 18 kWh per day
 
 Monthly Generation = 18 × 30 = 540 kWh
 
-Monthly Savings = 540 × Rs 32 = Rs 17,280
+Monthly Savings = 540 × Rs 32 × 1.0 = Rs 17,280
+```
+
+**Example: 5kW system with Night usage**
+```
+Daily Generation = 5 kW × 4.5 hrs × 0.80
+                 = 18 kWh per day
+
+Monthly Generation = 18 × 30 = 540 kWh
+
+Monthly Savings = 540 × Rs 32 × 0.8 = Rs 13,824
 ```
 
 ---
@@ -213,7 +233,7 @@ Payback = 1,138,438 ÷ 290,304 = 3.9 years
 | **System Cost** | `BaseRate × Capacity × CapacityMult × PanelMult × InverterMult` |
 | **Total Investment** | `SystemCost + Battery + Roof + Monitoring + Warranty + Tax` |
 | **Daily Generation** | `Capacity × 4.5 hrs × 0.80` |
-| **Monthly Savings** | `DailyGeneration × 30 × Rs 32` |
+| **Monthly Savings** | `DailyGeneration × 30 × Rs 32 × usageMultiplier` |
 | **Payback Period** | `TotalInvestment ÷ (MonthlySavings × 12)` |
 
 ---
@@ -228,6 +248,13 @@ SOLAR_CONFIG.savings.electricityTariff = 32;  // Change this
 
 // To change sun hours:
 SOLAR_CONFIG.savings.peakSunHours = 4.5;  // Change this
+
+// To change usage multipliers:
+SOLAR_CONFIG.savings.usageMultiplier = {
+  day: 0.9,      // Day usage multiplier
+  balanced: 1.0, // Balanced usage multiplier
+  night: 0.8,    // Night usage multiplier
+};
 
 // To change battery prices:
 SOLAR_CONFIG.batteries["5"].price = 180000;  // Change this
