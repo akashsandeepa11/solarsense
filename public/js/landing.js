@@ -242,15 +242,160 @@ function initializeTypingEffect() {
 /* -------------------------------------------------------------------------- */
 /*  Quotation Calculator Section                                              */
 /* -------------------------------------------------------------------------- */
+/* ============================================
+   SOLAR QUOTATION CONFIGURATION
+   ============================================
+   Edit values below to update pricing and calculations.
+   All prices are in Sri Lankan Rupees (LKR).
+*/
 
+const SOLAR_CONFIG = {
+
+  // ─────────────────────────────────────────────
+  // SYSTEM SIZING: Maps monthly bill to system capacity
+  // ─────────────────────────────────────────────
+  systemSizing: {
+    // Monthly bill range -> recommended system size (kW)
+    billToCapacity: {
+      low: 3,          // Bill < Rs 15,000
+      medium: 5,       // Bill Rs 15,000 - 30,000
+      high: 7,         // Bill Rs 30,000 - 45,000
+      "very-high": 10, // Bill > Rs 45,000
+    },
+  },
+
+  // ─────────────────────────────────────────────
+  // BASE COSTS: Per kW installation costs
+  // ─────────────────────────────────────────────
+  baseCosts: {
+    // Price multiplier based on system size (larger = slightly cheaper per kW)
+    capacityMultiplier: {
+      3: 1.0,    // 3kW - base price
+      5: 1.0,    // 5kW - same as base (was 1.12, lowered for realistic pricing)
+      7: 0.95,   // 7kW - 5% discount per kW
+      10: 0.90,  // 10kW - 10% discount per kW
+    },
+  },
+
+  // ─────────────────────────────────────────────
+  // PANEL COSTS: Price multiplier by panel type
+  // ─────────────────────────────────────────────
+  panels: {
+    // Panel type -> price multiplier
+    mono: {
+      multiplier: 1.10,      // Monocrystalline - premium, high efficiency
+      efficiency: 0.20,      // 20% efficiency
+      label: "Monocrystalline",
+    },
+    poly: {
+      multiplier: 1.0,       // Polycrystalline - standard, good value
+      efficiency: 0.17,      // 17% efficiency  
+      label: "Polycrystalline",
+    },
+  },
+
+  // ─────────────────────────────────────────────
+  // INVERTER COSTS: Price multiplier by inverter type
+  // ─────────────────────────────────────────────
+  inverters: {
+    string: {
+      multiplier: 1.0,       // String inverter - basic, no battery support
+      label: "String Inverter",
+    },
+    hybrid: {
+      multiplier: 1.25,      // Hybrid inverter - supports battery
+      label: "Hybrid Inverter",
+    },
+  },
+
+  // ─────────────────────────────────────────────
+  // BATTERY COSTS: Fixed price by capacity
+  // ─────────────────────────────────────────────
+  batteries: {
+    none: { price: 0, capacity: 0, label: "No Battery" },
+    5: { price: 180000, capacity: 5, label: "5 kWh Battery" },      // ~Rs 36,000/kWh
+    10: { price: 320000, capacity: 10, label: "10 kWh Battery" },   // ~Rs 32,000/kWh
+  },
+
+  // ─────────────────────────────────────────────
+  // INSTALLATION COSTS: Based on roof type
+  // ─────────────────────────────────────────────
+  installation: {
+    roofType: {
+      tile: { price: 25000, label: "Tile Roof" },
+      metal: { price: 18000, label: "Metal Roof" },
+      flat: { price: 30000, label: "Flat Concrete" },
+    },
+  },
+
+  // ─────────────────────────────────────────────
+  // ADDITIONAL COSTS
+  // ─────────────────────────────────────────────
+  extras: {
+    monitoring: {
+      basic: { price: 12000, label: "Basic Monitoring" },
+      advanced: { price: 35000, label: "Smart Monitoring + App" },
+    },
+    warranty: {
+      10: { price: 0, years: 10, label: "10 Year Warranty" },
+      15: { price: 25000, years: 15, label: "15 Year Warranty" },
+      25: { price: 55000, years: 25, label: "25 Year Warranty" },
+    },
+  },
+
+  // ─────────────────────────────────────────────
+  // TAX & FEES
+  // ─────────────────────────────────────────────
+  fees: {
+    taxRate: 0.08,  // 8% VAT and levies
+  },
+
+  // ─────────────────────────────────────────────
+  // SAVINGS CALCULATION PARAMETERS
+  // ─────────────────────────────────────────────
+  savings: {
+    // Average peak sun hours per day in Sri Lanka
+    peakSunHours: 4.5,
+
+    // System performance ratio (accounts for losses)
+    performanceRatio: 0.80,  // 80% of theoretical output
+
+    // CEB electricity tariff (Rs per kWh) - use average rate
+    electricityTariff: 32,
+
+    // Annual degradation rate of solar panels
+    annualDegradation: 0.005,  // 0.5% per year
+  },
+
+  // ─────────────────────────────────────────────
+  // BACKUP NEEDS MAPPING
+  // ─────────────────────────────────────────────
+  backupMapping: {
+    none: { battery: "none", inverter: "string" },
+    essentials: { battery: "5", inverter: "hybrid" },
+    full: { battery: "10", inverter: "hybrid" },
+  },
+
+  // ─────────────────────────────────────────────
+  // PANEL PREFERENCE MAPPING
+  // ─────────────────────────────────────────────
+  preferenceMapping: {
+    value: "poly",        // Budget-friendly option
+    performance: "mono",  // Premium option
+  },
+};
+
+// ─────────────────────────────────────────────
+// INSTALLER DATA
+// ─────────────────────────────────────────────
 const installersData = [
   {
     id: 1,
     name: "SunPower Solutions",
     rating: 4.8,
     reviews: 247,
-    baseRate: 85000,
-    markup: 1.05,
+    baseRate: 85000,   // Rs per kW base installation rate
+    markup: 1.0,       // Price multiplier (1.0 = no markup)
     experience: "12 yrs",
     region: "Island-wide",
   },
@@ -260,7 +405,7 @@ const installersData = [
     rating: 4.7,
     reviews: 189,
     baseRate: 78000,
-    markup: 0.98,
+    markup: 1.0,
     experience: "9 yrs",
     region: "Western & Southern",
   },
@@ -270,7 +415,7 @@ const installersData = [
     rating: 4.9,
     reviews: 312,
     baseRate: 91000,
-    markup: 1.08,
+    markup: 1.0,
     experience: "14 yrs",
     region: "Island-wide",
   },
@@ -280,57 +425,21 @@ const installersData = [
     rating: 4.6,
     reviews: 156,
     baseRate: 76000,
-    markup: 0.95,
+    markup: 1.0,
     experience: "8 yrs",
     region: "Central & Uva",
   },
 ];
 
-const pricingConfig = {
-  capacity: {
-    3: 1.0,
-    5: 1.12,
-    7: 1.25,
-    10: 1.48,
-  },
-  panelType: {
-    mono: 1.1,
-    poly: 0.95,
-    thin: 0.85,
-  },
-  inverterType: {
-    string: 1.0,
-    micro: 1.18,
-    hybrid: 1.35,
-  },
-  battery: {
-    none: 0,
-    5: 190000,
-    10: 340000,
-    15: 480000,
-  },
-  roofType: {
-    tile: 25000,
-    metal: 18000,
-    flat: 32000,
-  },
-  monitoring: {
-    basic: 15000,
-    advanced: 42000,
-  },
-  warranty: {
-    10: 0,
-    15: 28000,
-    25: 65000,
-  },
-};
-
+// ─────────────────────────────────────────────
+// QUOTATION STATE
+// ─────────────────────────────────────────────
 let currentStep = 1;
 let selectedInstaller = null;
 
 const quotationState = {
   installer: null,
-  capacity: "5",
+  capacity: 5,
   panelType: "mono",
   inverterType: "string",
   battery: "none",
@@ -682,47 +791,33 @@ function updateNavigationState() {
 }
 
 function updateStateFromInputs() {
-  // Mapping Logic
+  const cfg = SOLAR_CONFIG;
+
   // 1. Bill Amount -> Capacity
   const billAmount = document.getElementById("bill-amount")?.value || "medium";
-  const billMap = {
-    low: "3", // < 15k
-    medium: "5", // 15-30k
-    high: "7", // 30-45k
-    "very-high": "10", // > 45k
-  };
-  quotationState.capacity = billMap[billAmount];
+  quotationState.capacity = cfg.systemSizing.billToCapacity[billAmount] || 5;
 
   // 2. Usage Pattern
   quotationState.usagePattern = document.getElementById("usage-pattern")?.value || "balanced";
 
   // 3. Backup Needs -> Battery & Inverter
   const backupNeeds = document.getElementById("backup-needs")?.value || "none";
-  if (backupNeeds === "none") {
-    quotationState.battery = "none";
-    quotationState.inverterType = "string";
-  } else if (backupNeeds === "essentials") {
-    quotationState.battery = "5";
-    quotationState.inverterType = "hybrid";
-  } else {
-    // full
-    quotationState.battery = "10";
-    quotationState.inverterType = "hybrid";
-  }
+  const backupConfig = cfg.backupMapping[backupNeeds] || cfg.backupMapping.none;
+  quotationState.battery = backupConfig.battery;
+  quotationState.inverterType = backupConfig.inverter;
 
   // 4. Preference -> Panel Type
   const preference = document.getElementById("preference")?.value || "value";
-  quotationState.panelType = preference === "value" ? "poly" : "mono";
+  quotationState.panelType = cfg.preferenceMapping[preference] || "poly";
 
-  // 5. Installation
-  quotationState.roofType =
-    document.getElementById("roof-type")?.value || "tile";
+  // 5. Roof Type
+  quotationState.roofType = document.getElementById("roof-type")?.value || "tile";
 
-  const smartFeatures = document.getElementById("smart-features")?.value || "basic";
-  quotationState.monitoring = smartFeatures;
-  quotationState.warranty = smartFeatures === "advanced" ? "25" : "10";
+  // 6. Monitoring (smart-features was removed, default to basic)
+  quotationState.monitoring = "basic";
+  quotationState.warranty = "10";
 
-  // 6. Heavy Loads (Appliances)
+  // 7. Heavy Loads (Appliances)
   const applianceCheckboxes = document.querySelectorAll('input[name="appliances"]:checked');
   quotationState.heavyLoads = Array.from(applianceCheckboxes)
     .map(cb => cb.value)
@@ -732,36 +827,67 @@ function updateStateFromInputs() {
 function calculatePrice() {
   if (!selectedInstaller) return null;
 
+  const cfg = SOLAR_CONFIG;
   const capacity = Number(quotationState.capacity);
-  const baseRate =
-    selectedInstaller.baseRate * capacity * selectedInstaller.markup;
-  const capacityModifier = pricingConfig.capacity[capacity] || 1;
-  const panelModifier = pricingConfig.panelType[quotationState.panelType] || 1;
-  const inverterModifier =
-    pricingConfig.inverterType[quotationState.inverterType] || 1;
 
-  const adjustedBase =
-    baseRate * capacityModifier * panelModifier * inverterModifier;
+  // Base installation cost
+  const baseRate = selectedInstaller.baseRate * capacity * selectedInstaller.markup;
 
-  const batteryCost = pricingConfig.battery[quotationState.battery] || 0;
-  const roofCost = pricingConfig.roofType[quotationState.roofType] || 0;
-  const monitoringCost =
-    pricingConfig.monitoring[quotationState.monitoring] || 0;
-  const warrantyCost = pricingConfig.warranty[quotationState.warranty] || 0;
+  // Apply modifiers from config
+  const capacityMultiplier = cfg.baseCosts.capacityMultiplier[capacity] || 1;
+  const panelMultiplier = cfg.panels[quotationState.panelType]?.multiplier || 1;
+  const inverterMultiplier = cfg.inverters[quotationState.inverterType]?.multiplier || 1;
 
-  const subtotal =
-    adjustedBase + batteryCost + roofCost + monitoringCost + warrantyCost;
-  const tax = subtotal * 0.08; // estimated VAT & levies
+  const systemCost = baseRate * capacityMultiplier * panelMultiplier * inverterMultiplier;
+
+  // Additional costs from config
+  const batteryCost = cfg.batteries[quotationState.battery]?.price || 0;
+  const roofCost = cfg.installation.roofType[quotationState.roofType]?.price || 0;
+  const monitoringCost = cfg.extras.monitoring[quotationState.monitoring]?.price || 0;
+  const warrantyCost = cfg.extras.warranty[quotationState.warranty]?.price || 0;
+
+  // Calculate totals
+  const subtotal = systemCost + batteryCost + roofCost + monitoringCost + warrantyCost;
+  const tax = subtotal * cfg.fees.taxRate;
   const total = Math.round(subtotal + tax);
 
   return {
-    adjustedBase: Math.round(adjustedBase),
+    systemCost: Math.round(systemCost),
     batteryCost,
     roofCost,
     monitoringCost,
     warrantyCost,
     tax: Math.round(tax),
     total,
+    // Keep old name for backward compatibility in renderConfirmation
+    adjustedBase: Math.round(systemCost),
+  };
+}
+
+/**
+ * Calculate monthly and annual savings
+ * Uses SOLAR_CONFIG.savings parameters
+ */
+function calculateSavings(capacity) {
+  const cfg = SOLAR_CONFIG.savings;
+
+  // Daily generation = capacity × peak sun hours × performance ratio
+  const dailyGeneration = capacity * cfg.peakSunHours * cfg.performanceRatio;
+
+  // Monthly generation (30 days average)
+  const monthlyGeneration = dailyGeneration * 30;
+
+  // Monthly savings = generation × tariff rate
+  const monthlySavings = Math.round(monthlyGeneration * cfg.electricityTariff);
+
+  // Annual savings
+  const annualSavings = monthlySavings * 12;
+
+  return {
+    dailyGeneration: Math.round(dailyGeneration * 10) / 10,
+    monthlyGeneration: Math.round(monthlyGeneration),
+    monthlySavings,
+    annualSavings,
   };
 }
 
@@ -800,15 +926,13 @@ function renderConfirmation() {
     ? `We've sized this to comfortably power your ${applianceList.join(" and ")}.`
     : "";
 
-  // Calculate key numbers
+  // Calculate key numbers using config-based functions
   const pricing = calculatePrice();
   const capacity = Number(state.capacity);
-  const monthlyGeneration = capacity * 4.5 * 30;
-  const tariff = 35;
-  const monthlySavings = Math.round(monthlyGeneration * tariff);
-  const annualSavings = monthlySavings * 12;
-  const paybackYears = pricing ? Math.max(pricing.total / annualSavings, 0).toFixed(1) : "-";
+  const savings = calculateSavings(capacity);
+  const paybackYears = pricing ? (pricing.total / savings.annualSavings).toFixed(1) : "-";
   const totalInvestment = pricing ? formatCurrency(pricing.total) : "-";
+  const monthlySavings = savings.monthlySavings;
 
   // Confidence indicator
   const hasAllInputs = state.heavyLoads.length > 0 || state.heavyLoads.includes("none");
