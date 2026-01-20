@@ -2,6 +2,31 @@ let animatedObserver = null;
 const animatedSelectors =
   ".features__item, .step, .fade-in, .testimonial, .installer-card";
 
+// Global function for appliance card toggle (used by onclick handlers)
+function toggleAppliance(card, value) {
+  const checkbox = card.querySelector('input[type="checkbox"]');
+  if (!checkbox) return;
+
+  // Toggle checkbox
+  checkbox.checked = !checkbox.checked;
+
+  // Update visual state
+  const icon = card.querySelector("i");
+  const textSpan = card.querySelector("span");
+
+  if (checkbox.checked) {
+    card.style.borderColor = "#fe9630";
+    card.style.background = "rgba(254, 150, 48, 0.1)";
+    if (icon) icon.style.color = "#fe9630";
+    if (textSpan) textSpan.style.color = "#fe9630";
+  } else {
+    card.style.borderColor = "#e2e8f0";
+    card.style.background = "#f8fafc";
+    if (icon) icon.style.color = "#94a3b8";
+    if (textSpan) textSpan.style.color = "#475569";
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   initializeHeaderInteractions();
   initializeScrollAnimations();
@@ -217,15 +242,170 @@ function initializeTypingEffect() {
 /* -------------------------------------------------------------------------- */
 /*  Quotation Calculator Section                                              */
 /* -------------------------------------------------------------------------- */
+/* ============================================
+   SOLAR QUOTATION CONFIGURATION
+   ============================================
+   Edit values below to update pricing and calculations.
+   All prices are in Sri Lankan Rupees (LKR).
+*/
 
+const SOLAR_CONFIG = {
+
+  // ─────────────────────────────────────────────
+  // SYSTEM SIZING: Maps monthly bill to system capacity
+  // ─────────────────────────────────────────────
+  systemSizing: {
+    // Monthly bill range -> recommended system size (kW)
+    billToCapacity: {
+      low: 3,          // Bill < Rs 15,000
+      medium: 5,       // Bill Rs 15,000 - 30,000
+      high: 7,         // Bill Rs 30,000 - 45,000
+      "very-high": 10, // Bill > Rs 45,000
+    },
+  },
+
+  // ─────────────────────────────────────────────
+  // BASE COSTS: Per kW installation costs
+  // ─────────────────────────────────────────────
+  baseCosts: {
+    // Price multiplier based on system size (larger = slightly cheaper per kW)
+    capacityMultiplier: {
+      3: 1.0,    // 3kW - base price
+      5: 1.0,    // 5kW - same as base (was 1.12, lowered for realistic pricing)
+      7: 0.95,   // 7kW - 5% discount per kW
+      10: 0.90,  // 10kW - 10% discount per kW
+    },
+  },
+
+  // ─────────────────────────────────────────────
+  // PANEL COSTS: Price multiplier by panel type
+  // ─────────────────────────────────────────────
+  panels: {
+    // Panel type -> price multiplier
+    mono: {
+      multiplier: 1.10,      // Monocrystalline - premium, high efficiency
+      efficiency: 0.20,      // 20% efficiency
+      label: "Monocrystalline",
+    },
+    poly: {
+      multiplier: 1.0,       // Polycrystalline - standard, good value
+      efficiency: 0.17,      // 17% efficiency  
+      label: "Polycrystalline",
+    },
+  },
+
+  // ─────────────────────────────────────────────
+  // INVERTER COSTS: Price multiplier by inverter type
+  // ─────────────────────────────────────────────
+  inverters: {
+    string: {
+      multiplier: 1.0,       // String inverter - basic, no battery support
+      label: "String Inverter",
+    },
+    hybrid: {
+      multiplier: 1.25,      // Hybrid inverter - supports battery
+      label: "Hybrid Inverter",
+    },
+  },
+
+  // ─────────────────────────────────────────────
+  // BATTERY COSTS: Fixed price by capacity
+  // ─────────────────────────────────────────────
+  batteries: {
+    none: { price: 0, capacity: 0, label: "No Battery" },
+    5: { price: 180000, capacity: 5, label: "5 kWh Battery" },      // ~Rs 36,000/kWh
+    10: { price: 320000, capacity: 10, label: "10 kWh Battery" },   // ~Rs 32,000/kWh
+  },
+
+  // ─────────────────────────────────────────────
+  // INSTALLATION COSTS: Based on roof type
+  // ─────────────────────────────────────────────
+  installation: {
+    roofType: {
+      tile: { price: 25000, label: "Tile Roof" },
+      metal: { price: 18000, label: "Metal Roof" },
+      flat: { price: 30000, label: "Flat Concrete" },
+    },
+  },
+
+  // ─────────────────────────────────────────────
+  // ADDITIONAL COSTS
+  // ─────────────────────────────────────────────
+  extras: {
+    monitoring: {
+      basic: { price: 12000, label: "Basic Monitoring" },
+      advanced: { price: 35000, label: "Smart Monitoring + App" },
+    },
+    warranty: {
+      10: { price: 0, years: 10, label: "10 Year Warranty" },
+      15: { price: 25000, years: 15, label: "15 Year Warranty" },
+      25: { price: 55000, years: 25, label: "25 Year Warranty" },
+    },
+  },
+
+  // ─────────────────────────────────────────────
+  // TAX & FEES
+  // ─────────────────────────────────────────────
+  fees: {
+    taxRate: 0.08,  // 8% VAT and levies
+  },
+
+  // ─────────────────────────────────────────────
+  // SAVINGS CALCULATION PARAMETERS
+  // ─────────────────────────────────────────────
+  savings: {
+    // Average peak sun hours per day in Sri Lanka
+    peakSunHours: 4.5,
+
+    // System performance ratio (accounts for losses)
+    performanceRatio: 0.80,  // 80% of theoretical output
+
+    // CEB electricity tariff (Rs per kWh) - use average rate
+    electricityTariff: 32,
+
+    // Annual degradation rate of solar panels
+    annualDegradation: 0.005,  // 0.5% per year
+
+    // Usage pattern multipliers - affects how much solar generation is self-consumed
+    // Day: Best direct solar utilization
+    // Balanced: Average utilization (baseline)
+    // Night: More grid dependency, less direct solar use
+    usageMultiplier: {
+      day: 0.9,
+      balanced: 1.0,
+      night: 0.8,
+    },
+  },
+
+  // ─────────────────────────────────────────────
+  // BACKUP NEEDS MAPPING
+  // ─────────────────────────────────────────────
+  backupMapping: {
+    none: { battery: "none", inverter: "string" },
+    essentials: { battery: "5", inverter: "hybrid" },
+    full: { battery: "10", inverter: "hybrid" },
+  },
+
+  // ─────────────────────────────────────────────
+  // PANEL PREFERENCE MAPPING
+  // ─────────────────────────────────────────────
+  preferenceMapping: {
+    value: "poly",        // Budget-friendly option
+    performance: "mono",  // Premium option
+  },
+};
+
+// ─────────────────────────────────────────────
+// INSTALLER DATA
+// ─────────────────────────────────────────────
 const installersData = [
   {
     id: 1,
     name: "SunPower Solutions",
     rating: 4.8,
     reviews: 247,
-    baseRate: 85000,
-    markup: 1.05,
+    baseRate: 85000,   // Rs per kW base installation rate
+    markup: 1.0,       // Price multiplier (1.0 = no markup)
     experience: "12 yrs",
     region: "Island-wide",
   },
@@ -235,7 +415,7 @@ const installersData = [
     rating: 4.7,
     reviews: 189,
     baseRate: 78000,
-    markup: 0.98,
+    markup: 1.0,
     experience: "9 yrs",
     region: "Western & Southern",
   },
@@ -245,7 +425,7 @@ const installersData = [
     rating: 4.9,
     reviews: 312,
     baseRate: 91000,
-    markup: 1.08,
+    markup: 1.0,
     experience: "14 yrs",
     region: "Island-wide",
   },
@@ -255,63 +435,29 @@ const installersData = [
     rating: 4.6,
     reviews: 156,
     baseRate: 76000,
-    markup: 0.95,
+    markup: 1.0,
     experience: "8 yrs",
     region: "Central & Uva",
   },
 ];
 
-const pricingConfig = {
-  capacity: {
-    3: 1.0,
-    5: 1.12,
-    7: 1.25,
-    10: 1.48,
-  },
-  panelType: {
-    mono: 1.1,
-    poly: 0.95,
-    thin: 0.85,
-  },
-  inverterType: {
-    string: 1.0,
-    micro: 1.18,
-    hybrid: 1.35,
-  },
-  battery: {
-    none: 0,
-    5: 190000,
-    10: 340000,
-    15: 480000,
-  },
-  roofType: {
-    tile: 25000,
-    metal: 18000,
-    flat: 32000,
-  },
-  monitoring: {
-    basic: 15000,
-    advanced: 42000,
-  },
-  warranty: {
-    10: 0,
-    15: 28000,
-    25: 65000,
-  },
-};
-
+// ─────────────────────────────────────────────
+// QUOTATION STATE
+// ─────────────────────────────────────────────
 let currentStep = 1;
 let selectedInstaller = null;
 
 const quotationState = {
   installer: null,
-  capacity: "5",
+  capacity: 5,
   panelType: "mono",
   inverterType: "string",
   battery: "none",
   roofType: "tile",
   monitoring: "basic",
   warranty: "10",
+  usagePattern: "balanced",
+  heavyLoads: [],
 };
 
 function initializeQuotationCalculator() {
@@ -349,7 +495,7 @@ function setupQuotationEventListeners() {
   }
 
   const specControls = document.querySelectorAll(
-    "#capacity, #panel-type, #inverter-type, #battery, #roof-type, #monitoring, #warranty"
+    "#bill-amount, #usage-pattern, #backup-needs, #preference, #roof-type, #smart-features"
   );
   specControls.forEach((control) => {
     control.addEventListener("change", () => {
@@ -365,6 +511,35 @@ function setupQuotationEventListeners() {
     trigger.addEventListener("click", (event) => {
       event.preventDefault();
       scrollToQuotation();
+    });
+  });
+
+  // Appliance checkbox card interactions - click on card to toggle
+  document.querySelectorAll(".checkbox-card").forEach((card) => {
+    card.addEventListener("click", function (e) {
+      e.preventDefault();
+      const checkbox = this.querySelector('input[type="checkbox"]');
+      if (!checkbox) return;
+
+      // Toggle the checkbox
+      checkbox.checked = !checkbox.checked;
+
+      // Update visual state
+      const content = this.querySelector(".checkbox-card__content");
+      if (checkbox.checked) {
+        content.style.borderColor = "#fe9630";
+        content.style.background = "rgba(254, 150, 48, 0.1)";
+        content.style.color = "#fe9630";
+        const icon = content.querySelector("i");
+        if (icon) icon.style.color = "#fe9630";
+      } else {
+        content.style.borderColor = "#e2e8f0";
+        content.style.background = "#f8fafc";
+        content.style.color = "#475569";
+        const icon = content.querySelector("i");
+        if (icon) icon.style.color = "#94a3b8";
+      }
+      updateStateFromInputs();
     });
   });
 }
@@ -437,9 +612,8 @@ function initializeInstallerDirectory() {
             <div class="installer-card__name">${installer.name}</div>
             <div class="installer-card__rating">
               <i class="fas fa-star"></i>
-              <span>${installer.rating.toFixed(1)} · ${
-        installer.installs
-      } installs</span>
+              <span>${installer.rating.toFixed(1)} · ${installer.installs
+        } installs</span>
             </div>
           </div>
           <span class="installer-card__badge">
@@ -447,17 +621,16 @@ function initializeInstallerDirectory() {
             Verified
           </span>
         </div>
-        <p class="installer-card__bio">Serving ${
-          installer.district.charAt(0).toUpperCase() +
-          installer.district.slice(1)
+        <p class="installer-card__bio">Serving ${installer.district.charAt(0).toUpperCase() +
+        installer.district.slice(1)
         } district · ${installer.years}+ years experience</p>
         <div class="installer-card__services">
           ${installer.services
-            .map(
-              (service) =>
-                `<span class="service-tag">${formatLabel(service)}</span>`
-            )
-            .join("")}
+          .map(
+            (service) =>
+              `<span class="service-tag">${formatLabel(service)}</span>`
+          )
+          .join("")}
         </div>
         <div class="installer-card__actions">
           <a href="#quotation-section" class="btn btn-primary btn-sm quote-trigger">Request Quote</a>
@@ -512,14 +685,13 @@ function loadInstallerOptions() {
     card.innerHTML = `
       <div class="installer-card-head">
         <span class="rating"><i class="fas fa-star"></i> ${installer.rating.toFixed(
-          1
-        )}</span>
+      1
+    )}</span>
         <span class="installer-option__meta">${installer.reviews} reviews</span>
       </div>
       <div class="installer-option__name">${installer.name}</div>
-      <div class="installer-option__meta">${installer.experience} • ${
-      installer.region
-    }</div>
+      <div class="installer-option__meta">${installer.experience} • ${installer.region
+      }</div>
       <div class="installer-option__price">
         <span>Average rate</span>
         <span>Rs ${(installer.baseRate / 1000).toFixed(0)}k / kW</span>
@@ -614,9 +786,9 @@ function updateNavigationState() {
   }
 
   if (currentStep === 4) {
-    nextBtn.textContent = "Confirm & Submit Request";
+    nextBtn.textContent = "Get My Quote";
   } else {
-    nextBtn.textContent = "Next Step";
+    nextBtn.textContent = "Continue";
   }
 
   if (currentStep >= 5) {
@@ -629,52 +801,105 @@ function updateNavigationState() {
 }
 
 function updateStateFromInputs() {
-  quotationState.capacity = document.getElementById("capacity")?.value || "5";
-  quotationState.panelType =
-    document.getElementById("panel-type")?.value || "mono";
-  quotationState.inverterType =
-    document.getElementById("inverter-type")?.value || "string";
-  quotationState.battery = document.getElementById("battery")?.value || "none";
-  quotationState.roofType =
-    document.getElementById("roof-type")?.value || "tile";
-  quotationState.monitoring =
-    document.getElementById("monitoring")?.value || "basic";
-  quotationState.warranty = document.getElementById("warranty")?.value || "10";
+  const cfg = SOLAR_CONFIG;
+
+  // 1. Bill Amount -> Capacity
+  const billAmount = document.getElementById("bill-amount")?.value || "medium";
+  quotationState.capacity = cfg.systemSizing.billToCapacity[billAmount] || 5;
+
+  // 2. Usage Pattern
+  quotationState.usagePattern = document.getElementById("usage-pattern")?.value || "balanced";
+
+  // 3. Backup Needs -> Battery & Inverter
+  const backupNeeds = document.getElementById("backup-needs")?.value || "none";
+  const backupConfig = cfg.backupMapping[backupNeeds] || cfg.backupMapping.none;
+  quotationState.battery = backupConfig.battery;
+  quotationState.inverterType = backupConfig.inverter;
+
+  // 4. Preference -> Panel Type
+  const preference = document.getElementById("preference")?.value || "value";
+  quotationState.panelType = cfg.preferenceMapping[preference] || "poly";
+
+  // 5. Roof Type
+  quotationState.roofType = document.getElementById("roof-type")?.value || "tile";
+
+  // 6. Monitoring (smart-features was removed, default to basic)
+  quotationState.monitoring = "basic";
+  quotationState.warranty = "10";
+
+  // 7. Heavy Loads (Appliances)
+  const applianceCheckboxes = document.querySelectorAll('input[name="appliances"]:checked');
+  quotationState.heavyLoads = Array.from(applianceCheckboxes)
+    .map(cb => cb.value)
+    .filter(v => v !== "none");
 }
 
 function calculatePrice() {
   if (!selectedInstaller) return null;
 
+  const cfg = SOLAR_CONFIG;
   const capacity = Number(quotationState.capacity);
-  const baseRate =
-    selectedInstaller.baseRate * capacity * selectedInstaller.markup;
-  const capacityModifier = pricingConfig.capacity[capacity] || 1;
-  const panelModifier = pricingConfig.panelType[quotationState.panelType] || 1;
-  const inverterModifier =
-    pricingConfig.inverterType[quotationState.inverterType] || 1;
 
-  const adjustedBase =
-    baseRate * capacityModifier * panelModifier * inverterModifier;
+  // Base installation cost
+  const baseRate = selectedInstaller.baseRate * capacity * selectedInstaller.markup;
 
-  const batteryCost = pricingConfig.battery[quotationState.battery] || 0;
-  const roofCost = pricingConfig.roofType[quotationState.roofType] || 0;
-  const monitoringCost =
-    pricingConfig.monitoring[quotationState.monitoring] || 0;
-  const warrantyCost = pricingConfig.warranty[quotationState.warranty] || 0;
+  // Apply modifiers from config
+  const capacityMultiplier = cfg.baseCosts.capacityMultiplier[capacity] || 1;
+  const panelMultiplier = cfg.panels[quotationState.panelType]?.multiplier || 1;
+  const inverterMultiplier = cfg.inverters[quotationState.inverterType]?.multiplier || 1;
 
-  const subtotal =
-    adjustedBase + batteryCost + roofCost + monitoringCost + warrantyCost;
-  const tax = subtotal * 0.08; // estimated VAT & levies
+  const systemCost = baseRate * capacityMultiplier * panelMultiplier * inverterMultiplier;
+
+  // Additional costs from config
+  const batteryCost = cfg.batteries[quotationState.battery]?.price || 0;
+  const roofCost = cfg.installation.roofType[quotationState.roofType]?.price || 0;
+  const monitoringCost = cfg.extras.monitoring[quotationState.monitoring]?.price || 0;
+  const warrantyCost = cfg.extras.warranty[quotationState.warranty]?.price || 0;
+
+  // Calculate totals
+  const subtotal = systemCost + batteryCost + roofCost + monitoringCost + warrantyCost;
+  const tax = subtotal * cfg.fees.taxRate;
   const total = Math.round(subtotal + tax);
 
   return {
-    adjustedBase: Math.round(adjustedBase),
+    systemCost: Math.round(systemCost),
     batteryCost,
     roofCost,
     monitoringCost,
     warrantyCost,
     tax: Math.round(tax),
     total,
+    // Keep old name for backward compatibility in renderConfirmation
+    adjustedBase: Math.round(systemCost),
+  };
+}
+
+/**
+ * Calculate monthly and annual savings
+ * Uses SOLAR_CONFIG.savings parameters
+ * Applies usage pattern multiplier for realistic savings estimate
+ */
+function calculateSavings(capacity, usagePattern = "balanced") {
+  const cfg = SOLAR_CONFIG.savings;
+
+  // Daily generation = capacity × peak sun hours × performance ratio
+  const dailyGeneration = capacity * cfg.peakSunHours * cfg.performanceRatio;
+
+  // Monthly generation (30 days average)
+  const monthlyGeneration = dailyGeneration * 30;
+
+  // Monthly savings = generation × tariff rate × usage multiplier
+  const multiplier = cfg.usageMultiplier[usagePattern] || 1.0;
+  const monthlySavings = Math.round(monthlyGeneration * cfg.electricityTariff * multiplier);
+
+  // Annual savings
+  const annualSavings = monthlySavings * 12;
+
+  return {
+    dailyGeneration: Math.round(dailyGeneration * 10) / 10,
+    monthlyGeneration: Math.round(monthlyGeneration),
+    monthlySavings,
+    annualSavings,
   };
 }
 
@@ -685,40 +910,145 @@ function renderConfirmation() {
   const state = quotationState;
   const installerName = selectedInstaller ? selectedInstaller.name : "-";
 
+  // Build benefit-focused recommendation (no technical specs)
+  let benefitText = "Your system will cover your daily electricity needs";
+
+  if (state.battery !== "none") {
+    benefitText += ", power essential appliances during outages";
+  }
+
+  benefitText += ", and maximize your solar savings.";
+
+  // Usage pattern benefit
+  const usageBenefit = {
+    "day": "With most of your usage during the day, you'll get the best value from direct solar power.",
+    "night": "Battery storage ensures you save even when using electricity at night.",
+    "balanced": "Your balanced usage means consistent savings around the clock."
+  };
+
+  // Appliance benefit
+  const applianceNames = {
+    "ac": "air conditioner",
+    "heater": "water heater",
+    "washer": "washing machine",
+    "cooker": "electric cooker"
+  };
+  const applianceList = state.heavyLoads.map(a => applianceNames[a]).filter(Boolean);
+  const applianceBenefit = applianceList.length > 0
+    ? `We've sized this to comfortably power your ${applianceList.join(" and ")}.`
+    : "";
+
+  // Calculate key numbers using config-based functions
+  const pricing = calculatePrice();
+  const capacity = Number(state.capacity);
+  const savings = calculateSavings(capacity, state.usagePattern);
+  const paybackYears = pricing ? (pricing.total / savings.annualSavings).toFixed(1) : "-";
+  const totalInvestment = pricing ? formatCurrency(pricing.total) : "-";
+  const monthlySavings = savings.monthlySavings;
+
+  // Confidence indicator
+  const hasAllInputs = state.heavyLoads.length > 0 || state.heavyLoads.includes("none");
+  const confidenceLevel = hasAllInputs ? "High" : "Medium";
+
+  const appDesc = state.monitoring === "advanced" ? "Premium tracking & alerts" : "Standard included";
+
   summaryEl.innerHTML = `
-    <div class="summary-section">
-      <div class="summary-title">Installer</div>
-      <div class="summary-item"><strong>Company</strong><span>${installerName}</span></div>
-      <div class="summary-item"><strong>Region</strong><span>${
-        selectedInstaller?.region || "--"
-      }</span></div>
+    <div class="quote-recommendation">
+      <div class="quote-recommendation__header">
+        <i class="fas fa-sun"></i>
+        <span>Your Solar Solution</span>
+      </div>
+      <p class="quote-recommendation__text">${benefitText}</p>
+      <p class="quote-recommendation__subtext">${usageBenefit[state.usagePattern] || ""} ${applianceBenefit}</p>
     </div>
-    <div class="summary-section" style="margin-top:1.25rem;">
-      <div class="summary-title">System Specification</div>
-      <div class="summary-item"><strong>Capacity</strong><span>${
-        state.capacity
-      } kW</span></div>
-      <div class="summary-item"><strong>Panel Type</strong><span>${formatLabel(
-        state.panelType
-      )}</span></div>
-      <div class="summary-item"><strong>Inverter</strong><span>${formatLabel(
-        state.inverterType
-      )}</span></div>
-      <div class="summary-item"><strong>Battery</strong><span>${
-        state.battery === "none" ? "No battery" : `${state.battery} kWh`
-      }</span></div>
+
+    <div class="quote-metrics">
+      <div class="quote-metric quote-metric--investment">
+        <p class="quote-metric__label">Total Investment</p>
+        <p class="quote-metric__value quote-metric__value--dark">${totalInvestment}</p>
+      </div>
+      <div class="quote-metric quote-metric--savings">
+        <p class="quote-metric__label">Monthly Savings</p>
+        <p class="quote-metric__value quote-metric__value--green">${formatCurrency(monthlySavings)}</p>
+      </div>
+      <div class="quote-metric quote-metric--payback">
+        <p class="quote-metric__label">Payback Period</p>
+        <p class="quote-metric__value quote-metric__value--blue">${paybackYears} yrs</p>
+      </div>
     </div>
-    <div class="summary-section" style="margin-top:1.25rem;">
-      <div class="summary-title">Installation Preferences</div>
-      <div class="summary-item"><strong>Roof Type</strong><span>${formatLabel(
-        state.roofType
-      )}</span></div>
-      <div class="summary-item"><strong>Monitoring</strong><span>${formatLabel(
-        state.monitoring
-      )}</span></div>
-      <div class="summary-item"><strong>Warranty</strong><span>${
-        state.warranty
-      } years</span></div>
+
+    <div class="quote-confidence">
+      <span class="quote-confidence__label">Estimate Confidence:</span>
+      <span class="quote-confidence__value ${hasAllInputs ? 'quote-confidence__value--high' : 'quote-confidence__value--medium'}">${confidenceLevel}</span>
+    </div>
+
+    <div class="quote-installer">
+      <div class="quote-installer__content">
+        <div>
+          <p class="quote-installer__name">Installed by ${installerName}</p>
+          <p class="quote-installer__region">Coverage: ${selectedInstaller?.region || "--"}</p>
+        </div>
+        <i class="fas fa-check-circle quote-installer__check"></i>
+      </div>
+    </div>
+
+    <details class="quote-details">
+      <summary class="quote-details__summary">
+        <span>View cost breakdown</span>
+        <i class="fas fa-chevron-down"></i>
+      </summary>
+      <div class="quote-details__content">
+        <div class="quote-details__row">
+          <span class="quote-details__label">System & Installation</span>
+          <span class="quote-details__value">${pricing ? formatCurrency(pricing.adjustedBase) : "-"}</span>
+        </div>
+        ${pricing && pricing.batteryCost > 0 ? `
+        <div class="quote-details__row">
+          <span class="quote-details__label">Battery Backup</span>
+          <span class="quote-details__value">${formatCurrency(pricing.batteryCost)}</span>
+        </div>` : ""}
+        <div class="quote-details__row">
+          <span class="quote-details__label">Roof Mounting</span>
+          <span class="quote-details__value">${pricing ? formatCurrency(pricing.roofCost) : "-"}</span>
+        </div>
+        ${pricing && pricing.monitoringCost > 0 ? `
+        <div class="quote-details__row">
+          <span class="quote-details__label">Smart Monitoring</span>
+          <span class="quote-details__value">${formatCurrency(pricing.monitoringCost)}</span>
+        </div>` : ""}
+        <div class="quote-details__row">
+          <span class="quote-details__label">Taxes & Fees</span>
+          <span class="quote-details__value">${pricing ? formatCurrency(pricing.tax) : "-"}</span>
+        </div>
+      </div>
+    </details>
+
+    <details class="quote-details">
+      <summary class="quote-details__summary">
+        <span>What's included</span>
+        <i class="fas fa-chevron-down"></i>
+      </summary>
+      <div class="quote-details__content">
+        <div class="quote-details__row">
+          <span class="quote-details__label">Roof Mounting</span>
+          <span class="quote-details__value">${formatLabel(state.roofType)} compatible</span>
+        </div>
+        <div class="quote-details__row">
+          <span class="quote-details__label">Smart Tracking</span>
+          <span class="quote-details__value">${appDesc}</span>
+        </div>
+        <div class="quote-details__row">
+          <span class="quote-details__label">Warranty</span>
+          <span class="quote-details__value">${state.warranty} years</span>
+        </div>
+      </div>
+    </details>
+
+    <div class="quote-tip">
+      <p class="quote-tip__text">
+        <i class="fas fa-lightbulb"></i>
+        <strong>Want a more accurate quote?</strong> Our installer will verify appliance types & roof details during the site visit.
+      </p>
     </div>
   `;
 }
@@ -726,55 +1056,8 @@ function renderConfirmation() {
 function displayPriceSummary() {
   const priceCard = document.getElementById("price-summary");
   if (!priceCard) return;
-
-  const pricing = calculatePrice();
-  if (!pricing) {
-    priceCard.innerHTML = "";
-    return;
-  }
-
-  const capacity = Number(quotationState.capacity);
-  const monthlyGeneration = capacity * 4.5 * 30; // kWh per month
-  const tariff = 35; // Rs per kWh
-  const monthlySavings = Math.round(monthlyGeneration * tariff);
-  const annualSavings = monthlySavings * 12;
-  const paybackYears = Math.max(pricing.total / annualSavings, 0).toFixed(1);
-
-  priceCard.innerHTML = `
-    <h4>Investment Snapshot</h4>
-    <div class="price-breakdown">
-      <div class="price-item"><span>System & Components</span><span>${formatCurrency(
-        pricing.adjustedBase
-      )}</span></div>
-      <div class="price-item"><span>Battery Storage</span><span>${formatCurrency(
-        pricing.batteryCost
-      )}</span></div>
-      <div class="price-item"><span>Roof & Mounting</span><span>${formatCurrency(
-        pricing.roofCost
-      )}</span></div>
-      <div class="price-item"><span>Monitoring</span><span>${formatCurrency(
-        pricing.monitoringCost
-      )}</span></div>
-      <div class="price-item"><span>Extended Warranty</span><span>${formatCurrency(
-        pricing.warrantyCost
-      )}</span></div>
-      <div class="price-item"><span>Taxes & Levies (est.)</span><span>${formatCurrency(
-        pricing.tax
-      )}</span></div>
-    </div>
-    <div class="price-total"><span>Total Estimated Investment</span><span>${formatCurrency(
-      pricing.total
-    )}</span></div>
-    <div class="savings-info">
-      <div class="savings-row"><span>Projected monthly savings</span><span>${formatCurrency(
-        monthlySavings
-      )}</span></div>
-      <div class="savings-row"><span>Projected annual savings</span><span>${formatCurrency(
-        annualSavings
-      )}</span></div>
-      <div class="savings-row"><span>Estimated payback period</span><span>${paybackYears} years</span></div>
-    </div>
-  `;
+  // All pricing content is now rendered in renderConfirmation() for a cleaner, consolidated view
+  priceCard.innerHTML = "";
 }
 
 function validateContactDetails() {
