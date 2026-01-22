@@ -78,96 +78,88 @@ class SuperAdmin extends Controller
 
     public function add_installer_verification(): void
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            // Initial load
+            $this->view('pages/auth/installer_registration', [
+                'user' => $this->user
+            ], layout: 'main');
+            return;
+        }
 
+        $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            // Form is submitting
-            // Validate the data
-            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+        // Collect form data (MATCH FORM NAMES)
+        $data = [
+            'user' => $this->user,
 
-            // Input data from form
-            $data = [
-                'user' => $this->user,
-                'company_name' => trim($_POST['company_name'] ?? ''),
-                'email' => trim($_POST['email'] ?? ''),
-                'contact' => trim($_POST['contact'] ?? ''),
-                'address' => trim($_POST['address'] ?? ''),
+            'company_name' => trim($_POST['company_name'] ?? ''),
+            'address' => trim($_POST['address'] ?? ''),
+            'number_of_employees' => trim($_POST['number_of_employees'] ?? ''),
+            'website' => trim($_POST['website'] ?? ''),
+            'district' => trim($_POST['district'] ?? ''),
+            'postal_code' => trim($_POST['postal_code'] ?? ''),
+            'contact_number' => trim($_POST['contact_number'] ?? ''),
+            'email' => trim($_POST['email'] ?? ''),
+            'service_type' => trim($_POST['service_type'] ?? ''),
+            'years_of_experience' => trim($_POST['years_of_experience'] ?? ''),
+            'completed_projects' => trim($_POST['completed_projects'] ?? ''),
+            'service_areas' => trim($_POST['service_areas'] ?? ''),
 
-                // Error fields
-                'company_name_err' => '',
-                'email_err' => '',
-                'contact_err' => '',
-                'address_err' => ''
-            ];
+            // Error fields
+            'company_name_err' => '',
+            'email_err' => '',
+            'contact_number_err' => '',
+            'address_err' => '',
+            'district_err' => '',
+            'service_type_err' => ''
+        ];
 
-            // Validate all fields
-            if ($this->authModel->findUserByEmail($data['email'])) {
-                $data['email_err'] = 'Email is already registered';
-            }
+        // Validation
+        if (empty($data['company_name'])) {
+            $data['company_name_err'] = 'Company name is required';
+        }
 
-            if (empty($data['company_name'])) {
-                $data['company_name_err'] = "Please enter full name";
-            }
+        if (empty($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+            $data['email_err'] = 'Valid email is required';
+        } elseif ($this->authModel->findUserByEmail($data['email'])) {
+            $data['email_err'] = 'Email is already registered';
+        }
 
-            if (empty($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-                $data['email_err'] = "Please enter a valid email address";
-            }
+        if (empty($data['contact_number'])) {
+            $data['contact_number_err'] = 'Contact number is required';
+        }
 
-            if (empty($data['contact']) || !preg_match('/^[0-9\-\+\s\(\)]+$/', $data['contact'])) {
-                $data['contact_err'] = "Please enter a valid contact number";
-            }
+        if (empty($data['address'])) {
+            $data['address_err'] = 'Address is required';
+        }
 
-            if (empty($data['address'])) {
-                $data['address_err'] = "Please enter physical address";
-            }
+        if (empty($data['district'])) {
+            $data['district_err'] = 'District is required';
+        }
 
-            // Check for any errors
-            $hasErrors = !empty($data['company_name_err']) || !empty($data['email_err']) ||
-                !empty($data['contact_err']) || !empty($data['address_err']);
+        if (empty($data['service_type'])) {
+            $data['service_type_err'] = 'Service type is required';
+        }
 
-            if ($hasErrors) {
-                // Reload form with errors
+        // Check for errors
+        foreach ($data as $key => $value) {
+            if (str_ends_with($key, '_err') && !empty($value)) {
                 $this->view('pages/auth/installer_registration', $data, layout: 'main');
                 return;
             }
-
-            // All validation passed - save to database
-            $prospectiveInstallerData = [
-                'company_name' => $data['company_name'],
-                'address' => $data['address'],
-                'contact' => $data['contact'],
-                'email' => $data['email']
-            ];
-
-            // Call model to save data
-            if ($this->fleetModel->add_installer_verification($prospectiveInstallerData)) {
-                setToast('Request Submitted Successfully', 'success');
-                redirect('auth/installerRegistrationHandler');
-            } else {
-                setToast('Something went wrong during registration.', 'error');
-                $this->view('pages/auth/installer_registration', $data, layout: 'main');
-            }
-            return;
-
-        } else {
-            // Initial form load
-            $data = [
-                'user' => $this->user,
-                'company_name' => '',
-                'email' => '',
-                'contact' => '',
-                'address' => '',
-
-                'company_name_err' => '',
-                'email_err' => '',
-                'contact_err' => '',
-                'address_err' => ''
-            ];
-
-            $this->view('pages/auth/installer_registration', $data, layout: 'main');
         }
 
+        // Save to DB (PASS ALL REQUIRED FIELDS)
+        if ($this->fleetModel->add_installer_verification($data)) {
+            setToast('Request submitted successfully', 'success');
+            redirect('auth/installerRegistrationHandler');
+            return;
+        }
+
+        setToast('Something went wrong during registration.', 'error');
+        $this->view('pages/auth/installer_registration', $data, layout: 'main');
     }
+
 
     // --- Notifications ---
     public function notifications()
