@@ -126,33 +126,6 @@
                     </ol>
                 </div>
             </div>
-
-            <!-- Benefits Card -->
-            <div class="card shadow-lg rounded-xl">
-                <div class="card-body">
-                    <h3 class="card-title text-xl font-semibold mb-4">
-                        <i class="fas fa-lightbulb text-warning mr-2"></i>Benefits
-                    </h3>
-                    <ul class="benefit-list">
-                        <li>
-                            <i class="fas fa-chart-line text-success mr-2"></i>
-                            <span>Track your consumption patterns</span>
-                        </li>
-                        <li>
-                            <i class="fas fa-chart-pie text-accent mr-2"></i>
-                            <span>Compare actual vs. expected</span>
-                        </li>
-                        <li>
-                            <i class="fas fa-coins text-primary mr-2"></i>
-                            <span>Optimize your savings</span>
-                        </li>
-                        <li>
-                            <i class="fas fa-bell text-warning mr-2"></i>
-                            <span>Get personalized alerts</span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
         </div>
     </div>
 
