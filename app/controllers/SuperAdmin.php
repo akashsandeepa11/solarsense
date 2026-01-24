@@ -76,89 +76,89 @@ class SuperAdmin extends Controller
         $this->view('pages/super_admin/reports', $data, 'dashboard');
     }
 
-    public function add_installer_verification(): void
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            // Initial load
-            $this->view('pages/auth/installer_registration', [
-                'user' => $this->user
-            ], layout: 'main');
-            return;
-        }
+    // public function add_installer_verification(): void
+    // {
+    //     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    //         // Initial load
+    //         $this->view('pages/auth/installer_registration', [
+    //             'user' => $this->user
+    //         ], layout: 'main');
+    //         return;
+    //     }
 
-        $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+    //     $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
-        // Collect form data (MATCH FORM NAMES)
-        $data = [
-            'user' => $this->user,
+    //     // Collect form data (MATCH FORM NAMES)
+    //     $data = [
+    //         'user' => $this->user,
 
-            'company_name' => trim($_POST['company_name'] ?? ''),
-            'address' => trim($_POST['address'] ?? ''),
-            'number_of_employees' => trim($_POST['number_of_employees'] ?? ''),
-            'website' => trim($_POST['website'] ?? ''),
-            'district' => trim($_POST['district'] ?? ''),
-            'postal_code' => trim($_POST['postal_code'] ?? ''),
-            'contact_number' => trim($_POST['contact_number'] ?? ''),
-            'email' => trim($_POST['email'] ?? ''),
-            'service_type' => trim($_POST['service_type'] ?? ''),
-            'years_of_experience' => trim($_POST['years_of_experience'] ?? ''),
-            'completed_projects' => trim($_POST['completed_projects'] ?? ''),
-            'service_areas' => trim($_POST['service_areas'] ?? ''),
+    //         'company_name' => trim($_POST['company_name'] ?? ''),
+    //         'address' => trim($_POST['address'] ?? ''),
+    //         'number_of_employees' => trim($_POST['number_of_employees'] ?? ''),
+    //         'website' => trim($_POST['website'] ?? ''),
+    //         'district' => trim($_POST['district'] ?? ''),
+    //         'postal_code' => trim($_POST['postal_code'] ?? ''),
+    //         'contact_number' => trim($_POST['contact_number'] ?? ''),
+    //         'email' => trim($_POST['email'] ?? ''),
+    //         'service_type' => trim($_POST['service_type'] ?? ''),
+    //         'years_of_experience' => trim($_POST['years_of_experience'] ?? ''),
+    //         'completed_projects' => trim($_POST['completed_projects'] ?? ''),
+    //         'service_areas' => trim($_POST['service_areas'] ?? ''),
 
-            // Error fields
-            'company_name_err' => '',
-            'email_err' => '',
-            'contact_number_err' => '',
-            'address_err' => '',
-            'district_err' => '',
-            'service_type_err' => ''
-        ];
+    //         // Error fields
+    //         'company_name_err' => '',
+    //         'email_err' => '',
+    //         'contact_number_err' => '',
+    //         'address_err' => '',
+    //         'district_err' => '',
+    //         'service_type_err' => ''
+    //     ];
 
-        // Validation
-        if (empty($data['company_name'])) {
-            $data['company_name_err'] = 'Company name is required';
-        }
+    //     // Validation
+    //     if (empty($data['company_name'])) {
+    //         $data['company_name_err'] = 'Company name is required';
+    //     }
 
-        if (empty($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            $data['email_err'] = 'Valid email is required';
-        } elseif ($this->authModel->findUserByEmail($data['email'])) {
-            $data['email_err'] = 'Email is already registered';
-        }
+    //     if (empty($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+    //         $data['email_err'] = 'Valid email is required';
+    //     } elseif ($this->authModel->findUserByEmail($data['email'])) {
+    //         $data['email_err'] = 'Email is already registered';
+    //     }
 
-        if (empty($data['contact_number'])) {
-            $data['contact_number_err'] = 'Contact number is required';
-        }
+    //     if (empty($data['contact_number'])) {
+    //         $data['contact_number_err'] = 'Contact number is required';
+    //     }
 
-        if (empty($data['address'])) {
-            $data['address_err'] = 'Address is required';
-        }
+    //     if (empty($data['address'])) {
+    //         $data['address_err'] = 'Address is required';
+    //     }
 
-        if (empty($data['district'])) {
-            $data['district_err'] = 'District is required';
-        }
+    //     if (empty($data['district'])) {
+    //         $data['district_err'] = 'District is required';
+    //     }
 
-        if (empty($data['service_type'])) {
-            $data['service_type_err'] = 'Service type is required';
-        }
+    //     if (empty($data['service_type'])) {
+    //         $data['service_type_err'] = 'Service type is required';
+    //     }
 
-        // Check for errors
-        foreach ($data as $key => $value) {
-            if (str_ends_with($key, '_err') && !empty($value)) {
-                $this->view('pages/auth/installer_registration', $data, layout: 'main');
-                return;
-            }
-        }
+    //     // Check for errors
+    //     foreach ($data as $key => $value) {
+    //         if (str_ends_with($key, '_err') && !empty($value)) {
+    //             $this->view('pages/auth/installer_registration', $data, layout: 'main');
+    //             return;
+    //         }
+    //     }
 
-        // Save to DB (PASS ALL REQUIRED FIELDS)
-        if ($this->fleetModel->add_installer_verification($data)) {
-            setToast('Request submitted successfully', 'success');
-            redirect('auth/installerRegistrationHandler');
-            return;
-        }
+    //     // Save to DB (PASS ALL REQUIRED FIELDS)
+    //     if ($this->fleetModel->add_installer_verification($data)) {
+    //         setToast('Request submitted successfully', 'success');
+    //         redirect('auth/installerRegistrationHandler');
+    //         return;
+    //     }
 
-        setToast('Something went wrong during registration.', 'error');
-        $this->view('pages/auth/installer_registration', $data, layout: 'main');
-    }
+    //     setToast('Something went wrong during registration.', 'error');
+    //     $this->view('pages/auth/installer_registration', $data, layout: 'main');
+    // }
 
 
     // --- Notifications ---

@@ -184,7 +184,7 @@ $buttonIcon = 'fas fa-paper-plane';
                         <p class="text-secondary mt-1"><?php echo $pageDescription; ?></p>
                     </div>
 
-                    <form id="installerRequest-form" action="<?php echo URLROOT ?>/superadmin/add_installer_verification"
+                    <form id="installerRequest-form" action="<?php echo URLROOT ?>/auth/add_installer_verification"
                         method="post" novalidate enctype="multipart/form-data">
 
                         <!-- Company Information Section -->
