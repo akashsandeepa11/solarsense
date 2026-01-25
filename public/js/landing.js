@@ -240,6 +240,33 @@ const SOLAR_CONFIG = {
   },
 
   // ─────────────────────────────────────────────
+  // APPLIANCE POWER CONSUMPTION: kW per unit
+  // Used to adjust system capacity based on heavy loads
+  // ─────────────────────────────────────────────
+  appliances: {
+    ac: {
+      kw: 1.5,           // Average AC unit ~1.5kW
+      hoursPerDay: 6,    // Typical usage hours
+      label: "Air Conditioner",
+    },
+    heater: {
+      kw: 2.0,           // Water heater ~2kW
+      hoursPerDay: 2,    // Typical usage hours
+      label: "Water Heater",
+    },
+    washer: {
+      kw: 0.5,           // Washing machine ~0.5kW
+      hoursPerDay: 1,    // Typical usage hours
+      label: "Washing Machine",
+    },
+    cooker: {
+      kw: 2.5,           // Electric cooker ~2.5kW
+      hoursPerDay: 2,    // Typical usage hours
+      label: "Electric Cooker",
+    },
+  },
+
+  // ─────────────────────────────────────────────
   // BASE COSTS: Per kW installation costs
   // ─────────────────────────────────────────────
   baseCosts: {
@@ -810,6 +837,28 @@ function updateStateFromInputs() {
     washer: parseInt(document.querySelector('input[name="appliance_qty_washer"]')?.value) || 0,
     cooker: parseInt(document.querySelector('input[name="appliance_qty_cooker"]')?.value) || 0,
   };
+
+  // 8. Adjust capacity based on appliance load
+  // Calculate additional kW needed for heavy appliances
+  const applianceCfg = cfg.appliances;
+  const qty = quotationState.applianceQuantities;
+  const savingsCfg = cfg.savings;
+
+  // Calculate daily kWh from appliances
+  let applianceDailyKwh = 0;
+  applianceDailyKwh += (qty.ac || 0) * applianceCfg.ac.kw * applianceCfg.ac.hoursPerDay;
+  applianceDailyKwh += (qty.heater || 0) * applianceCfg.heater.kw * applianceCfg.heater.hoursPerDay;
+  applianceDailyKwh += (qty.washer || 0) * applianceCfg.washer.kw * applianceCfg.washer.hoursPerDay;
+  applianceDailyKwh += (qty.cooker || 0) * applianceCfg.cooker.kw * applianceCfg.cooker.hoursPerDay;
+
+  // Convert to required kW capacity (considering sun hours and performance ratio)
+  // Required kW = Daily kWh / (Peak Sun Hours * Performance Ratio)
+  const additionalCapacityNeeded = applianceDailyKwh / (savingsCfg.peakSunHours * savingsCfg.performanceRatio);
+
+  // Add to base capacity (round up to nearest 0.5 kW, cap combined at 15kW)
+  const baseCapacity = cfg.systemSizing.billToCapacity[billAmount] || 5;
+  const adjustedCapacity = Math.min(15, Math.ceil((baseCapacity + additionalCapacityNeeded) * 2) / 2);
+  quotationState.capacity = adjustedCapacity;
 }
 
 function calculatePrice() {
