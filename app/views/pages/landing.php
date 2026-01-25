@@ -498,78 +498,73 @@
 
                             </div>
 
-                            <div class="appliance-section" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0;">
+                            <div class="appliance-section">
                                 <label class="form-label">Which of these do you use regularly?</label>
-                                <p style="font-size: 0.85rem; color: #64748b; margin: 0 0 1rem 0;">Select all that apply — helps us fine-tune your system size</p>
+                                <p class="appliance-hint">Select and specify how many of each — helps us fine-tune your system size</p>
                                 <script>
-                                    function updateCardStyle(card, isChecked) {
-                                        var icon = card.querySelector("i");
-                                        var textSpan = card.querySelector("span");
-                                        if (isChecked) {
-                                            card.style.borderColor = "#fe9630";
-                                            card.style.background = "rgba(254, 150, 48, 0.1)";
-                                            if (icon) icon.style.color = "#fe9630";
-                                            if (textSpan) textSpan.style.color = "#fe9630";
+                                    function adjustQty(btn, delta) {
+                                        var card = btn.closest('.appliance-card');
+                                        var input = card.querySelector('.qty-input');
+                                        var currentVal = parseInt(input.value) || 0;
+                                        var min = parseInt(input.min) || 0;
+                                        var max = parseInt(input.max) || 10;
+                                        var newVal = Math.max(min, Math.min(max, currentVal + delta));
+                                        input.value = newVal;
+                                        updateCardVisual(card, newVal);
+                                    }
+                                    function updateCardVisual(card, qty) {
+                                        if (qty > 0) {
+                                            card.classList.add('active');
                                         } else {
-                                            card.style.borderColor = "#e2e8f0";
-                                            card.style.background = "#f8fafc";
-                                            if (icon) icon.style.color = "#94a3b8";
-                                            if (textSpan) textSpan.style.color = "#475569";
+                                            card.classList.remove('active');
                                         }
                                     }
-
-                                    function toggleAppliance(card, value) {
-                                        var checkbox = card.querySelector('input[type="checkbox"]');
-                                        if (!checkbox) return;
-                                        checkbox.checked = !checkbox.checked;
-                                        updateCardStyle(card, checkbox.checked);
-
-                                        // If "None" is selected, deselect all others
-                                        if (value === 'none' && checkbox.checked) {
-                                            var allCards = document.querySelectorAll('.appliance-card');
-                                            allCards.forEach(function(otherCard) {
-                                                var otherCheckbox = otherCard.querySelector('input[type="checkbox"]');
-                                                if (otherCheckbox && otherCheckbox.value !== 'none') {
-                                                    otherCheckbox.checked = false;
-                                                    updateCardStyle(otherCard, false);
-                                                }
-                                            });
-                                        }
-                                        // If any appliance is selected, deselect "None"
-                                        else if (value !== 'none' && checkbox.checked) {
-                                            var noneCard = document.querySelector('.appliance-card input[value="none"]');
-                                            if (noneCard && noneCard.checked) {
-                                                noneCard.checked = false;
-                                                updateCardStyle(noneCard.closest('.appliance-card'), false);
-                                            }
-                                        }
+                                    function onQtyInputChange(input) {
+                                        var card = input.closest('.appliance-card');
+                                        var val = parseInt(input.value) || 0;
+                                        var min = parseInt(input.min) || 0;
+                                        var max = parseInt(input.max) || 10;
+                                        val = Math.max(min, Math.min(max, val));
+                                        input.value = val;
+                                        updateCardVisual(card, val);
                                     }
                                 </script>
-                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.75rem;">
-                                    <div class="appliance-card" onclick="toggleAppliance(this, 'ac')" style="cursor: pointer; padding: 1rem 0.5rem; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; text-align: center; transition: all 0.2s;">
-                                        <input type="checkbox" name="appliances" value="ac" style="display:none;">
-                                        <i class="fas fa-snowflake" style="font-size: 1.4rem; color: #94a3b8; display: block; margin-bottom: 0.5rem;"></i>
-                                        <span style="font-size: 0.85rem; color: #475569;">Air conditioner</span>
+                                <div class="appliance-grid">
+                                    <div class="appliance-card" data-appliance="ac">
+                                        <i class="fas fa-snowflake appliance-card__icon"></i>
+                                        <span class="appliance-card__label">Air conditioner</span>
+                                        <div class="qty-selector">
+                                            <button type="button" class="qty-btn" onclick="adjustQty(this, -1)">−</button>
+                                            <input type="number" name="appliance_qty_ac" class="qty-input" value="0" min="0" max="10" onchange="onQtyInputChange(this)">
+                                            <button type="button" class="qty-btn" onclick="adjustQty(this, 1)">+</button>
+                                        </div>
                                     </div>
-                                    <div class="appliance-card" onclick="toggleAppliance(this, 'heater')" style="cursor: pointer; padding: 1rem 0.5rem; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; text-align: center; transition: all 0.2s;">
-                                        <input type="checkbox" name="appliances" value="heater" style="display:none;">
-                                        <i class="fas fa-fire" style="font-size: 1.4rem; color: #94a3b8; display: block; margin-bottom: 0.5rem;"></i>
-                                        <span style="font-size: 0.85rem; color: #475569;">Water heater</span>
+                                    <div class="appliance-card" data-appliance="heater">
+                                        <i class="fas fa-fire appliance-card__icon"></i>
+                                        <span class="appliance-card__label">Water heater</span>
+                                        <div class="qty-selector">
+                                            <button type="button" class="qty-btn" onclick="adjustQty(this, -1)">−</button>
+                                            <input type="number" name="appliance_qty_heater" class="qty-input" value="0" min="0" max="10" onchange="onQtyInputChange(this)">
+                                            <button type="button" class="qty-btn" onclick="adjustQty(this, 1)">+</button>
+                                        </div>
                                     </div>
-                                    <div class="appliance-card" onclick="toggleAppliance(this, 'washer')" style="cursor: pointer; padding: 1rem 0.5rem; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; text-align: center; transition: all 0.2s;">
-                                        <input type="checkbox" name="appliances" value="washer" style="display:none;">
-                                        <i class="fas fa-tshirt" style="font-size: 1.4rem; color: #94a3b8; display: block; margin-bottom: 0.5rem;"></i>
-                                        <span style="font-size: 0.85rem; color: #475569;">Washing machine</span>
+                                    <div class="appliance-card" data-appliance="washer">
+                                        <i class="fas fa-tshirt appliance-card__icon"></i>
+                                        <span class="appliance-card__label">Washing machine</span>
+                                        <div class="qty-selector">
+                                            <button type="button" class="qty-btn" onclick="adjustQty(this, -1)">−</button>
+                                            <input type="number" name="appliance_qty_washer" class="qty-input" value="0" min="0" max="10" onchange="onQtyInputChange(this)">
+                                            <button type="button" class="qty-btn" onclick="adjustQty(this, 1)">+</button>
+                                        </div>
                                     </div>
-                                    <div class="appliance-card" onclick="toggleAppliance(this, 'cooker')" style="cursor: pointer; padding: 1rem 0.5rem; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; text-align: center; transition: all 0.2s;">
-                                        <input type="checkbox" name="appliances" value="cooker" style="display:none;">
-                                        <i class="fas fa-utensils" style="font-size: 1.4rem; color: #94a3b8; display: block; margin-bottom: 0.5rem;"></i>
-                                        <span style="font-size: 0.85rem; color: #475569;">Electric cooker</span>
-                                    </div>
-                                    <div class="appliance-card" onclick="toggleAppliance(this, 'none')" style="cursor: pointer; padding: 1rem 0.5rem; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; text-align: center; transition: all 0.2s;">
-                                        <input type="checkbox" name="appliances" value="none" style="display:none;">
-                                        <i class="fas fa-ban" style="font-size: 1.4rem; color: #94a3b8; display: block; margin-bottom: 0.5rem;"></i>
-                                        <span style="font-size: 0.85rem; color: #475569;">None of these</span>
+                                    <div class="appliance-card" data-appliance="cooker">
+                                        <i class="fas fa-utensils appliance-card__icon"></i>
+                                        <span class="appliance-card__label">Electric cooker</span>
+                                        <div class="qty-selector">
+                                            <button type="button" class="qty-btn" onclick="adjustQty(this, -1)">−</button>
+                                            <input type="number" name="appliance_qty_cooker" class="qty-input" value="0" min="0" max="10" onchange="onQtyInputChange(this)">
+                                            <button type="button" class="qty-btn" onclick="adjustQty(this, 1)">+</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

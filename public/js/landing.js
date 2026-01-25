@@ -2,31 +2,6 @@ let animatedObserver = null;
 const animatedSelectors =
   ".features__item, .step, .fade-in, .testimonial, .installer-card";
 
-// Global function for appliance card toggle (used by onclick handlers)
-function toggleAppliance(card, value) {
-  const checkbox = card.querySelector('input[type="checkbox"]');
-  if (!checkbox) return;
-
-  // Toggle checkbox
-  checkbox.checked = !checkbox.checked;
-
-  // Update visual state
-  const icon = card.querySelector("i");
-  const textSpan = card.querySelector("span");
-
-  if (checkbox.checked) {
-    card.style.borderColor = "#fe9630";
-    card.style.background = "rgba(254, 150, 48, 0.1)";
-    if (icon) icon.style.color = "#fe9630";
-    if (textSpan) textSpan.style.color = "#fe9630";
-  } else {
-    card.style.borderColor = "#e2e8f0";
-    card.style.background = "#f8fafc";
-    if (icon) icon.style.color = "#94a3b8";
-    if (textSpan) textSpan.style.color = "#475569";
-  }
-}
-
 document.addEventListener("DOMContentLoaded", () => {
   initializeHeaderInteractions();
   initializeScrollAnimations();
@@ -457,7 +432,7 @@ const quotationState = {
   monitoring: "basic",
   warranty: "10",
   usagePattern: "balanced",
-  heavyLoads: [],
+  applianceQuantities: { ac: 0, heater: 0, washer: 0, cooker: 0 },
 };
 
 function initializeQuotationCalculator() {
@@ -466,6 +441,7 @@ function initializeQuotationCalculator() {
 
   loadInstallerOptions();
   setupQuotationEventListeners();
+  initializeApplianceQuantitySelectors();
   goToStep(1);
 }
 
@@ -827,11 +803,13 @@ function updateStateFromInputs() {
   quotationState.monitoring = "basic";
   quotationState.warranty = "10";
 
-  // 7. Heavy Loads (Appliances)
-  const applianceCheckboxes = document.querySelectorAll('input[name="appliances"]:checked');
-  quotationState.heavyLoads = Array.from(applianceCheckboxes)
-    .map(cb => cb.value)
-    .filter(v => v !== "none");
+  // 7. Appliance Quantities
+  quotationState.applianceQuantities = {
+    ac: parseInt(document.querySelector('input[name="appliance_qty_ac"]')?.value) || 0,
+    heater: parseInt(document.querySelector('input[name="appliance_qty_heater"]')?.value) || 0,
+    washer: parseInt(document.querySelector('input[name="appliance_qty_washer"]')?.value) || 0,
+    cooker: parseInt(document.querySelector('input[name="appliance_qty_cooker"]')?.value) || 0,
+  };
 }
 
 function calculatePrice() {
@@ -926,16 +904,21 @@ function renderConfirmation() {
     "balanced": "Your balanced usage means consistent savings around the clock."
   };
 
-  // Appliance benefit
+  // Appliance benefit with quantities
   const applianceNames = {
     "ac": "air conditioner",
     "heater": "water heater",
     "washer": "washing machine",
     "cooker": "electric cooker"
   };
-  const applianceList = state.heavyLoads.map(a => applianceNames[a]).filter(Boolean);
+  const applianceList = [];
+  const qty = state.applianceQuantities || {};
+  if (qty.ac > 0) applianceList.push(qty.ac > 1 ? `${qty.ac} air conditioners` : "air conditioner");
+  if (qty.heater > 0) applianceList.push(qty.heater > 1 ? `${qty.heater} water heaters` : "water heater");
+  if (qty.washer > 0) applianceList.push(qty.washer > 1 ? `${qty.washer} washing machines` : "washing machine");
+  if (qty.cooker > 0) applianceList.push(qty.cooker > 1 ? `${qty.cooker} electric cookers` : "electric cooker");
   const applianceBenefit = applianceList.length > 0
-    ? `We've sized this to comfortably power your ${applianceList.join(" and ")}.`
+    ? `We've sized this to comfortably power your ${applianceList.join(", ").replace(/, ([^,]*)$/, " and $1")}.`
     : "";
 
   // Calculate key numbers using config-based functions
@@ -946,9 +929,9 @@ function renderConfirmation() {
   const totalInvestment = pricing ? formatCurrency(pricing.total) : "-";
   const monthlySavings = savings.monthlySavings;
 
-  // Confidence indicator
-  const hasAllInputs = state.heavyLoads.length > 0 || state.heavyLoads.includes("none");
-  const confidenceLevel = hasAllInputs ? "High" : "Medium";
+  // Confidence indicator (reuses qty from above)
+  const hasApplianceInput = qty.ac > 0 || qty.heater > 0 || qty.washer > 0 || qty.cooker > 0;
+  const confidenceLevel = hasApplianceInput ? "High" : "Medium";
 
   const appDesc = state.monitoring === "advanced" ? "Premium tracking & alerts" : "Standard included";
 
