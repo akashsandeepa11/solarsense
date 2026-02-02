@@ -11,50 +11,27 @@ $config = [
 ];
 include __DIR__ . '/../../inc/components/page_header.php';
 
-// Dummy cart data (like products added to cart)
-$cartItems = [
-    [
-        'id' => 1,
-        'title' => 'Premium Solar Battery',
-        'company' => 'SolarTech Solutions',
-        'price' => 292496.75,
-        'quantity' => 1,
-        'image' => 'solar_battery.png'
-    ],
-    [
-        'id' => 5,
-        'title' => 'Portable Solar Power Bank',
-        'company' => 'MobilePower Plus',
-        'price' => 42246.75,
-        'quantity' => 2,
-        'image' => 'portable_solar_powerbank.png'
-    ],
-    [
-        'id' => 3,
-        'title' => 'Solar Garden Lamp Set',
-        'company' => 'GreenLight Solutions',
-        'price' => 19496.75,
-        'quantity' => 1,
-        'image' => 'solar_graden_lamp_set.png'
-    ]
-];
+// Get cart from session
+$cartItems = $_SESSION['cart'] ?? [];
 ?>
 
 <div class="shop-container">
 
-    <!-- <h2 style="margin-bottom: 20px;">Your Shopping Cart</h2> -->
-
     <div class="cart-grid">
         <div class="cart-items">
             <?php if(empty($cartItems)): ?>
-                <p style="text-align:center; padding:2rem;">Your cart is empty.</p>
+                <div class="empty-cart">
+                    <i class="fa-solid fa-cart-shopping" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+                    <p>Your cart is empty.</p>
+                    <a href="<?php echo URLROOT; ?>/homeowner/shop" class="btn btn-primary" style="margin-top: 1rem;">Browse Products</a>
+                </div>
             <?php else: ?>
                 <?php foreach($cartItems as $item): ?>
-                <div class="cart-card" data-id="<?php echo $item['id']; ?>">
+                <div class="cart-card" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>">
                     <img src="<?php echo URLROOT; ?>/img/<?php echo $item['image']; ?>" alt="<?php echo $item['title']; ?>" class="cart-product-image">
                     <div class="cart-product-info">
-                        <h4><?php echo $item['title']; ?></h4>
-                        <p class="cart-product-company"><?php echo $item['company']; ?></p>
+                        <h4><?php echo htmlspecialchars($item['title']); ?></h4>
+                        <p class="cart-product-company"><?php echo htmlspecialchars($item['company']); ?></p>
                         <p class="cart-product-price">Rs.<?php echo number_format($item['price'],2); ?></p>
 
                         <div class="cart-actions">
@@ -74,7 +51,11 @@ $cartItems = [
             <h3>Order Summary</h3>
             <p>Items: <span id="summary-count"><?php echo array_sum(array_column($cartItems,'quantity')); ?></span></p>
             <p>Total: Rs.<span id="summary-total"><?php echo number_format(array_sum(array_map(fn($i)=>$i['price']*$i['quantity'],$cartItems)),2); ?></span></p>
-            <button class="btn btn-primary checkout-btn">Proceed to Checkout</button>
+            <?php if(!empty($cartItems)): ?>
+            <a href="<?php echo URLROOT; ?>/homeowner/shop/checkout" class="btn btn-primary checkout-btn">Proceed to Checkout</a>
+            <?php else: ?>
+            <button class="btn btn-primary checkout-btn" disabled style="opacity: 0.5; cursor: not-allowed;">Proceed to Checkout</button>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -92,6 +73,14 @@ $cartItems = [
     display: flex;
     flex-direction: column;
     gap: 1rem;
+}
+
+.empty-cart {
+    text-align: center;
+    padding: 3rem;
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #ddd;
 }
 
 .cart-card {
@@ -172,24 +161,50 @@ $cartItems = [
 .checkout-btn {
     width: 100%;
     margin-top: 15px;
+    text-align: center;
+    text-decoration: none;
 }
 </style>
 
 <script>
-// Update total when quantity changes
-const quantities = document.querySelectorAll('.cart-quantity');
-const summaryTotal = document.getElementById('summary-total');
-const summaryCount = document.getElementById('summary-count');
+const URLROOT = '<?php echo URLROOT; ?>';
 
-quantities.forEach(input => {
-    input.addEventListener('change', updateSummary);
+// Update total when quantity changes
+document.querySelectorAll('.cart-quantity').forEach(input => {
+    input.addEventListener('change', function() {
+        const card = this.closest('.cart-card');
+        const productId = card.dataset.id;
+        const quantity = this.value;
+        
+        fetch(`${URLROOT}/homeowner/updateCartQty`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `product_id=${productId}&quantity=${quantity}`
+        });
+        
+        updateSummary();
+    });
 });
 
+// Remove item handlers
 document.querySelectorAll('.remove-btn').forEach(btn => {
-    btn.addEventListener('click', e => {
-        const card = e.target.closest('.cart-card');
+    btn.addEventListener('click', function() {
+        const card = this.closest('.cart-card');
+        const productId = card.dataset.id;
+        
+        fetch(`${URLROOT}/homeowner/removeFromCart`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `product_id=${productId}`
+        });
+        
         card.remove();
         updateSummary();
+        
+        // Check if cart is empty
+        if (document.querySelectorAll('.cart-card').length === 0) {
+            location.reload();
+        }
     });
 });
 
@@ -198,13 +213,13 @@ function updateSummary() {
     let total = 0, count = 0;
 
     cartCards.forEach(card => {
-        const price = parseFloat(card.querySelector('.cart-product-price').textContent.replace('$',''));
+        const price = parseFloat(card.dataset.price);
         const qty = parseInt(card.querySelector('.cart-quantity').value);
         total += price * qty;
         count += qty;
     });
 
-    summaryTotal.textContent = total.toFixed(2);
-    summaryCount.textContent = count;
+    document.getElementById('summary-total').textContent = total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('summary-count').textContent = count;
 }
 </script>

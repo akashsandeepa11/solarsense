@@ -49,15 +49,18 @@
                         
                         $this->view('pages/homeowner/shop', $data, 'dashboard');
                         
-                    }else if($page='cart'){
+                    }else if($page=='cart'){
                         $data = [
                             'user' => $this->user,
                         ];
                         
                         $this->view('pages/homeowner/cart', $data, 'dashboard');
+                    }else if($page=='checkout'){
+                        $this->checkout();
                     }
 
                 }
+
 
         public function profile(){
             $data = [
@@ -201,6 +204,188 @@
             ];
             
             $this->view('pages/common/notifications', $data, layout: 'dashboard');
+        }
+
+        // --- PayHere Payment Gateway ---
+        
+        public function checkout() {
+            require_once APPROOT . '/helpers/PayHere.php';
+            
+            // Get cart from session
+            $cartItems = $_SESSION['cart'] ?? [];
+            
+            // Redirect to cart if empty
+            if (empty($cartItems)) {
+                header('Location: ' . URLROOT . '/homeowner/shop/cart');
+                exit;
+            }
+            
+            $subtotal = array_sum(array_map(fn($i) => $i['price'] * $i['quantity'], $cartItems));
+            $itemCount = array_sum(array_column($cartItems, 'quantity'));
+            $orderId = 'SS-' . time() . '-' . rand(1000, 9999);
+            
+            $data = [
+                'user' => $this->user,
+                'cartItems' => $cartItems,
+                'subtotal' => $subtotal,
+                'itemCount' => $itemCount,
+                'orderId' => $orderId,
+                'payhereUrl' => PayHere::getCheckoutUrl()
+            ];
+            
+            $this->view('pages/homeowner/checkout', $data, 'dashboard');
+        }
+        
+        public function paymentNotify() {
+            require_once APPROOT . '/helpers/PayHere.php';
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); exit; }
+            
+            $logFile = APPROOT . '/logs/payhere_' . date('Y-m-d') . '.log';
+            file_put_contents($logFile, date('Y-m-d H:i:s') . ' - ' . json_encode($_POST) . "\n", FILE_APPEND);
+            
+            if (!PayHere::verifyCallback($_POST, PAYHERE_MERCHANT_SECRET)) {
+                http_response_code(400); exit;
+            }
+            
+            http_response_code(200);
+            echo 'OK';
+            exit;
+        }
+        
+        public function paymentReturn() {
+            $data = [
+                'user' => $this->user,
+                'orderId' => $_GET['order_id'] ?? 'N/A',
+                'status' => 'success'
+            ];
+            $this->view('pages/homeowner/payment_success', $data, 'dashboard');
+        }
+        
+        public function paymentCancel() {
+            $data = ['user' => $this->user, 'status' => 'cancelled'];
+            $this->view('pages/homeowner/payment_cancelled', $data, 'dashboard');
+        }
+
+        // --- Cart Management (Session-based) ---
+        
+        public function addToCart() {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                echo json_encode(['success' => false, 'message' => 'Invalid request']);
+                exit;
+            }
+            
+            $productId = $_POST['product_id'] ?? null;
+            if (!$productId) {
+                echo json_encode(['success' => false, 'message' => 'Product ID required']);
+                exit;
+            }
+            
+            // Find product
+            $products = $this->getProducts();
+            $product = null;
+            foreach ($products as $p) {
+                if ($p['id'] == $productId) {
+                    $product = $p;
+                    break;
+                }
+            }
+            
+            if (!$product) {
+                echo json_encode(['success' => false, 'message' => 'Product not found']);
+                exit;
+            }
+            
+            // Initialize cart if not exists
+            if (!isset($_SESSION['cart'])) {
+                $_SESSION['cart'] = [];
+            }
+            
+            // Add to cart or update quantity
+            $found = false;
+            foreach ($_SESSION['cart'] as &$item) {
+                if ($item['id'] == $productId) {
+                    $item['quantity']++;
+                    $found = true;
+                    break;
+                }
+            }
+            
+            if (!$found) {
+                $_SESSION['cart'][] = [
+                    'id' => $product['id'],
+                    'title' => $product['title'],
+                    'company' => $product['company'],
+                    'price' => $product['price'] * 325, // Convert to LKR
+                    'image' => $product['image'],
+                    'quantity' => 1
+                ];
+            }
+            
+            echo json_encode([
+                'success' => true, 
+                'message' => 'Added to cart',
+                'cartCount' => $this->getCartCount()
+            ]);
+            exit;
+        }
+        
+        public function removeFromCart() {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                echo json_encode(['success' => false]);
+                exit;
+            }
+            
+            $productId = $_POST['product_id'] ?? null;
+            if ($productId && isset($_SESSION['cart'])) {
+                $_SESSION['cart'] = array_values(array_filter($_SESSION['cart'], function($item) use ($productId) {
+                    return $item['id'] != $productId;
+                }));
+            }
+            
+            echo json_encode(['success' => true, 'cartCount' => $this->getCartCount()]);
+            exit;
+        }
+        
+        public function updateCartQty() {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                echo json_encode(['success' => false]);
+                exit;
+            }
+            
+            $productId = $_POST['product_id'] ?? null;
+            $quantity = max(1, intval($_POST['quantity'] ?? 1));
+            
+            if ($productId && isset($_SESSION['cart'])) {
+                foreach ($_SESSION['cart'] as &$item) {
+                    if ($item['id'] == $productId) {
+                        $item['quantity'] = $quantity;
+                        break;
+                    }
+                }
+            }
+            
+            echo json_encode(['success' => true, 'cartCount' => $this->getCartCount()]);
+            exit;
+        }
+        
+        public function getCartData() {
+            echo json_encode([
+                'success' => true,
+                'cart' => $_SESSION['cart'] ?? [],
+                'cartCount' => $this->getCartCount()
+            ]);
+            exit;
+        }
+        
+        private function getCartCount() {
+            if (!isset($_SESSION['cart'])) return 0;
+            return array_sum(array_column($_SESSION['cart'], 'quantity'));
+        }
+        
+        public function clearCart() {
+            $_SESSION['cart'] = [];
+            echo json_encode(['success' => true]);
+            exit;
         }
     }
 

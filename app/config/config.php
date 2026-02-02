@@ -24,4 +24,9 @@
     }
     // WEBSITE NAME 
     define("SITENAME", "SolarSense"); 
+
+    // PayHere Payment Gateway Configuration
+    define("PAYHERE_MERCHANT_ID", getenv('PAYHERE_MERCHANT_ID') ?: ''); 
+    define("PAYHERE_MERCHANT_SECRET", getenv('PAYHERE_MERCHANT_SECRET') ?: ''); 
+    define("PAYHERE_SANDBOX", getenv('PAYHERE_SANDBOX') === 'true'); 
 ?>

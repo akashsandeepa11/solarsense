@@ -150,7 +150,7 @@ $products = $data['products'] ?? [
                 <p class="product-price">Rs. <?php echo number_format($product['price'] * 325, 2); ?></p>
                 <p class="product-description"><?php echo htmlspecialchars($product['description']); ?></p>
                 <div class="product-actions">
-                    <button class="btn btn-primary">Add to Cart</button>
+                    <button class="btn btn-primary add-to-cart-btn" data-product-id="<?php echo $product['id']; ?>">Add to Cart</button>
                     <a href="<?php echo URLROOT; ?>/homeowner/productDetails/<?php echo $product['id']; ?>" class="btn btn-secondary">Details</a>
                 </div>
             </div>
@@ -228,21 +228,58 @@ $products = $data['products'] ?? [
         document.getElementById('priceFilter').addEventListener('change', applyFilters);  
 
 
-        let cartCount = 0;
+// Add to Cart functionality
+const URLROOT = '<?php echo URLROOT; ?>';
 
-//number of add to cart items  update in cart icon
-document.querySelectorAll('.btn.btn-primary').forEach(btn => {
+// Initialize cart count on page load
+fetch(`${URLROOT}/homeowner/getCartData`)
+    .then(res => res.json())
+    .then(data => {
+        updateCartBadge(data.cartCount);
+    });
+
+// Add to cart click handlers
+document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
     btn.addEventListener('click', function() {
-        cartCount++;
-        const countBubble = document.getElementById('cartCount');
-        countBubble.textContent = cartCount;
-        if (cartCount > 0) {
-    countBubble.style.display = 'inline-block';
-    countBubble.textContent = cartCount;
-}
-
+        const productId = this.dataset.productId;
+        const originalText = this.textContent;
+        this.textContent = 'Adding...';
+        this.disabled = true;
+        
+        fetch(`${URLROOT}/homeowner/addToCart`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `product_id=${productId}`
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                updateCartBadge(data.cartCount);
+                this.textContent = 'Added!';
+                setTimeout(() => {
+                    this.textContent = originalText;
+                    this.disabled = false;
+                }, 1000);
+            } else {
+                this.textContent = originalText;
+                this.disabled = false;
+                alert(data.message || 'Error adding to cart');
+            }
+        })
+        .catch(() => {
+            this.textContent = originalText;
+            this.disabled = false;
+        });
     });
 });
+
+function updateCartBadge(count) {
+    const countBubble = document.getElementById('cartCount');
+    if (countBubble) {
+        countBubble.textContent = count;
+        countBubble.style.display = count > 0 ? 'inline-block' : 'none';
+    }
+}
     
 </script>  
 

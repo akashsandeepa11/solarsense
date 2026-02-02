@@ -100,9 +100,14 @@ if (sidebarToggle) {
     const nav = document.getElementById('main-topnav');
     if (!nav) return;
     
+    function adjustBodyPadding() {
+        document.body.style.paddingTop = nav.offsetHeight + 'px';
+    }
+    
     // Run on load and on resize
     if (document.readyState === 'complete' || document.readyState === 'interactive') adjustBodyPadding();
     window.addEventListener('load', adjustBodyPadding);
     window.addEventListener('resize', adjustBodyPadding);
 })();
 </script>
+
