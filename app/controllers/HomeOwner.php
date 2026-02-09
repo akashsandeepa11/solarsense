@@ -92,10 +92,14 @@ class HomeOwner extends Controller
         $this->view('pages/homeowner/reports', $data, 'dashboard');
     }
 
-    public function uploadSMS()
+    public function uploadSMS(): void
     {
+        $data = [];
+        $this->view('homeowner/uploadsms', $data);
+        // POST request only
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            redirect('homeowner/dashboard');
+            redirect('homeowner/uploadsms');
+            return;
         }
 
         $sms = trim($_POST['smsContent'] ?? '');
@@ -104,73 +108,24 @@ class HomeOwner extends Controller
             die('SMS content missing');
         }
 
-        // ---------- PARSE SMS ----------
-        $parsed = $this->parseSMS($sms);
+        $data = $this->smsModel->parse_sms($sms);
 
-        if (!$parsed) {
+        if (!$data) {
             die('Invalid CEB SMS format');
         }
 
-        $parsed['user_id'] = $_SESSION['user_id']; // adjust to your auth system
-        $parsed['raw_sms'] = $sms;
+        $data['user_id'] = $_SESSION['user_id'];
+        $data['created_at'] = date('Y-m-d H:i:s');
+        $data['raw_sms'] = $sms;
 
-        // ---------- SAVE ----------
-        if ($this->smsModel->uploadSMS($parsed)) {
-            redirect('homeowner/uploadSms');
+        if ($this->smsModel->upload_sms($data)) {
+            redirect('homeowner/uploadsms');
         } else {
             die('Failed to save SMS');
         }
     }
 
-    private function parseSMS($sms)
-    {
-        $data = [];
 
-        // Account number + type
-        if (preg_match('/A\/C No:\s*(\d+)\s*\((.*?)\)/', $sms, $m)) {
-            $data['account_no'] = $m[1];
-            $data['account_type'] = $m[2];
-        }
-
-        // Customer name (next line after A/C)
-        if (preg_match('/\)\s*\n([A-Z\.\s]+)/', $sms, $m)) {
-            $data['customer_name'] = trim($m[1]);
-        }
-
-        // Reading date
-        if (preg_match('/Reading Date:\s*(\d{4}-\d{2}-\d{2})/', $sms, $m)) {
-            $data['reading_date'] = $m[1];
-        }
-
-        // Consumption
-        if (preg_match('/Consumption:\s*(\d+)\s*Unit/', $sms, $m)) {
-            $data['consumption_units'] = (int) $m[1];
-        }
-
-        // Readings (Export / Import)
-        if (preg_match('/Readings:\s*(\d+)\(E\),\s*(\d+)\(I\)/', $sms, $m)) {
-            $data['export_reading'] = (int) $m[1];
-            $data['import_reading'] = (int) $m[2];
-        }
-
-        // Previous readings
-        if (preg_match('/Prv\. Readings:\s*(\d+)\(E\),\s*(\d+)\(I\)/', $sms, $m)) {
-            $data['prev_export_reading'] = (int) $m[1];
-            $data['prev_import_reading'] = (int) $m[2];
-        }
-
-        // Monthly bill
-        if (preg_match('/Monthly Bill:\s*Rs\.\s*([-\d,]+\.\d{2})/', $sms, $m)) {
-            $data['monthly_bill'] = floatval(str_replace(',', '', $m[1]));
-        }
-
-        // Total due
-        if (preg_match('/Total Due:\s*Rs\.\s*([-\d,]+\.\d{2})/', $sms, $m)) {
-            $data['total_due'] = floatval(str_replace(',', '', $m[1]));
-        }
-
-        return $data;
-    }
 
     public function productDetails($id = null)
     {
