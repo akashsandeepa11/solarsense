@@ -7,7 +7,7 @@ class HomeOwner extends Controller
         'role' => ROLE_HOMEOWNER,
     ];
 
-
+    
     public function __construct()
     {
         $this->serviceModel = $this->model('M_Service');
@@ -69,8 +69,7 @@ class HomeOwner extends Controller
             //     return;
             // }
 
-            $modelData = [
-                'user_id' => $this->user['user_id'],  // pass scalar ID only
+            $modelData = [  // pass scalar ID only
                 'service_type' => $data['service_type'],
                 'service_description' => $data['service_description']
             ];
