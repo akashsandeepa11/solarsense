@@ -92,36 +92,39 @@ class HomeOwner extends Controller
         $this->view('pages/homeowner/reports', $data, 'dashboard');
     }
 
+
     public function uploadSMS(): void
     {
-        $data = [];
-        $this->view('homeowner/uploadsms', $data);
-        // POST request only
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            redirect('homeowner/uploadsms');
-            return;
-        }
+        echo "uploadSMS called - Method: " . $_SERVER['REQUEST_METHOD'];
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            echo "POST data: " . print_r($_POST, true);
+            $sms = trim($_POST['smsContent'] ?? '');
 
-        $sms = trim($_POST['smsContent'] ?? '');
+            if (empty($sms)) {
+                die('SMS content missing');
+            }
 
-        if (empty($sms)) {
-            die('SMS content missing');
-        }
+            $data = $this->smsModel->parse_sms($sms);
 
-        $data = $this->smsModel->parse_sms($sms);
+            if (!$data) {
+                die('Invalid CEB SMS format');
+            }
 
-        if (!$data) {
-            die('Invalid CEB SMS format');
-        }
+            $data['user_id'] = $_SESSION['user_id'];
+            $data['created_at'] = date('Y-m-d H:i:s');
+            $data['raw_sms'] = $sms;
 
-        $data['user_id'] = $_SESSION['user_id'];
-        $data['created_at'] = date('Y-m-d H:i:s');
-        $data['raw_sms'] = $sms;
-
-        if ($this->smsModel->upload_sms($data)) {
-            redirect('homeowner/uploadsms');
+            if ($this->smsModel->upload_sms($data)) {
+                redirect('homeowner/uploadsms');
+            } else {
+                die('Failed to save SMS');
+            }
         } else {
-            die('Failed to save SMS');
+            // For GET requests, show the form
+            $data = [
+                'user' => $this->user,
+            ];
+            $this->view('pages/homeowner/uploadsms', $data, 'dashboard');
         }
     }
 

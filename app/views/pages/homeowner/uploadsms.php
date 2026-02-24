@@ -69,7 +69,7 @@
                 <div class="card-body">
                     <h3 class="card-title text-2xl font-semibold mb-6">Import CEB Bill Message</h3>
 
-                    <form id="smsUploadForm" action="<?php echo URLROOT ?>/homeowner/uploadSMS" method="post" novalidate enctype="multipart/form-data">
+                    <form id="smsUploadForm" action="<?php echo URLROOT ?>/homeowner/uploadSMS" method="POST" novalidate enctype="multipart/form-data">
                         <!-- SMS Content Textarea -->
                         <div class="mb-4">
                             <?php
@@ -182,36 +182,3 @@
         </div>
     </div>
 </div>
-
-<!-- <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const smsUploadForm = document.getElementById('smsUploadForm');
-
-        if (smsUploadForm) {
-            smsUploadForm.addEventListener('submit', function (e) {
-                e.preventDefault();
-
-                // Get the message content
-                const smsContent = document.getElementById('smsContent').value.trim();
-
-                if (!smsContent) {
-                    alert('Please paste the CEB SMS message');
-                    return;
-                }
-
-                // Show loading state
-                const submitBtn = smsUploadForm.querySelector('button[type="submit"]');
-                const originalText = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
-                submitBtn.disabled = true;
-
-                // Simulate processing and show success
-                setTimeout(function () {
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
-                    alert('Message uploaded successfully!');
-                    smsUploadForm.reset();
-                }, 1500);
-            });
-        }
-    }); -->

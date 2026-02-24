@@ -15,9 +15,6 @@ class M_SMS
             INSERT INTO sms (
                 user_id,
                 created_at,
-                account_no,
-                meter_type,
-                customer_name,
                 balance_bf,
                 reading_date,
                 units_bf,
@@ -33,9 +30,6 @@ class M_SMS
             ) VALUES (
                 :user_id,
                 :created_at,
-                :account_no,
-                :meter_type,
-                :customer_name,
                 :balance_bf,
                 :reading_date,
                 :units_bf,
@@ -62,15 +56,12 @@ class M_SMS
     {
         $data = [];
 
-        if (preg_match('/A\/C No:\s*(\d+)\s*\((.*?)\)/', $sms, $m)) {
-            $data['account_no'] = $m[1];
-            $data['meter_type'] = $m[2];
-        } else {
+        if (!preg_match('/A\/C No:\s*(\d+)\s*\((.*?)\)/', $sms, $m)) {
             return false;
         }
 
-        if (preg_match('/\)\s*\n([A-Z\.\s]+)/', $sms, $m)) {
-            $data['customer_name'] = trim($m[1]);
+        if (!preg_match('/\)\s*\n([A-Z\.\s]+)/', $sms, $m)) {
+            return false;
         }
 
         if (preg_match('/B\/F:\s*Rs\.\s*([-\d,]+\.\d{2})/', $sms, $m)) {
@@ -114,5 +105,11 @@ class M_SMS
         return $data;
     }
 
+    public function sms_history()
+    {
+        $this->db->query("SELECT * FROM sms WHERE user_id = :user_id ORDER BY created_at DESC");
+        $this->db->bind(':user_id', $_SESSION['user_id']);
+        return $this->db->resultSet();
+    }
 }
 ?>
