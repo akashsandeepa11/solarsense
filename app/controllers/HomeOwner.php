@@ -24,7 +24,7 @@
                             'user' => $this->user,
                         ];
                         
-                        $this->view('pages/homeowner/uploadsms', $data, 'dashboard');
+                $this->view('pages/homeowner/uploadsms', $data, 'dashboard');
             }
         }
 

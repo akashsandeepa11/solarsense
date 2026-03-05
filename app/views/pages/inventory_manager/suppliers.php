@@ -9,6 +9,7 @@ $suppliers = [
 ?>
 
 <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/inventory_manager/suppliers.css">
+<link rel="stylesheet" href="<?php echo URLROOT; ?>/css/components.css">
 
 <div class="content-area">
     <!-- Page Header -->
@@ -18,49 +19,32 @@ $suppliers = [
         'description' => 'Manage your solar equipment suppliers and vendors'
     ];
     $config = $pageHeaderConfig;
-    require APPROOT . '/views/inc/components/page_header.php';
+    include __DIR__ . '/../../inc/components/page_header.php';
     ?>
 
     <!-- Stats Cards -->
-    <div class="stats-grid mb-6">
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-store"></i>
-            </div>
-            <div class="stat-content">
-                <p class="stat-label">Total Suppliers</p>
-                <p class="stat-value" id="totalSuppliers">0</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon success">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="stat-content">
-                <p class="stat-label">Active Suppliers</p>
-                <p class="stat-value" id="activeSuppliers">0</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon warning">
-                <i class="fas fa-pause-circle"></i>
-            </div>
-            <div class="stat-content">
-                <p class="stat-label">Inactive Suppliers</p>
-                <p class="stat-value" id="inactiveSuppliers">0</p>
-            </div>
-        </div>
-    </div>
+    <?php
+    $supplier_stats = [
+        ['label' => 'Total Suppliers', 'value' => count($suppliers), 'icon' => 'fas fa-store', 'color' => 'primary'],
+        ['label' => 'Active Suppliers', 'value' => count(array_filter($suppliers, fn($s) => $s['status'] === 'Active')), 'icon' => 'fas fa-check-circle', 'color' => 'success'],
+        ['label' => 'Inactive Suppliers', 'value' => count(array_filter($suppliers, fn($s) => $s['status'] === 'Inactive')), 'icon' => 'fas fa-pause-circle', 'color' => 'warning'],
+    ];
+    $config = [
+        'stats' => $supplier_stats,
+        'columns' => 3
+    ];
+    include __DIR__ . '/../../inc/components/stat_card.php';
+    ?>
 
     <!-- Filter Bar -->
-    <div class="card shadow-lg rounded-xl mb-4">
+    <div class="card shadow-lg rounded-xl mb-4 mt-6">
         <div class="card-body">
-            <div class="toolbar">
-                <input type="text" id="searchInput" placeholder="Search by name or category..." class="form-control">
-                <select id="categoryFilter" class="form-control">
+            <div class="d-flex flex-wrap gap-4 align-center">
+                <input type="text" id="searchInput" placeholder="Search by name or category..." class="form-control" style="max-width: 300px;">
+                <select id="categoryFilter" class="form-control" style="max-width: 180px;">
                     <option value="all">All Categories</option>
                 </select>
-                <select id="statusFilter" class="form-control">
+                <select id="statusFilter" class="form-control" style="max-width: 150px;">
                     <option value="all">All Status</option>
                     <option value="Active">Active</option>
                     <option value="Inactive">Inactive</option>
@@ -69,33 +53,48 @@ $suppliers = [
         </div>
     </div>
 
-    <!-- Table Container -->
-    <div class="card shadow-lg rounded-xl">
-        <div class="card-body">
-            <div class="table-header mb-4">
-                <h3 class="text-2xl font-semibold">Suppliers List</h3>
-                <button class="btn btn-primary rounded-lg" onclick="showAddModal()">
-                    <i class="fas fa-plus mr-2"></i>Add New Supplier
-                </button>
-            </div>
-
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="text-sm font-semibold text-secondary">Supplier ID</th>
-                            <th class="text-sm font-semibold text-secondary">Name</th>
-                            <th class="text-sm font-semibold text-secondary">Contact</th>
-                            <th class="text-sm font-semibold text-secondary">Category</th>
-                            <th class="text-sm font-semibold text-secondary">Status</th>
-                            <th class="text-sm font-semibold text-secondary">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody"></tbody>
-                </table>
-            </div>
-        </div>
+    <!-- Suppliers Table -->
+    <div class="d-flex justify-between align-center mb-4">
+        <h3 class="text-xl font-semibold">Suppliers List</h3>
+        <button class="btn btn-primary rounded-lg" onclick="showAddModal()">
+            <i class="fas fa-plus mr-2"></i>Add New Supplier
+        </button>
     </div>
+
+    <?php
+    $config = [
+        'headers' => [
+            ['key' => 'id', 'label' => 'Supplier ID'],
+            ['key' => 'name', 'label' => 'Name'],
+            ['key' => 'contact', 'label' => 'Contact'],
+            ['key' => 'category', 'label' => 'Category'],
+            ['key' => 'status', 'label' => 'Status'],
+        ],
+        'rows' => $suppliers,
+        'columns' => [
+            [
+                'key' => 'id',
+                'render' => function($row) {
+                    return '<span class="font-semibold">' . htmlspecialchars($row['id']) . '</span>';
+                }
+            ],
+            [
+                'key' => 'status',
+                'render' => function($row) {
+                    $statusClass = $row['status'] === 'Active' ? 'bg-success' : 'bg-warning';
+                    $statusIcon = $row['status'] === 'Active' ? 'fa-check-circle' : 'fa-pause-circle';
+                    return '<span class="badge ' . $statusClass . ' text-surface px-3 py-1 rounded-full text-xs"><i class="fas ' . $statusIcon . ' mr-1"></i>' . htmlspecialchars($row['status']) . '</span>';
+                }
+            ],
+        ],
+        'actions' => [
+            ['label' => 'Edit', 'icon' => 'fas fa-edit', 'onclick' => 'onclick="editSupplier(' . "'{id}'" . ')"', 'class' => 'btn-sm btn-primary'],
+            ['label' => 'Delete', 'icon' => 'fas fa-trash', 'onclick' => 'onclick="deleteSupplier(' . "'{id}'" . ')"', 'class' => 'btn-icon-danger'],
+        ],
+        'empty_message' => 'No suppliers found'
+    ];
+    include __DIR__ . '/../../inc/components/data_table.php';
+    ?>
 </div>
 
 <!-- Add Supplier Modal -->
@@ -115,7 +114,7 @@ $suppliers = [
                 'required' => true,
                 'wrapperClass' => 'mb-4'
             ];
-            require APPROOT . '/views/inc/components/input_field.php';
+            include __DIR__ . '/../../inc/components/input_field.php';
             ?>
 
             <?php
@@ -129,7 +128,7 @@ $suppliers = [
                 'required' => true,
                 'wrapperClass' => 'mb-4'
             ];
-            require APPROOT . '/views/inc/components/input_field.php';
+            include __DIR__ . '/../../inc/components/input_field.php';
             ?>
 
             <?php
@@ -143,7 +142,7 @@ $suppliers = [
                 'required' => true,
                 'wrapperClass' => 'mb-4'
             ];
-            require APPROOT . '/views/inc/components/input_field.php';
+            include __DIR__ . '/../../inc/components/input_field.php';
             ?>
 
             <?php
@@ -159,7 +158,7 @@ $suppliers = [
                 'required' => true,
                 'wrapperClass' => 'mb-4'
             ];
-            require APPROOT . '/views/inc/components/select_field.php';
+            include __DIR__ . '/../../inc/components/select_field.php';
             ?>
         </div>
 
@@ -191,7 +190,7 @@ $suppliers = [
                 'required' => true,
                 'wrapperClass' => 'mb-4'
             ];
-            require APPROOT . '/views/inc/components/input_field.php';
+            include __DIR__ . '/../../inc/components/input_field.php';
             ?>
 
             <?php
@@ -205,7 +204,7 @@ $suppliers = [
                 'required' => true,
                 'wrapperClass' => 'mb-4'
             ];
-            require APPROOT . '/views/inc/components/input_field.php';
+            include __DIR__ . '/../../inc/components/input_field.php';
             ?>
 
             <?php
@@ -219,7 +218,7 @@ $suppliers = [
                 'required' => true,
                 'wrapperClass' => 'mb-4'
             ];
-            require APPROOT . '/views/inc/components/input_field.php';
+            include __DIR__ . '/../../inc/components/input_field.php';
             ?>
 
             <?php
@@ -235,7 +234,7 @@ $suppliers = [
                 'required' => true,
                 'wrapperClass' => 'mb-4'
             ];
-            require APPROOT . '/views/inc/components/select_field.php';
+            include __DIR__ . '/../../inc/components/select_field.php';
             ?>
         </div>
 
