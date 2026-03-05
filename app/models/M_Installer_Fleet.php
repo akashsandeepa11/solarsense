@@ -10,45 +10,73 @@ class M_Installer_Fleet
     }
 
     //receive verification request
-    public function add_installer_verification($companyData)
-    {
-        try {
-            // Start transaction
-            $this->db->beginTransaction();
+//     public function add_installer_verification($companyData)
+//     {
+//         try {
+//             $this->db->beginTransaction();
 
-            // 1. Insert into `user` table
-            $this->db->query('INSERT INTO installer_company (company_name, address, contact, email) VALUES (:company_name, :address, :contact, :email)');
-            $this->db->bind(':company_name', $companyData['company_name']);
-            $this->db->bind(':address', $companyData['address']);
-            $this->db->bind(':contact', $companyData['contact']);
-            $this->db->bind(':email', $companyData['email']);
+//             $this->db->query('
+//     INSERT INTO installer_company (
+//         company_name,
+//         address,
+//         num_employees,
+//         website,
+//         district,
+//         postal_code,
+//         register_date,
+//         contact,
+//         email,
+//         status,
+//         request_date,
+//         service_type,
+//         years_experience,
+//         complete_project,
+//         service_areas
+//     ) VALUES (
+//         :company_name,
+//         :address,
+//         :num_employees,
+//         :website,
+//         :district,
+//         :postal_code,
+//         NOW(),
+//         :contact,
+//         :email,
+//         :status,
+//         NOW(),
+//         :service_type,
+//         :years_experience,
+//         :complete_project,
+//         :service_areas
+//     )
+// ');
 
-            $this->db->execute();
 
+//             $this->db->bind(':company_name', $companyData['company_name']);
+//             $this->db->bind(':address', $companyData['address']);
+//             $this->db->bind(':num_employees', $companyData['number_of_employees']);
+//             $this->db->bind(':website', $companyData['website']);
+//             $this->db->bind(':district', $companyData['district']);
+//             $this->db->bind(':postal_code', $companyData['postal_code']);
+//             $this->db->bind(':contact', $companyData['contact_number']);
+//             $this->db->bind(':email', $companyData['email']);
+//             $this->db->bind(':status', 'Pending');
+//             $this->db->bind(':service_type', $companyData['service_type']);
+//             $this->db->bind(':years_experience', $companyData['years_of_experience']);
+//             $this->db->bind(':complete_project', $companyData['completed_projects']);
+//             $this->db->bind(':service_areas', $companyData['service_areas']);
 
-            // Commit the transaction
-            $this->db->commit();
+//             $this->db->execute();
+//             $this->db->commit();
 
-            return true;
+//             return true;
 
-        } catch (Exception $e) {
-            $this->db->rollBack();
-            $errorMsg = 'Add company failed: ' . $e->getMessage();
-            error_log($errorMsg);
-
-            // Write to a file we can read easily
-            if (!is_dir(dirname(__DIR__) . '/logs')) {
-                mkdir(dirname(__DIR__) . '/logs', 0755, true);
-            }
-            file_put_contents(
-                dirname(__DIR__) . '/logs/add_customer_error.log',
-                date('Y-m-d H:i:s') . ' - ' . $errorMsg . "\n",
-                FILE_APPEND
-            );
-
-            return false;
-        }
-    }
+//         } catch (Exception $e) {
+//             $this->db->rollBack();
+//             error_log($e->getMessage());
+//             return false;
+//         }
+//     }
 
     public function get_verifications()
     {
@@ -58,63 +86,64 @@ class M_Installer_Fleet
 
     public function verify_company($companyId)
     {
-        $password = '123';
+        // 1. Generate PLAINTEXT password
+        $plainPassword = substr(bin2hex(random_bytes(6)), 0, 10);
+
         try {
             $this->db->beginTransaction();
 
-            // 1. Update company status to Verified
-            $this->db->query("UPDATE installer_company SET status = 'Verified' WHERE company_id = :company_id");
+            // 2. Update company status
+            $this->db->query("
+            UPDATE installer_company 
+            SET status = 'Verified' 
+            WHERE company_id = :company_id
+        ");
             $this->db->bind(':company_id', $companyId);
             $this->db->execute();
 
-            // 2. Get company info (email and company name)
-            $this->db->query("SELECT company_name, email FROM installer_company WHERE company_id = :company_id");
+            // 3. Get company info
+            $this->db->query("
+            SELECT company_name, email 
+            FROM installer_company 
+            WHERE company_id = :company_id
+        ");
             $this->db->bind(':company_id', $companyId);
             $company = $this->db->single_assoc();
-
-            // var_dump($company);
 
             if (!$company) {
                 throw new Exception("Company not found.");
             }
 
-            // 3. Add the installer admin (create user and link)
-            $userData = [
-                'email' => $company['email'],
-                'password' => password_hash($password, PASSWORD_DEFAULT), // Hash password securely
-            ];
-
-            $installerAdminData = [
-                'company_id' => $companyId,
-                'company_name' => $company['company_name']
-            ];
-
-            // 1. Insert into `user` table
+            // 4. Create user
             $this->db->query('
-                INSERT INTO user (email, password, type, full_name)
-                VALUES (:email, :password, :type, :full_name)
-            ');
-            $this->db->bind(':email', $userData['email']);
-            $this->db->bind(':password', $userData['password']);
+            INSERT INTO user (email, password, type, full_name)
+            VALUES (:email, :password, :type, :full_name)
+        ');
+            $this->db->bind(':email', $company['email']);
+            $this->db->bind(':password', password_hash($plainPassword, PASSWORD_DEFAULT));
             $this->db->bind(':type', ROLE_INSTALLER_ADMIN);
-            $this->db->bind(':full_name', $installerAdminData['company_name']);
+            $this->db->bind(':full_name', $company['company_name']);
             $this->db->execute();
 
-            // Get inserted user ID
             $userId = $this->db->lastInsertId();
 
-            // 2. Insert into `installer_admin` table
+            // 5. Link installer admin
             $this->db->query('
-                INSERT INTO installer_admin (user_id, company_id, register_date)
-                VALUES (:user_id, :company_id, :register_date)
-            ');
+            INSERT INTO installer_admin (user_id, company_id, register_date)
+            VALUES (:user_id, :company_id, :register_date)
+        ');
             $this->db->bind(':user_id', $userId);
-            $this->db->bind(':company_id', $installerAdminData['company_id']);
+            $this->db->bind(':company_id', $companyId);
             $this->db->bind(':register_date', date('Y-m-d'));
             $this->db->execute();
 
             $this->db->commit();
-            return true;
+
+            // 6. RETURN plaintext password + email
+            return [
+                'email' => $company['email'],
+                'password' => $plainPassword
+            ];
 
         } catch (Exception $e) {
             $this->db->rollBack();
@@ -122,6 +151,7 @@ class M_Installer_Fleet
             return false;
         }
     }
+
     //add installer admin account
     // public function add_installer_admin($userData, $installerAdminData) {
     //     try {
