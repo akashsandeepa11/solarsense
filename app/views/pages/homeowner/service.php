@@ -1,54 +1,11 @@
 <?php
-// --- PHP Setup for Service Data ---
-// Service Types
 $serviceTypes = [
-    'inspection' => 'Inspection',
-    'repair' => 'Repair',
-    'cleaning' => 'Cleaning',
-    'maintenance' => 'Maintenance',
-    'troubleshooting' => 'Troubleshooting'
+    1 => 'Inspection',
+    2 => 'Repair',
+    3 => 'Cleaning',
+    4 => 'Maintenance',
+    5 => 'Troubleshooting'
 ];
-
-// Service History Data
-$serviceHistory = [
-    [
-        'id' => 'SR-001',
-        'date' => '2025-08-10',
-        'service_type' => 'Cleaning',
-        'component' => 'Solar Panels',
-        'technician' => 'John Smith',
-        'remarks' => 'Cleaned and inspected all panels',
-        'status' => 'completed'
-    ],
-    [
-        'id' => 'SR-002',
-        'date' => '2025-07-15',
-        'service_type' => 'Repair',
-        'component' => 'Inverter',
-        'technician' => 'Mike Johnson',
-        'remarks' => 'Replaced faulty capacitor',
-        'status' => 'completed'
-    ],
-    [
-        'id' => 'SR-003',
-        'date' => '2025-07-05',
-        'service_type' => 'Inspection',
-        'component' => 'Wiring & Connections',
-        'technician' => 'Sarah Davis',
-        'remarks' => 'Routine inspection completed',
-        'status' => 'completed'
-    ],
-    [
-        'id' => 'SR-004',
-        'date' => '2025-06-20',
-        'service_type' => 'Maintenance',
-        'component' => 'Battery Bank',
-        'technician' => 'Robert Brown',
-        'remarks' => 'Battery health check and cleaning',
-        'status' => 'completed'
-    ]
-];
-
 ?>
 
 <!-- Link to custom CSS file for this page -->
@@ -72,7 +29,7 @@ $serviceHistory = [
             <div class="card shadow-lg rounded-xl">
                 <div class="card-body">
                     <h3 class="card-title text-2xl font-semibold mb-6">Submit Service Request</h3>
-                    
+
                     <form id="serviceRequestForm" method="POST">
                         <!-- Service Type -->
                         <div class="mb-4">
@@ -146,24 +103,6 @@ $serviceHistory = [
                     </div>
                 </div>
             </div>
-
-            <!-- Quick Actions Card -->
-            <div class="card shadow-lg rounded-xl">
-                <div class="card-body">
-                    <h3 class="card-title text-lg font-semibold mb-4">
-                        <i class="fas fa-headset text-success mr-2"></i>Need Help?
-                    </h3>
-                    <div class="d-flex flex-column gap-2">
-                        <a href="#" class="btn btn-secondary btn-sm w-100 rounded-lg">
-                            <i class="fas fa-phone mr-2"></i>Call Support
-                        </a>
-                        <a href="#" class="btn btn-secondary btn-sm w-100 rounded-lg">
-                            <i class="fas fa-envelope mr-2"></i>Email Us
-                        </a>
-
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -173,7 +112,7 @@ $serviceHistory = [
             <div class="card shadow-lg rounded-xl">
                 <div class="card-body">
                     <h3 class="card-title text-2xl font-semibold mb-6">Service History</h3>
-                    
+
                     <div class="table-responsive">
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
@@ -188,22 +127,39 @@ $serviceHistory = [
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($serviceHistory as $record): ?>
+                                <?php foreach ($data['serviceHistory'] as $record): ?>
                                     <tr>
-                                        <td class="text-sm font-semibold"><?php echo htmlspecialchars($record['id']); ?></td>
-                                        <td class="text-sm"><?php echo htmlspecialchars($record['date']); ?></td>
-                                        <td class="text-sm"><?php echo htmlspecialchars($record['service_type']); ?></td>
-                                        <td class="text-sm"><?php echo htmlspecialchars($record['component']); ?></td>
-                                        <td class="text-sm"><?php echo htmlspecialchars($record['technician']); ?></td>
-                                        <td class="text-sm"><?php echo htmlspecialchars($record['remarks']); ?></td>
+                                        <td class="text-sm font-semibold"><?php echo htmlspecialchars($record->task_id); ?>
+                                        </td>
+                                        <td class="text-sm"><?php echo htmlspecialchars($record->request_date); ?></td>
                                         <td class="text-sm">
-                                            <?php if ($record['status'] === 'completed'): ?>
+                                            <?php
+                                            $serviceTypes = [
+                                                1 => 'Inspection',
+                                                2 => 'Repair',
+                                                3 => 'Cleaning',
+                                                4 => 'Maintenance',
+                                                5 => 'Troubleshooting'
+                                            ];
+                                            echo $serviceTypes[$record->service_type] ?? 'Unknown';
+                                            ?>
+                                            ?>
+                                        </td>
+                                        <td class="text-sm">Solar System</td>
+                                        <td class="text-sm">
+                                            <?php echo (empty($record->agent_id)) ? 'Pending' : htmlspecialchars($record->agent_id); ?>
+                                        </td>
+                                        <td class="text-sm"><?php echo htmlspecialchars($record->service_description); ?>
+                                        </td>
+                                        <td class="text-sm">
+                                            <?php if ($record->status === 'Completed'): ?>
                                                 <span class="badge badge-success">
                                                     <i class="fas fa-check-circle mr-1"></i>Completed
                                                 </span>
                                             <?php else: ?>
                                                 <span class="badge badge-warning">
-                                                    <i class="fas fa-clock mr-1"></i>Pending
+                                                    <i
+                                                        class="fas fa-clock mr-1"></i><?php echo htmlspecialchars($record->status); ?>
                                                 </span>
                                             <?php endif; ?>
                                         </td>
@@ -217,40 +173,3 @@ $serviceHistory = [
         </div>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const serviceForm = document.getElementById('serviceRequestForm');
-    
-    if (serviceForm) {
-        serviceForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Get form values
-            const customerName = document.getElementById('customerName').value.trim();
-            const serviceType = document.getElementById('serviceType').value;
-            const description = document.getElementById('serviceDescription').value.trim();
-            
-            // Validate
-            if (!customerName || !serviceType || !description) {
-                alert('Please fill in all required fields');
-                return;
-            }
-            
-            // Show loading state
-            const submitBtn = serviceForm.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Submitting...';
-            submitBtn.disabled = true;
-            
-            // Simulate processing
-            setTimeout(function() {
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-                alert('Service request submitted successfully! We will contact you within 24-48 hours.');
-                serviceForm.reset();
-            }, 1500);
-        });
-    }
-});
-</script>
