@@ -3,30 +3,48 @@ class HomeOwner extends Controller
 {
     private $serviceModel;
     private $smsModel;
+    private $dashboardModel;
 
     private $user = [
         'role' => ROLE_HOMEOWNER,
     ];
 
-    
+
     public function __construct()
     {
         $this->serviceModel = $this->model('M_Service');
         $this->smsModel = $this->model('M_SMS');
+        $this->dashboardModel = $this->model('M_Homeowner_Dashboard');
 
     }
 
 
     public function dashboard($page = 'index')
     {
-
         if ($page == 'index') {
+            $year = isset($_GET['year']) ? (int) $_GET['year'] : (int) date('Y');
+            $stats = $this->dashboardModel->getStats($_SESSION['user_id']);
+            $monthly = $this->dashboardModel->getMonthlyGeneration($_SESSION['user_id'], $year);
+
+            // Prepare chart arrays
+            $labels = [];
+            $generation = [];
+            foreach ($monthly as $row) {
+                $key = $year . '-' . str_pad($row->month, 2, '0', STR_PAD_LEFT); // e.g. "2025-03"
+                $generation[$key] = (int) $row->generation;
+            }
+
             $data = [
                 'user' => $this->user,
+                'stats' => $stats,
+                'chart_labels' => $labels,
+                'chart_generation' => $generation,
+                'selected_year'    => $year,
             ];
 
             $this->view('pages/homeowner/dashboard', $data, layout: 'dashboard');
-        } else if ($page = 'uploadsms') {
+
+        } else if ($page == 'uploadsms') {
             $data = [
                 'user' => $this->user,
             ];

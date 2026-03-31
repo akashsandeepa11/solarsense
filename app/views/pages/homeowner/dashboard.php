@@ -1,7 +1,6 @@
 <?php
-// --- PHP Setup for Dummy Data ---
-// In a real controller, this data would be fetched from the database.
 
+$currentYear = $data['selected_year'];
 // --- Define the solar tariff rate ---
 define('SOLAR_TARIFF_RATE_LKR', 37.50); // LKR 37.50 per kWh exported
 
@@ -26,36 +25,31 @@ $daily_forecast = [
 $grid_export_kwh = 310;
 $monthly_income_lkr = $grid_export_kwh * SOLAR_TARIFF_RATE_LKR;
 
-// Stat Cards for Key Metrics (using stat_card component)
+$stats = $data['stats'];
+
+$total_export = $stats->total_export ?? 0;
+$total_import = $stats->total_import ?? 0;
+$total_generation = $stats->total_generation ?? 0;
+
 $stat_metrics = [
     [
         'label' => 'Total Solar Generation',
-        'value' => '450 kWh',
+        'value' => $total_generation . ' kWh',
         'icon' => 'fas fa-solar-panel',
-        'color' => 'primary',
-        'trend' => ['direction' => 'up', 'percentage' => 12]
+        'color' => 'primary'
     ],
     [
         'label' => 'Grid Export',
-        'value' => $grid_export_kwh . ' kWh',
+        'value' => $total_export . ' kWh',
         'icon' => 'fas fa-arrow-up',
-        'color' => 'success',
-        'trend' => ['direction' => 'up', 'percentage' => 8]
+        'color' => 'success'
     ],
     [
         'label' => 'Grid Import',
-        'value' => '85 kWh',
+        'value' => $total_import . ' kWh',
         'icon' => 'fas fa-arrow-down',
-        'color' => 'warning',
-        'trend' => ['direction' => 'down', 'percentage' => 5]
-    ],
-    [
-        'label' => 'Monthly Income',
-        'value' => 'LKR ' . number_format($monthly_income_lkr),
-        'icon' => 'fas fa-coins',
-        'color' => 'accent',
-        'trend' => ['direction' => 'up', 'percentage' => 15]
-    ],
+        'color' => 'warning'
+    ]
 ];
 
 // System Health & Financials
@@ -67,27 +61,44 @@ $profit_tracker = [
     'yearly_goal_progress' => 78 // Percentage
 ];
 
-// Historical Chart Data for Actual vs. Expected Generation
 $performance_chart_data = [
-    'labels' => ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
-    'actual_generation' => [420, 480, 460, 510, 490, 450],
-    'expected_generation' => [430, 470, 465, 500, 495, 455],
-    'grid_import' => [120, 95, 110, 70, 75, 85],
+    'labels' => $data['chart_labels'],
+    'actual_generation' => $data['chart_generation'],
+    'expected_generation' => [430, 470, 465, 500, 495, 455], // will be replaced below
 ];
+
+// --- Ensure 12 months of data for charts ---
+$actual_generation       = [];
+$expected_generation_raw = [430, 470, 465, 500, 495, 455, 460, 480, 450, 440, 420, 410];
+$expected_generation     = [];
+$chart_labels            = [];
+
+for ($month = 1; $month <= 12; $month++) {
+    $yearMonthKey        = $currentYear . '-' . str_pad($month, 2, '0', STR_PAD_LEFT);
+    $chart_labels[]      = DateTime::createFromFormat('!m', $month)->format('M');
+    $actual_generation[] = $data['chart_generation'][$yearMonthKey] ?? 0;
+    $expected_generation[] = $expected_generation_raw[$month - 1];
+}
+
+$performance_chart_data['labels']              = $chart_labels;
+$performance_chart_data['actual_generation']   = $actual_generation;
+$performance_chart_data['expected_generation'] = $expected_generation;
 
 // Logic to determine bar colors based on performance
 $bar_colors = [];
 for ($i = 0; $i < count($performance_chart_data['actual_generation']); $i++) {
     $actual = $performance_chart_data['actual_generation'][$i];
     $expected = $performance_chart_data['expected_generation'][$i];
-    $performance_ratio = $actual / $expected;
+
+    // Avoid division by zero
+    $performance_ratio = ($expected != 0) ? ($actual / $expected) : 0;
 
     if ($performance_ratio >= 0.9) {
-        $bar_colors[] = 'rgba(34, 197, 94, 0.7)'; // Success color
+        $bar_colors[] = 'rgba(34, 197, 94, 0.7)'; // Success
     } elseif ($performance_ratio >= 0.75) {
-        $bar_colors[] = 'rgba(245, 158, 11, 0.7)'; // Warning color
+        $bar_colors[] = 'rgba(245, 158, 11, 0.7)'; // Warning
     } else {
-        $bar_colors[] = 'rgba(239, 68, 68, 0.7)'; // Error color
+        $bar_colors[] = 'rgba(239, 68, 68, 0.7)'; // Error
     }
 }
 
@@ -120,11 +131,8 @@ $quick_actions = [
     ],
 ];
 
-// Chart Filter Options - Month and Date Range
-$currentMonth = isset($_GET['month']) ? (int)$_GET['month'] : date('m');
-$currentYear = isset($_GET['year']) ? (int)$_GET['year'] : date('Y');
-$startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
-$endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t');
+// Chart Filter 
+$currentYear  = $data['selected_year'];
 
 // Months array for dropdown
 $months = [
@@ -156,7 +164,7 @@ for ($i = 0; $i < 5; $i++) {
         'description' => 'Here\'s your solar performance overview.',
         'buttons' => [
             [
-                'label' => '+ Upload New SMS',
+                'label' => 'Upload New SMS',
                 'url' => URLROOT . '/homeowner/dashboard/uploadsms',
                 'icon' => 'fas fa-cloud-upload-alt',
                 'class' => 'btn-primary'
@@ -186,18 +194,6 @@ for ($i = 0; $i < 5; $i++) {
             $filterConfig = [
                 'filters' => [
                     [
-                        'id' => 'monthFilter',
-                        'name' => 'month',
-                        'label' => 'Month',
-                        'options' => array_map(function($num, $name) use ($currentMonth) {
-                            return [
-                                'value' => $num,
-                                'label' => $name,
-                                'selected' => $currentMonth == $num
-                            ];
-                        }, array_keys($months), $months)
-                    ],
-                    [
                         'id' => 'yearFilter',
                         'name' => 'year',
                         'label' => 'Year',
@@ -208,14 +204,6 @@ for ($i = 0; $i < 5; $i++) {
                                 'selected' => $currentYear == $year
                             ];
                         }, array_keys($years))
-                    ]
-                ],
-                'buttons' => [
-                    [
-                        'label' => 'Apply Filters',
-                        'icon' => 'fas fa-filter',
-                        'class' => 'btn-primary',
-                        'type' => 'submit'
                     ]
                 ],
                 'form_method' => 'GET',
@@ -232,7 +220,7 @@ for ($i = 0; $i < 5; $i++) {
                     <h3 class="card-title text-2xl font-semibold mb-4">
                         Performance: Actual vs. Expected
                         <span class="text-sm text-secondary font-normal">
-                            (<?php echo $months[$currentMonth]; ?> <?php echo $currentYear; ?>)
+                            (<?php echo $currentYear; ?>)
                         </span>
                     </h3>
                     <div class="chart-container">
@@ -338,16 +326,6 @@ for ($i = 0; $i < 5; $i++) {
                             yAxisID: 'y', // Main axis
                         },
                         {
-                            type: 'line',
-                            label: 'Grid Import (kWh)',
-                            data: <?php echo json_encode($performance_chart_data['grid_import']); ?>,
-                            borderColor: 'rgba(239, 68, 68, 1)', // error color
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            fill: true,
-                            tension: 0.4,
-                            yAxisID: 'y1', // Secondary axis
-                        },
-                        {
                             type: 'bar',
                             label: 'Actual Generation (kWh)',
                             data: <?php echo json_encode($performance_chart_data['actual_generation']); ?>,
@@ -367,12 +345,6 @@ for ($i = 0; $i < 5; $i++) {
                             beginAtZero: true,
                             position: 'left',
                             title: { display: true, text: 'Energy Generation (kWh)' }
-                        },
-                        y1: {
-                            beginAtZero: true,
-                            position: 'right',
-                            title: { display: true, text: 'Grid Import (kWh)' },
-                            grid: { drawOnChartArea: false } // Hide grid lines for this axis
                         }
                     },
                     plugins: { 
