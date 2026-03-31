@@ -2,6 +2,7 @@
 class HomeOwner extends Controller
 {
     private $serviceModel;
+    private $smsModel;
 
     private $user = [
         'role' => ROLE_HOMEOWNER,
@@ -11,6 +12,8 @@ class HomeOwner extends Controller
     public function __construct()
     {
         $this->serviceModel = $this->model('M_Service');
+        $this->smsModel = $this->model('M_SMS');
+
     }
 
 
@@ -146,9 +149,7 @@ class HomeOwner extends Controller
 
     public function uploadSMS(): void
     {
-        echo "uploadSMS called - Method: " . $_SERVER['REQUEST_METHOD'];
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            echo "POST data: " . print_r($_POST, true);
             $sms = trim($_POST['smsContent'] ?? '');
 
             if (empty($sms)) {
@@ -174,6 +175,7 @@ class HomeOwner extends Controller
             // For GET requests, show the form
             $data = [
                 'user' => $this->user,
+                'recentUploads' => $this->smsModel->sms_history()
             ];
             $this->view('pages/homeowner/uploadsms', $data, 'dashboard');
         }

@@ -15,52 +15,6 @@
     require APPROOT . '/views/inc/components/page_header.php';
     ?>
 
-    <!-- Dummy Data for Recent Uploads -->
-    <?php
-    $recentUploads = [
-        [
-            'date' => '2025-02-05',
-            'consumption' => '564 Units',
-            'amount' => 'Rs. 89.74',
-            'account' => 'A/C No: 0510021204',
-            'name' => 'MR.V.S. RAMANAYAKA',
-            'status' => 'Processed'
-        ],
-        [
-            'date' => '2025-01-05',
-            'consumption' => '587 Units',
-            'amount' => 'Rs. 95.20',
-            'account' => 'A/C No: 0510021204',
-            'name' => 'MR.V.S. RAMANAYAKA',
-            'status' => 'Processed'
-        ],
-        [
-            'date' => '2024-12-05',
-            'consumption' => '543 Units',
-            'amount' => 'Rs. 82.15',
-            'account' => 'A/C No: 0510021204',
-            'name' => 'MR.V.S. RAMANAYAKA',
-            'status' => 'Processed'
-        ],
-        [
-            'date' => '2024-11-05',
-            'consumption' => '612 Units',
-            'amount' => 'Rs. 104.50',
-            'account' => 'A/C No: 0510021204',
-            'name' => 'MR.V.S. RAMANAYAKA',
-            'status' => 'Processed'
-        ],
-        [
-            'date' => '2024-10-05',
-            'consumption' => '598 Units',
-            'amount' => 'Rs. 99.75',
-            'account' => 'A/C No: 0510021204',
-            'name' => 'MR.V.S. RAMANAYAKA',
-            'status' => 'Processed'
-        ]
-    ];
-    ?>
-
     <!-- Main Content Grid -->
     <div class="row">
         <!-- Left Column - Upload Form -->
@@ -69,7 +23,8 @@
                 <div class="card-body">
                     <h3 class="card-title text-2xl font-semibold mb-6">Import CEB Bill Message</h3>
 
-                    <form id="smsUploadForm" action="<?php echo URLROOT ?>/homeowner/uploadSMS" method="POST" novalidate enctype="multipart/form-data">
+                    <form id="smsUploadForm" action="<?php echo URLROOT ?>/homeowner/uploadSMS" method="POST" novalidate
+                        enctype="multipart/form-data">
                         <!-- SMS Content Textarea -->
                         <div class="mb-4">
                             <?php
@@ -116,7 +71,7 @@
             <div class="card shadow-lg rounded-xl mb-4">
                 <div class="card-body">
                     <h3 class="card-title text-xl font-semibold mb-4">
-                        <i class="fas fa-question-circle text-primary mr-2"></i>How to Upload
+                        How to Upload
                     </h3>
                     <ol class="list-steps">
                         <li>Open the SMS from CEB on your phone</li>
@@ -136,34 +91,37 @@
                 <div class="card-body">
                     <h3 class="card-title text-2xl font-semibold mb-4">Recent Uploads</h3>
 
-                    <?php if (isset($recentUploads) && !empty($recentUploads)): ?>
+                    <?php if (!empty($data['recentUploads'])): ?>
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th class="text-sm font-semibold text-secondary">Date</th>
+                                        <th class="text-sm font-semibold text-secondary">Reading Date</th>
+                                        <th class="text-sm font-semibold text-secondary">Export Reading</th>
+                                        <th class="text-sm font-semibold text-secondary">Import Reading</th>
                                         <th class="text-sm font-semibold text-secondary">Consumption</th>
                                         <th class="text-sm font-semibold text-secondary">Bill Amount</th>
-                                        <th class="text-sm font-semibold text-secondary">Status</th>
-                                        <th class="text-sm font-semibold text-secondary">Action</th>
+                                        <!-- <th class="text-sm font-semibold text-secondary">Status</th>
+                                        <th class="text-sm font-semibold text-secondary">Action</th> -->
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($recentUploads as $upload): ?>
+                                    <?php foreach ($data['recentUploads'] as $upload): ?>
                                         <tr>
-                                            <td class="text-sm"><?php echo htmlspecialchars($upload['date']); ?></td>
-                                            <td class="text-sm"><?php echo htmlspecialchars($upload['consumption']); ?></td>
-                                            <td class="text-sm font-semibold"><?php echo htmlspecialchars($upload['amount']); ?>
+                                            <td class="text-sm">
+                                                <?php echo htmlspecialchars($upload->reading_date); ?>
                                             </td>
                                             <td class="text-sm">
-                                                <span class="badge badge-success">
-                                                    <i class="fas fa-check-circle mr-1"></i>Processed
-                                                </span>
+                                                <?php echo htmlspecialchars($upload->export_reading); ?>
                                             </td>
                                             <td class="text-sm">
-                                                <a href="#" class="text-primary font-semibold">
-                                                    <i class="fas fa-eye mr-1"></i>View
-                                                </a>
+                                                <?php echo htmlspecialchars($upload->import_reading); ?>
+                                            </td>
+                                            <td class="text-sm">
+                                                <?php echo htmlspecialchars($upload->consumption_units); ?>
+                                            </td>
+                                            <td class="text-sm font-semibold">
+                                                Rs. <?php echo htmlspecialchars($upload->monthly_bill); ?>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
