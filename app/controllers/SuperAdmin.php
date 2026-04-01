@@ -7,6 +7,7 @@ class SuperAdmin extends Controller
 
     private $authModel;
     private $fleetModel;
+    private $dashboardModel;
 
     private $user = [
         'role' => ROLE_SUPER_ADMIN,
@@ -16,13 +17,22 @@ class SuperAdmin extends Controller
     {
         $this->authModel = $this->model('M_Auth');
         $this->fleetModel = $this->model('M_Installer_Fleet');
+        $this->dashboardModel = $this->model('M_Superadmin_Dashboard');
     }
 
     public function dashboard()
     {
+        $stats = $this->dashboardModel->getStats();
+        $growth = $this->dashboardModel->getCompanyGrowthByYear();
+        $user_type = $this->dashboardModel->getUserByType();
+        $company_district = $this->dashboardModel->getCompanyByDistrict();
 
         $data = [
             'user' => $this->user,
+            'stats' => $stats,
+            'growth' => $growth,
+            'user_type' => $user_type,
+            'company_district' => $company_district
         ];
 
         $this->view('pages/super_admin/dashboard', $data, layout: 'dashboard');
