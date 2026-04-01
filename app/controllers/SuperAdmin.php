@@ -8,6 +8,7 @@ class SuperAdmin extends Controller
     private $authModel;
     private $fleetModel;
     private $dashboardModel;
+    private $profileModel;
 
     private $user = [
         'role' => ROLE_SUPER_ADMIN,
@@ -18,6 +19,7 @@ class SuperAdmin extends Controller
         $this->authModel = $this->model('M_Auth');
         $this->fleetModel = $this->model('M_Installer_Fleet');
         $this->dashboardModel = $this->model('M_Superadmin_Dashboard');
+        $this->profileModel = $this->model('M_Profile');
     }
 
     public function dashboard()
@@ -225,8 +227,10 @@ class SuperAdmin extends Controller
 
     public function profile()
     {
+        $user_data = $this->profileModel->getSuperadminProfile($_SESSION['user_id']);
         $data = [
             'user' => $this->user,
+            'user_data' => $user_data
         ];
 
         $this->view('pages/super_admin/profile', $data, 'dashboard');

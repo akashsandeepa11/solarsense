@@ -12,6 +12,11 @@
     <!-- Left Column -->
     <div class="col-lg-8">
       <?php
+      $profile_data = [
+          'full_name' => $data['user_data']->full_name ?? 'Admin User',
+          'email' => $data['user_data']->email ?? 'admin@solarsense.com'
+      ];
+
       $profileSections = [
           [
               'title' => 'Personal Details',
@@ -19,7 +24,7 @@
                   [
                       'id' => 'full-name',
                       'label' => 'Full Name',
-                      'value' => 'Admin User',
+                      'value' => $profile_data['full_name'],
                       'editable' => true,
                       'required' => true,
                       'summaryTarget' => 'summary-name'
@@ -27,25 +32,11 @@
                   [
                       'id' => 'email',
                       'label' => 'Email',
-                      'value' => 'admin@solarsense.com',
+                      'value' => $profile_data['email'],
                       'type' => 'email',
                       'editable' => true,
                       'required' => true,
                       'summaryTarget' => 'summary-email'
-                  ],
-                  [
-                      'id' => 'phone',
-                      'label' => 'Phone number',
-                      'value' => '+94 112 345 680',
-                      'editable' => true,
-                      'required' => false,
-                      'summaryTarget' => 'summary-phone'
-                  ],
-                  [
-                      'id' => 'admin-id',
-                      'label' => 'Admin ID',
-                      'value' => 'ADMIN-2024-001',
-                      'editable' => false
                   ]
               ]
           ],
