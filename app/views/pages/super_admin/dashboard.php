@@ -3,12 +3,12 @@
 
 // Platform Overview Cards
 $summary_cards = [
-    ['label' => 'Total Installer Companies', 'value' => '24', 'icon' => 'fas fa-building', 'color' => 'primary'],
+    ['label' => 'Total Solar Companies', 'value' => '24', 'icon' => 'fas fa-building', 'color' => 'primary'],
     ['label' => 'Pending Verifications', 'value' => 5, 'icon' => 'fas fa-clock', 'color' => 'warning'],
     ['label' => 'Total Platform Users', 'value' => '1,847', 'icon' => 'fas fa-users', 'color' => 'success'],
     ['label' => 'Active Support Tickets', 'value' => 12, 'icon' => 'fas fa-ticket-alt', 'color' => 'accent'],
-    ['label' => 'Verified Companies', 'value' => 19, 'icon' => 'fas fa-check-circle', 'color' => 'success'],
-    ['label' => 'Monthly Platform Revenue', 'value' => 'LKR 3.8M', 'icon' => 'fas fa-coins', 'color' => 'success'],
+    //['label' => 'Verified Companies', 'value' => 19, 'icon' => 'fas fa-check-circle', 'color' => 'success'],
+    //['label' => 'Monthly Platform Revenue', 'value' => 'LKR 3.8M', 'icon' => 'fas fa-coins', 'color' => 'success'],
 ];
 
 // Recent Verification Requests
@@ -50,11 +50,11 @@ $activity_stats = [
 ];
 
 // High-Priority Alerts
-$alerts = [
-    ['client' => 'SolarTech Solutions', 'issue' => 'Verification documents pending review', 'priority' => 'high'],
-    ['client' => 'GreenEnergy Systems', 'issue' => 'Support ticket escalated - urgent', 'priority' => 'high'],
-    ['client' => 'EcoPower Installations', 'issue' => 'Account suspension appeal submitted', 'priority' => 'medium'],
-];
+// $alerts = [
+//     ['client' => 'SolarTech Solutions', 'issue' => 'Verification documents pending review', 'priority' => 'high'],
+//     ['client' => 'GreenEnergy Systems', 'issue' => 'Support ticket escalated - urgent', 'priority' => 'high'],
+//     ['client' => 'EcoPower Installations', 'issue' => 'Account suspension appeal submitted', 'priority' => 'medium'],
+// ];
 
 // Recent System Activities
 $recent_activities = [
@@ -148,7 +148,7 @@ $user_registration = [
             </div>
 
             <!-- High-Priority Alerts -->
-            <div class="card shadow-lg rounded-xl mb-6">
+            <!-- <div class="card shadow-lg rounded-xl mb-6">
                 <div class="card-body">
                     <h3 class="card-title text-xl font-semibold mb-4">
                         <i class="fas fa-exclamation-circle text-error mr-2"></i>Priority Alerts
@@ -170,7 +170,7 @@ $user_registration = [
                         <p class="text-secondary text-center py-4">No alerts at this time</p>
                     <?php endif; ?>
                 </div>
-            </div>
+            </div> -->
 
             <!-- Charts Row -->
             <div class="row">
