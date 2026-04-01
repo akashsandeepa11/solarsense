@@ -16,10 +16,28 @@
 
         // --- Dashboard Page ---
         public function dashboard(){
+            $totalItems        = $this->inventoryModel->get_total_items_count();
+            $lowStockItems     = $this->inventoryModel->get_low_stock_items(5);
+            $totalStockValue   = $this->inventoryModel->get_total_stock_value();
+            $categoriesCount   = $this->inventoryModel->get_categories_count();
+            $stockByCategory   = $this->inventoryModel->get_stock_by_category();
+            $recentOrders      = $this->inventoryModel->get_recent_orders(5);
+            $totalOrdersCount  = $this->inventoryModel->get_total_orders_count();
+            $totalOrdersAmount = $this->inventoryModel->get_total_orders_amount();
+
             $data = [
-                'user' => $this->user,
+                'user'               => $this->user,
+                'total_items'        => $totalItems,
+                'low_stock_items'    => $lowStockItems,
+                'low_stock_count'    => count((array)$lowStockItems),
+                'total_stock_value'  => $totalStockValue,
+                'categories_count'   => $categoriesCount,
+                'stock_by_category'  => $stockByCategory,
+                'recent_orders'      => $recentOrders,
+                'total_orders_count' => $totalOrdersCount,
+                'total_orders_amount'=> $totalOrdersAmount,
             ];
-            
+
             $this->view('pages/inventory_manager/dashboard', $data, layout: 'dashboard');
         }
 

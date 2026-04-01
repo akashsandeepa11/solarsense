@@ -1,83 +1,35 @@
 <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/homeowner/shop.css">
 
 <?php
-// Page Header Configuration
 $config = [
-    'title' => 'Shopping Cart',
+    'title'       => 'Shopping Cart',
     'description' => 'Review your items and proceed to checkout',
-    'show_back' => true,
-    'back_url' => URLROOT . '/homeowner/shop',
-    'back_label' => 'Continue Shopping'
+    'show_back'   => true,
+    'back_url'    => URLROOT . '/homeowner/shop',
+    'back_label'  => 'Continue Shopping',
 ];
 include __DIR__ . '/../../inc/components/page_header.php';
-
-// Dummy cart data (like products added to cart)
-$cartItems = [
-    [
-        'id' => 1,
-        'title' => 'Premium Solar Battery',
-        'company' => 'SolarTech Solutions',
-        'price' => 292496.75,
-        'quantity' => 1,
-        'image' => 'solar_battery.png'
-    ],
-    [
-        'id' => 5,
-        'title' => 'Portable Solar Power Bank',
-        'company' => 'MobilePower Plus',
-        'price' => 42246.75,
-        'quantity' => 2,
-        'image' => 'portable_solar_powerbank.png'
-    ],
-    [
-        'id' => 3,
-        'title' => 'Solar Garden Lamp Set',
-        'company' => 'GreenLight Solutions',
-        'price' => 19496.75,
-        'quantity' => 1,
-        'image' => 'solar_graden_lamp_set.png'
-    ]
-];
 ?>
 
 <div class="shop-container">
-
-    <!-- <h2 style="margin-bottom: 20px;">Your Shopping Cart</h2> -->
-
     <div class="cart-grid">
-        <div class="cart-items">
-            <?php if(empty($cartItems)): ?>
-                <p style="text-align:center; padding:2rem;">Your cart is empty.</p>
-            <?php else: ?>
-                <?php foreach($cartItems as $item): ?>
-                <div class="cart-card" data-id="<?php echo $item['id']; ?>">
-                    <img src="<?php echo URLROOT; ?>/img/<?php echo $item['image']; ?>" alt="<?php echo $item['title']; ?>" class="cart-product-image">
-                    <div class="cart-product-info">
-                        <h4><?php echo $item['title']; ?></h4>
-                        <p class="cart-product-company"><?php echo $item['company']; ?></p>
-                        <p class="cart-product-price">Rs.<?php echo number_format($item['price'],2); ?></p>
 
-                        <div class="cart-actions">
-                            <label>
-                                Qty: 
-                                <input type="number" min="1" value="<?php echo $item['quantity']; ?>" class="cart-quantity">
-                            </label>
-                            <button class="remove-btn">Remove</button>
-                        </div>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
+        <!-- Cart Items (populated by JS from localStorage) -->
+        <div class="cart-items" id="cartItemsContainer">
+            <p id="emptyCartMsg" style="text-align:center;padding:2rem;color:#6b7280;">
+                <i class="fas fa-shopping-cart" style="font-size:2rem;display:block;margin-bottom:1rem;"></i>
+                Your cart is empty. <a href="<?php echo URLROOT; ?>/homeowner/shop">Browse items</a>
+            </p>
         </div>
 
+        <!-- Order Summary -->
         <div class="cart-summary">
             <h3>Order Summary</h3>
-            <p>Items: <span id="summary-count"><?php echo array_sum(array_column($cartItems,'quantity')); ?></span></p>
-            <p>Total: Rs.<span id="summary-total"><?php echo number_format(array_sum(array_map(fn($i)=>$i['price']*$i['quantity'],$cartItems)),2); ?></span></p>
-            <button class="btn btn-primary checkout-btn">Proceed to Checkout</button>
+            <p>Items: <span id="summary-count">0</span></p>
+            <p>Total: <strong>Rs. <span id="summary-total">0.00</span></strong></p>
+            <button class="btn btn-primary checkout-btn" id="checkoutBtn" disabled>Proceed to Checkout</button>
         </div>
     </div>
-
 </div>
 
 <style>
@@ -86,125 +38,147 @@ $cartItems = [
     gap: 2rem;
     flex-wrap: wrap;
 }
-
 .cart-items {
     flex: 2;
     display: flex;
     flex-direction: column;
     gap: 1rem;
 }
-
 .cart-card {
     display: flex;
     gap: 1rem;
     padding: 1rem;
-    border: 1px solid #ddd;
+    border: 1px solid #e5e7eb;
     border-radius: 10px;
     background: #fff;
     transition: box-shadow 0.2s;
 }
-
-.cart-card:hover {
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
-
+.cart-card:hover { box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
 .cart-product-image {
-    width: 120px;
-    height: 120px;
-    object-fit: contain;
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
     border-radius: 8px;
+    background: #f3f4f6;
 }
-
-.cart-product-info h4 {
-    margin: 0 0 5px;
-}
-
-.cart-product-company {
-    font-size: 14px;
-    color: gray;
-}
-
-.cart-product-price {
-    font-weight: bold;
-    margin: 5px 0;
-}
-
-.cart-actions {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
+.cart-product-info h4 { margin: 0 0 4px; }
+.cart-product-company { font-size: 13px; color: #9ca3af; margin: 0 0 4px; }
+.cart-product-price { font-weight: 700; margin: 4px 0; color: #fe9630; }
+.cart-actions { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
 .cart-actions input[type="number"] {
-    width: 50px;
-    padding: 3px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
+    width: 55px; padding: 4px 6px;
+    border-radius: 6px; border: 1px solid #d1d5db;
+    font-size: 0.875rem;
 }
-
 .remove-btn {
-    padding: 5px 10px;
-    border: none;
-    background: #f44336;
-    color: white;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.2s;
+    padding: 4px 10px; border: none;
+    background: #fee2e2; color: #dc2626;
+    border-radius: 6px; cursor: pointer;
+    font-size: 0.8rem; transition: background 0.2s;
 }
-
-.remove-btn:hover {
-    background: #d32f2f;
-}
-
+.remove-btn:hover { background: #fca5a5; }
 .cart-summary {
-    flex: 1;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 1rem;
-    background: #fff;
-    height: fit-content;
+    flex: 1; border: 1px solid #e5e7eb;
+    border-radius: 10px; padding: 1.5rem;
+    background: #fff; height: fit-content;
+    position: sticky; top: 20px;
 }
-
-.cart-summary h3 {
-    margin-top: 0;
-}
-
-.checkout-btn {
-    width: 100%;
-    margin-top: 15px;
-}
+.cart-summary h3 { margin-top: 0; }
+.cart-summary p { margin: 0.5rem 0; font-size: 0.95rem; }
+.checkout-btn { width: 100%; margin-top: 1rem; }
+.checkout-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 </style>
 
 <script>
-// Update total when quantity changes
-const quantities = document.querySelectorAll('.cart-quantity');
-const summaryTotal = document.getElementById('summary-total');
-const summaryCount = document.getElementById('summary-count');
+const URLROOT = '<?php echo URLROOT; ?>';
 
-quantities.forEach(input => {
-    input.addEventListener('change', updateSummary);
-});
-
-document.querySelectorAll('.remove-btn').forEach(btn => {
-    btn.addEventListener('click', e => {
-        const card = e.target.closest('.cart-card');
-        card.remove();
-        updateSummary();
-    });
-});
-
-function updateSummary() {
-    const cartCards = document.querySelectorAll('.cart-card');
-    let total = 0, count = 0;
-
-    cartCards.forEach(card => {
-        const price = parseFloat(card.querySelector('.cart-product-price').textContent.replace('$',''));
-        const qty = parseInt(card.querySelector('.cart-quantity').value);
-        total += price * qty;
-        count += qty;
-    });
-
-    summaryTotal.textContent = total.toFixed(2);
-    summaryCount.textContent = count;
+function getCart() {
+    return JSON.parse(localStorage.getItem('ss_cart') || '[]');
 }
+function saveCart(cart) {
+    localStorage.setItem('ss_cart', JSON.stringify(cart));
+}
+
+function renderCart() {
+    const cart      = getCart();
+    const container = document.getElementById('cartItemsContainer');
+    const emptyMsg  = document.getElementById('emptyCartMsg');
+    const countEl   = document.getElementById('summary-count');
+    const totalEl   = document.getElementById('summary-total');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+
+    // Remove existing cards (keep emptyMsg)
+    container.querySelectorAll('.cart-card').forEach(c => c.remove());
+
+    if (cart.length === 0) {
+        emptyMsg.style.display = 'block';
+        countEl.textContent = 0;
+        totalEl.textContent = '0.00';
+        checkoutBtn.disabled = true;
+        return;
+    }
+
+    emptyMsg.style.display = 'none';
+    checkoutBtn.disabled = false;
+
+    let totalQty = 0, totalAmt = 0;
+
+    cart.forEach(item => {
+        totalQty += item.qty;
+        totalAmt += item.price * item.qty;
+
+        const imgSrc = item.image
+            ? `${URLROOT}/img/inventory/${item.image}`
+            : '';
+
+        const card = document.createElement('div');
+        card.className = 'cart-card';
+        card.dataset.id = item.id;
+        card.innerHTML = `
+            ${imgSrc
+                ? `<img src="${imgSrc}" alt="${item.title}" class="cart-product-image" onerror="this.style.display='none'">`
+                : `<div class="cart-product-image" style="display:flex;align-items:center;justify-content:center;"><i class="fas fa-box-open" style="font-size:2rem;color:#d1d5db;"></i></div>`}
+            <div class="cart-product-info" style="flex:1;">
+                <h4>${item.title}</h4>
+                <p class="cart-product-price">Rs. ${(item.price * item.qty).toLocaleString('en-US', {minimumFractionDigits:2})}</p>
+                <p style="font-size:0.8rem;color:#9ca3af;">Rs. ${item.price.toLocaleString('en-US', {minimumFractionDigits:2})} each</p>
+                <div class="cart-actions">
+                    <label>Qty: <input type="number" min="1" value="${item.qty}" class="cart-quantity" data-id="${item.id}"></label>
+                    <button class="remove-btn" data-id="${item.id}"><i class="fas fa-trash mr-1"></i>Remove</button>
+                </div>
+            </div>`;
+        container.appendChild(card);
+    });
+
+    countEl.textContent = totalQty;
+    totalEl.textContent = totalAmt.toLocaleString('en-US', {minimumFractionDigits:2});
+
+    // Qty change
+    container.querySelectorAll('.cart-quantity').forEach(input => {
+        input.addEventListener('change', function () {
+            const id  = parseInt(this.dataset.id);
+            const qty = Math.max(1, parseInt(this.value) || 1);
+            const cart = getCart();
+            const item = cart.find(i => i.id === id);
+            if (item) { item.qty = qty; saveCart(cart); }
+            renderCart();
+        });
+    });
+
+    // Remove
+    container.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const id   = parseInt(this.dataset.id);
+            const cart = getCart().filter(i => i.id !== id);
+            saveCart(cart);
+            renderCart();
+        });
+    });
+}
+
+document.getElementById('checkoutBtn').addEventListener('click', () => {
+    alert('Checkout functionality coming soon.');
+});
+
+renderCart();
 </script>

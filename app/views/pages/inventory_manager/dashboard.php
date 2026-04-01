@@ -1,32 +1,35 @@
 <?php
 /**
- * Inventory Manager Dashboard
- * Overview of inventory statistics and recent activity
+ * Inventory Manager Dashboard - connected to database
  */
 
-// Dashboard statistics
+$totalItems       = $data['total_items']        ?? 0;
+$lowStockItems    = $data['low_stock_items']    ?? [];
+$lowStockCount    = $data['low_stock_count']    ?? 0;
+$totalStockValue  = $data['total_stock_value']  ?? 0;
+$categoriesCount  = $data['categories_count']   ?? 0;
+$stockByCategory  = $data['stock_by_category']  ?? [];
+$recentOrders     = $data['recent_orders']      ?? [];
+$totalOrdersCount = $data['total_orders_count'] ?? 0;
+$totalOrdersAmt   = $data['total_orders_amount']?? 0;
+
+// Build chart data from real DB results
+$chartLabels = [];
+$chartQty    = [];
+$chartValue  = [];
+foreach ((array)$stockByCategory as $row) {
+    $chartLabels[] = $row->category    ?? $row['category']    ?? 'Unknown';
+    $chartQty[]    = (int)($row->total_qty    ?? $row['total_qty']    ?? 0);
+    $chartValue[]  = (float)($row->total_value ?? $row['total_value'] ?? 0);
+}
+
 $dashboard_stats = [
-    ['label' => 'Total Items', 'value' => '156', 'icon' => 'fas fa-boxes-stacked', 'color' => 'primary'],
-    ['label' => 'Low Stock Items', 'value' => '12', 'icon' => 'fas fa-exclamation-triangle', 'color' => 'warning'],
-    ['label' => 'Total Suppliers', 'value' => '24', 'icon' => 'fas fa-truck-fast', 'color' => 'accent'],
-    ['label' => 'Pending Orders', 'value' => '8', 'icon' => 'fas fa-clock', 'color' => 'secondary'],
-    ['label' => 'Stock Value', 'value' => 'LKR 2.5M', 'icon' => 'fas fa-coins', 'color' => 'success'],
-    ['label' => 'This Month Purchases', 'value' => 'LKR 450K', 'icon' => 'fas fa-cart-shopping', 'color' => 'primary'],
-];
-
-// Low stock items
-$low_stock_items = [
-    ['id' => 1, 'name' => 'Mounting Brackets', 'current' => 5, 'minimum' => 20, 'category' => 'Accessories'],
-    ['id' => 2, 'name' => 'MC4 Connectors', 'current' => 12, 'minimum' => 50, 'category' => 'Electrical'],
-    ['id' => 3, 'name' => 'Cable Ties (Pack)', 'current' => 8, 'minimum' => 30, 'category' => 'Accessories'],
-    ['id' => 4, 'name' => 'Junction Box', 'current' => 3, 'minimum' => 15, 'category' => 'Electrical'],
-];
-
-// Sales & Purchase Chart Data
-$sales_purchase_chart_data = [
-    'labels' => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    'sales' => [320000, 450000, 380000, 520000, 480000, 550000],
-    'purchases' => [280000, 350000, 420000, 380000, 450000, 400000],
+    ['label' => 'Total Items',    'value' => $totalItems,                                 'icon' => 'fas fa-boxes-stacked',       'color' => 'primary'],
+    ['label' => 'Low Stock',      'value' => $lowStockCount,                              'icon' => 'fas fa-exclamation-triangle', 'color' => 'warning'],
+    ['label' => 'Categories',     'value' => $categoriesCount,                            'icon' => 'fas fa-tags',                 'color' => 'accent'],
+    ['label' => 'Stock Value',    'value' => 'LKR ' . number_format($totalStockValue, 0), 'icon' => 'fas fa-coins',                'color' => 'success'],
+    ['label' => 'Total Orders',   'value' => $totalOrdersCount,                           'icon' => 'fas fa-file-invoice',         'color' => 'primary'],
+    ['label' => 'Orders Value',   'value' => 'LKR ' . number_format($totalOrdersAmt, 0),  'icon' => 'fas fa-cart-shopping',        'color' => 'accent'],
 ];
 ?>
 
@@ -37,7 +40,7 @@ $sales_purchase_chart_data = [
     <!-- Page Header -->
     <?php
     $config = [
-        'title' => 'Inventory Dashboard',
+        'title'       => 'Inventory Dashboard',
         'description' => 'Overview of your inventory management system',
     ];
     include __DIR__ . '/../../inc/components/page_header.php';
@@ -45,26 +48,27 @@ $sales_purchase_chart_data = [
 
     <!-- Stats Cards -->
     <?php
-    $config = [
-        'stats' => $dashboard_stats,
-        'columns' => 6
-    ];
+    $config = ['stats' => $dashboard_stats, 'columns' => 6];
     include __DIR__ . '/../../inc/components/stat_card.php';
     ?>
 
-    <!-- Main Content Grid -->
+    <!-- Chart + Low Stock Row -->
     <div class="row mt-6">
-        <!-- Sales & Purchase Chart -->
+        <!-- Stock by Category Chart -->
         <div class="col-lg-6 mb-4">
             <div class="card shadow-sm rounded-xl h-100">
                 <div class="card-header d-flex justify-between align-center py-4 px-4">
-                    <h3 class="text-lg font-semibold">Sales & Purchase Overview</h3>
-                    <a href="<?php echo URLROOT; ?>/inventorymanager/reports" class="btn btn-sm btn-primary-outline">View Reports</a>
+                    <h3 class="text-lg font-semibold">Stock by Category</h3>
+                    <a href="<?php echo URLROOT; ?>/inventorymanager/inventory" class="btn btn-sm btn-primary-outline">View All</a>
                 </div>
                 <div class="card-body">
-                    <div class="chart-container" style="height: 280px;">
-                        <canvas id="salesPurchaseChart"></canvas>
-                    </div>
+                    <?php if (empty($chartLabels)): ?>
+                        <p class="text-center text-secondary py-6">No inventory data yet.</p>
+                    <?php else: ?>
+                        <div class="chart-container" style="height: 280px;">
+                            <canvas id="stockByCategoryChart"></canvas>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -75,48 +79,105 @@ $sales_purchase_chart_data = [
                 <div class="card-header d-flex justify-between align-center py-4 px-4">
                     <h3 class="text-lg font-semibold text-error">
                         <i class="fas fa-exclamation-triangle mr-2"></i>Low Stock Alerts
+                        <?php if ($lowStockCount > 0): ?>
+                            <span class="badge bg-error ml-2" style="font-size:0.75rem;"><?php echo $lowStockCount; ?></span>
+                        <?php endif; ?>
                     </h3>
                     <a href="<?php echo URLROOT; ?>/inventorymanager/inventory" class="btn btn-sm btn-error-outline">Manage Stock</a>
                 </div>
                 <div class="card-body p-0">
-                    <?php
-                    $config = [
-                        'headers' => [
-                            ['key' => 'name', 'label' => 'Item'],
-                            ['key' => 'category', 'label' => 'Category'],
-                            ['key' => 'current', 'label' => 'Current'],
-                            ['key' => 'minimum', 'label' => 'Min Required'],
-                        ],
-                        'rows' => $low_stock_items,
-                        'columns' => [
-                            [
-                                'key' => 'name',
-                                'render' => function($row) {
-                                    return '<span class="font-medium">' . htmlspecialchars($row['name']) . '</span>';
-                                }
+                    <?php if (empty($lowStockItems)): ?>
+                        <p class="text-center text-secondary py-6">
+                            <i class="fas fa-check-circle mr-2 text-success"></i>All items sufficiently stocked.
+                        </p>
+                    <?php else: ?>
+                        <?php
+                        $lowStockRows = array_map(function($item) {
+                            return [
+                                'id'       => $item->id       ?? $item['id'],
+                                'name'     => $item->name     ?? $item['name'],
+                                'category' => $item->category_name ?? $item['category_name'] ?? '—',
+                                'current'  => $item->quantity ?? $item['quantity'],
+                            ];
+                        }, (array)$lowStockItems);
+
+                        $config = [
+                            'headers' => [
+                                ['key' => 'name',     'label' => 'Item'],
+                                ['key' => 'category', 'label' => 'Category'],
+                                ['key' => 'current',  'label' => 'Qty'],
                             ],
-                            [
-                                'key' => 'category',
-                                'render' => function($row) {
-                                    return '<span class="text-secondary">' . htmlspecialchars($row['category']) . '</span>';
-                                }
+                            'rows'    => $lowStockRows,
+                            'columns' => [
+                                ['key' => 'name',    'render' => function($r) { return '<span class="font-medium">' . htmlspecialchars($r['name']) . '</span>'; }],
+                                ['key' => 'category','render' => function($r) { return '<span class="text-secondary">' . htmlspecialchars($r['category']) . '</span>'; }],
+                                ['key' => 'current', 'render' => function($r) { return '<span class="text-error font-semibold">' . (int)$r['current'] . '</span>'; }],
                             ],
-                            [
-                                'key' => 'current',
-                                'render' => function($row) {
-                                    return '<span class="text-error font-semibold">' . $row['current'] . '</span>';
-                                }
+                            'actions'       => [
+                                ['label' => 'View', 'icon' => 'fas fa-eye', 'url' => URLROOT . '/inventorymanager/item/{id}', 'class' => 'btn-sm btn-primary'],
                             ],
-                        ],
-                        'actions' => [
-                            ['label' => 'Reorder', 'icon' => 'fas fa-cart-plus', 'url' => URLROOT . '/inventorymanager/purchases?reorder={id}', 'class' => 'btn-sm btn-primary'],
-                        ],
-                        'empty_message' => 'No low stock items'
-                    ];
-                    include __DIR__ . '/../../inc/components/data_table.php';
-                    ?>
+                            'empty_message' => 'No low stock items',
+                        ];
+                        include __DIR__ . '/../../inc/components/data_table.php';
+                        ?>
+                    <?php endif; ?>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="card shadow-sm rounded-xl mb-4">
+        <div class="card-header d-flex justify-between align-center py-4 px-4">
+            <h3 class="text-lg font-semibold">
+                <i class="fas fa-file-invoice mr-2"></i>Recent Orders
+            </h3>
+            <a href="<?php echo URLROOT; ?>/inventorymanager/purchases" class="btn btn-sm btn-primary-outline">View All</a>
+        </div>
+        <div class="card-body p-0">
+            <?php if (empty($recentOrders)): ?>
+                <p class="text-center text-secondary py-6">No orders yet.</p>
+            <?php else: ?>
+                <?php
+                $orderRows = array_map(function($o) {
+                    return [
+                        'id'           => $o->order_id    ?? $o['order_id'],
+                        'order_id'     => '#' . ($o->order_id ?? $o['order_id']),
+                        'total_amount' => 'LKR ' . number_format($o->total_amount ?? $o['total_amount'] ?? 0, 2),
+                        'status'       => $o->status      ?? $o['status']      ?? '—',
+                        'date'         => $o->date        ?? $o['date']        ?? '—',
+                    ];
+                }, (array)$recentOrders);
+
+                $config = [
+                    'headers' => [
+                        ['key' => 'order_id',     'label' => 'Order #'],
+                        ['key' => 'date',         'label' => 'Date'],
+                        ['key' => 'total_amount', 'label' => 'Total'],
+                        ['key' => 'status',       'label' => 'Status'],
+                    ],
+                    'rows'    => $orderRows,
+                    'columns' => [
+                        ['key' => 'order_id',     'render' => function($r) { return '<span class="font-medium text-primary">' . htmlspecialchars($r['order_id']) . '</span>'; }],
+                        ['key' => 'total_amount', 'render' => function($r) { return '<span class="font-semibold">' . htmlspecialchars($r['total_amount']) . '</span>'; }],
+                        ['key' => 'status',       'render' => function($r) {
+                            $map = [
+                                'pending'   => ['bg-warning', 'Pending'],
+                                'completed' => ['bg-success', 'Completed'],
+                                'cancelled' => ['bg-error',   'Cancelled'],
+                                'approved'  => ['bg-accent',  'Approved'],
+                                'delivered' => ['bg-primary', 'Delivered'],
+                            ];
+                            $s = strtolower($r['status']);
+                            [$cls, $lbl] = $map[$s] ?? ['bg-secondary', ucfirst($r['status'])];
+                            return '<span class="badge ' . $cls . ' text-surface px-3 py-1 rounded-full text-xs">' . $lbl . '</span>';
+                        }],
+                    ],
+                    'empty_message' => 'No recent orders',
+                ];
+                include __DIR__ . '/../../inc/components/data_table.php';
+                ?>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -131,13 +192,10 @@ $sales_purchase_chart_data = [
                     <i class="fas fa-plus mr-2"></i>Add New Item
                 </a>
                 <a href="<?php echo URLROOT; ?>/inventorymanager/purchases" class="btn btn-accent">
-                    <i class="fas fa-cart-plus mr-2"></i>Create Purchase Order
+                    <i class="fas fa-cart-plus mr-2"></i>View Purchases
                 </a>
-                <a href="<?php echo URLROOT; ?>/inventorymanager/suppliers" class="btn btn-secondary">
-                    <i class="fas fa-user-plus mr-2"></i>Add Supplier
-                </a>
-                <a href="<?php echo URLROOT; ?>/inventorymanager/reports" class="btn btn-success">
-                    <i class="fas fa-file-export mr-2"></i>Generate Report
+                <a href="<?php echo URLROOT; ?>/inventorymanager/inventory" class="btn btn-secondary">
+                    <i class="fas fa-tags mr-2"></i>Manage Categories
                 </a>
             </div>
         </div>
@@ -145,66 +203,71 @@ $sales_purchase_chart_data = [
 </div>
 
 <script>
-function reorderItem(id) {
-    // Redirect to purchases page with item pre-selected
-    window.location.href = '<?php echo URLROOT; ?>/inventorymanager/purchases?reorder=' + id;
-}
+document.addEventListener('DOMContentLoaded', function () {
+    const ctx = document.getElementById('stockByCategoryChart');
+    if (!ctx) return;
 
-// Chart.js initialization
-document.addEventListener('DOMContentLoaded', function() {
-    const chartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'top',
-                labels: { padding: 15 }
+    const labels    = <?php echo json_encode($chartLabels); ?>;
+    const qtyData   = <?php echo json_encode($chartQty); ?>;
+    const valueData = <?php echo json_encode($chartValue); ?>;
+
+    const colors = [
+        'rgba(254,150,48,0.8)','rgba(34,197,94,0.8)','rgba(59,130,246,0.8)',
+        'rgba(168,85,247,0.8)','rgba(239,68,68,0.8)','rgba(20,184,166,0.8)',
+        'rgba(245,158,11,0.8)','rgba(99,102,241,0.8)'
+    ];
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Total Qty',
+                    data: qtyData,
+                    backgroundColor: colors,
+                    borderRadius: 6,
+                    borderWidth: 0,
+                    yAxisID: 'y',
+                },
+                {
+                    label: 'Stock Value (LKR)',
+                    data: valueData,
+                    type: 'line',
+                    fill: false,
+                    borderColor: 'rgba(34,197,94,1)',
+                    backgroundColor: 'rgba(34,197,94,0.5)',
+                    borderRadius: 6,
+                    tension: 0.3,
+                    pointRadius: 4,
+                    yAxisID: 'y1',
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'top', labels: { padding: 15 } },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            return ctx.datasetIndex === 1
+                                ? 'Value: LKR ' + ctx.parsed.y.toLocaleString()
+                                : 'Qty: ' + ctx.parsed.y;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y:  { beginAtZero: true, title: { display: true, text: 'Quantity' }, grid: { color: '#e5e7eb' } },
+                y1: { beginAtZero: true, position: 'right', title: { display: true, text: 'Value (LKR)' },
+                      grid: { drawOnChartArea: false },
+                      ticks: { callback: v => 'LKR ' + (v/1000).toFixed(0) + 'K' } },
+                x:  { grid: { display: false } }
             }
         }
-    };
-
-    // Sales & Purchase Chart
-    const salesPurchaseCtx = document.getElementById('salesPurchaseChart');
-    if (salesPurchaseCtx) {
-        new Chart(salesPurchaseCtx, {
-            type: 'bar',
-            data: {
-                labels: <?php echo json_encode($sales_purchase_chart_data['labels']); ?>,
-                datasets: [
-                    {
-                        label: 'Sales (LKR)',
-                        data: <?php echo json_encode($sales_purchase_chart_data['sales']); ?>,
-                        backgroundColor: 'rgba(34, 197, 94, 0.7)',
-                        borderColor: 'rgba(34, 197, 94, 1)',
-                        borderWidth: 0,
-                        borderRadius: 5
-                    },
-                    {
-                        label: 'Purchases (LKR)',
-                        data: <?php echo json_encode($sales_purchase_chart_data['purchases']); ?>,
-                        backgroundColor: 'rgba(254, 150, 48, 0.7)',
-                        borderColor: 'rgba(254, 150, 48, 1)',
-                        borderWidth: 0,
-                        borderRadius: 5
-                    }
-                ]
-            },
-            options: {
-                ...chartOptions,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: '#e5e7eb' },
-                        ticks: {
-                            callback: function(value) {
-                                return 'LKR ' + (value / 1000) + 'K';
-                            }
-                        }
-                    },
-                    x: { grid: { display: false } }
-                }
-            }
-        });
-    }
+    });
 });
 </script>

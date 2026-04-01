@@ -88,6 +88,79 @@ class M_inventory{
         return $this->db->resultSet();
     }
 
+    public function get_total_items_count() {
+        $this->db->query("SELECT COUNT(*) as total FROM inventory WHERE company_id = :company_id");
+        $this->db->bind(':company_id', 1);
+        $row = $this->db->single();
+        return $row->total ?? 0;
+    }
+
+    public function get_low_stock_items($threshold = 5) {
+        $this->db->query("
+            SELECT i.inventory_id as id, i.item_name as name, i.quantity, c.name as category_name
+            FROM inventory i
+            LEFT JOIN item_categories c ON i.category_id = c.id
+            WHERE i.company_id = :company_id AND i.quantity <= :threshold
+            ORDER BY i.quantity ASC
+        ");
+        $this->db->bind(':company_id', 1);
+        $this->db->bind(':threshold', $threshold);
+        return $this->db->resultSet();
+    }
+
+    public function get_total_stock_value() {
+        $this->db->query("SELECT SUM(quantity * unit_price) as total_value FROM inventory WHERE company_id = :company_id");
+        $this->db->bind(':company_id', 1);
+        $row = $this->db->single();
+        return $row->total_value ?? 0;
+    }
+
+    public function get_categories_count() {
+        $this->db->query("SELECT COUNT(*) as total FROM item_categories");
+        $row = $this->db->single();
+        return $row->total ?? 0;
+    }
+
+    public function get_stock_by_category() {
+        $this->db->query("
+            SELECT 
+                COALESCE(c.name, 'Uncategorised') as category,
+                SUM(i.quantity) as total_qty,
+                SUM(i.quantity * i.unit_price) as total_value
+            FROM inventory i
+            LEFT JOIN item_categories c ON i.category_id = c.id
+            WHERE i.company_id = :company_id
+            GROUP BY c.id, c.name
+            ORDER BY total_qty DESC
+        ");
+        $this->db->bind(':company_id', 1);
+        return $this->db->resultSet();
+    }
+
+    public function get_recent_orders($limit = 5) {
+        $this->db->query("
+            SELECT order_id, user_id, total_amount, status, date
+            FROM orders
+            ORDER BY date DESC, order_id DESC
+            LIMIT :limit
+        ");
+        $this->db->bind(':limit', $limit);
+        return $this->db->resultSet();
+    }
+
+    public function get_total_orders_count() {
+        $this->db->query("SELECT COUNT(*) as total FROM orders");
+        $row = $this->db->single();
+        return $row->total ?? 0;
+    }
+
+    public function get_total_orders_amount() {
+        $this->db->query("SELECT SUM(total_amount) as total FROM orders");
+        $row = $this->db->single();
+        return $row->total ?? 0;
+    }
+
+
     public function update_item($data) {
         $this->db->query('
             UPDATE inventory 
