@@ -3,6 +3,7 @@
 <div class="container-fluid p-8">
   <!-- Page Header -->
   <?php
+  $profile_data = $data['user_data'];
   $config = [
       'title' => 'Company Profile',
       'description' => 'Manage your company information and settings'
@@ -22,7 +23,7 @@
                   [
                       'id' => 'company-name',
                       'label' => 'Company Name',
-                      'value' => 'SolarTech Solutions Ltd.',
+                      'value' => $profile_data->full_name,
                       'editable' => true,
                       'required' => true,
                       'summaryTarget' => 'summary-name'
@@ -30,7 +31,7 @@
                   [
                       'id' => 'business-email',
                       'label' => 'Business Email',
-                      'value' => 'info@solartech.lk',
+                      'value' => $profile_data->email,
                       'type' => 'email',
                       'editable' => true,
                       'required' => true,
@@ -39,7 +40,7 @@
                   [
                       'id' => 'contact-number',
                       'label' => 'Contact Number',
-                      'value' => '+94 112 345 678',
+                      'value' => $profile_data->phone_number,
                       'editable' => true,
                       'required' => true,
                       'summaryTarget' => 'summary-phone'
@@ -47,86 +48,36 @@
                   [
                       'id' => 'business-address',
                       'label' => 'Business Address',
-                      'value' => '123 Green Energy Park, Colombo 05, Sri Lanka',
+                      'value' => $profile_data->address,
                       'editable' => true,
                       'required' => true,
                       'summaryTarget' => 'summary-location'
                   ],
                   [
-                      'id' => 'registration-number',
-                      'label' => 'Business Registration No.',
-                      'value' => 'BRG12345678',
-                      'editable' => false
-                  ]
-              ]
-          ],
-          [
-              'title' => 'Business Details',
-              'fields' => [
-                  [
-                      'id' => 'established-date',
-                      'label' => 'Established Date',
-                      'value' => '2010',
-                      'type' => 'number',
-                      'editable' => false
-                  ],
-                  [
-                      'id' => 'employee-count',
-                      'label' => 'Number of Employees',
-                      'value' => '50+',
-                      'editable' => true
-                  ],
-                  [
-                      'id' => 'service-areas',
-                      'label' => 'Service Areas',
-                      'value' => 'Western Province, Southern Province',
-                      'editable' => true,
-                      'fieldType' => 'textarea'
-                  ],
-                  [
-                      'id' => 'certification',
-                      'label' => 'Certifications',
-                      'value' => 'ISO 9001:2015, SEA Certified',
-                      'editable' => false
-                  ],
-                  [
-                      'id' => 'specialization',
-                      'label' => 'Specialization',
-                      'value' => 'Commercial Solar Installations',
-                      'editable' => true,
-                      'fieldType' => 'select',
-                      'options' => [
-                          'Residential Solar' => 'Residential Solar Installations',
-                          'Commercial Solar' => 'Commercial Solar Installations',
-                          'Industrial Solar' => 'Industrial Solar Installations',
-                          'Hybrid Systems' => 'Hybrid Systems',
-                          'All Services' => 'All Services'
-                      ]
-                  ],
-                  [
                       'id' => 'website',
                       'label' => 'Website',
-                      'value' => 'www.solartech.lk',
+                      'value' => $profile_data->website,
                       'type' => 'url',
-                      'editable' => true
-                  ]
-              ]
-          ],
-          [
-              'title' => 'Performance Metrics',
-              'fields' => [
+                      'editable' => true,
+                      'required' => true,
+                      'summaryTarget' => 'summary-website'
+                  ], 
                   [
-                      'id' => 'installations-completed',
-                      'label' => 'Total Installations',
-                      'value' => '500+',
-                      'editable' => false
+                      'id' => 'district',
+                      'label' => 'District',
+                      'value' => $profile_data->district,
+                      'editable' => true,
+                      'required' => true,
+                      'summaryTarget' => 'summary-district'
                   ],
                   [
-                      'id' => 'avg-rating',
-                      'label' => 'Average Rating',
-                      'value' => '4.8/5.0',
-                      'editable' => false
-                  ]
+                      'id' => 'register_date',
+                      'label' => 'Register Date',
+                      'value' => $profile_data->register_date,
+                      'editable' => true,
+                      'required' => true,
+                      'summaryTarget' => 'summary-register-date'
+                  ]                
               ]
           ]
       ];
@@ -230,12 +181,10 @@
           <!-- Profile Info -->
           <div class="text-center">
             <img src="<?php echo htmlspecialchars(getAvatarUrl('SolarTech Solutions Ltd.', 140)); ?>" alt="Profile" style="object-fit:cover;">
-            <h5 class="mb-1 fw-bold" id="summary-name">SolarTech Solutions Ltd.</h5>
-            <p class="text-primary small mb-1" id="registration-display">BRG12345678</p>
-            <p class="text-muted small mb-1" id="summary-email">info@solartech.lk</p>
-            <p class="text-muted small mb-1" id="summary-location">123 Green Energy Park, Colombo 05, Sri Lanka</p>
-            <p class="text-muted small mb-1" id="summary-phone">+94 112 345 678</p>
-            <p class="text-muted small mb-3" id="certification-display">ISO 9001:2015, SEA Certified</p>
+            <h5 class="mb-1 fw-bold" id="summary-name"><?php echo htmlspecialchars($profile_data->full_name); ?></h5>
+            <p class="text-muted small mb-1" id="summary-email"><?php echo htmlspecialchars($profile_data->email); ?></p>
+            <p class="text-muted small mb-1" id="summary-location"><?php echo htmlspecialchars($profile_data->address); ?></p>
+            <p class="text-muted small mb-1" id="summary-phone"><?php echo htmlspecialchars($profile_data->phone_number); ?></p>
           </div>
 
           <!-- Divider -->
@@ -256,17 +205,6 @@
               </div>
             </div>
           </div>
-
-          <div class="p-3 bg-light rounded">
-            <div class="mb-2">
-              <small class="text-muted">Service Areas</small>
-              <p class="text-primary small mb-0" id="service-areas-display">Western Province, Southern Province</p>
-            </div>
-            <div>
-              <small class="text-muted">Experience</small>
-              <p class="text-primary small mb-0" id="experience-display">Since 2010</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -282,10 +220,9 @@ document.querySelectorAll('.update-summary').forEach(input => {
     'business-email': 'summary-email',
     'contact-number': 'summary-phone',
     'business-address': 'summary-location',
-    'registration-number': 'registration-display',
-    'certification': 'certification-display',
-    'service-areas': 'service-areas-display',
-    'established-date': 'experience-display'
+    'website': 'summary-website',
+    'district': 'summary-district',
+    'register_date': 'summary-register-date'
   };
   
   if (summaryMap[id]) {
