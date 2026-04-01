@@ -7,9 +7,12 @@
         ];
 
         private $taskModel;
+        private $historyModel;
+
 
         public function __construct(){
             $this->taskModel = $this->model('M_maintenance_task');
+            $this->historyModel = $this->model('M_maintenance_history');
         }
 
         public function tasks(){
@@ -53,10 +56,13 @@
 
         public function history(){
 
+            $history = $this->historyModel->get_agent_history(); 
+
             $data = [
-                'user' => $this->user,
+                'user'    => $this->user,
+                'history' => $history,
             ];
-            
+                    
             $this->view('pages/service_agent/history', $data, layout: 'dashboard');
         }
 

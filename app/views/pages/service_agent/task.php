@@ -521,7 +521,7 @@ function confirmStartTask() {
 
 function confirmCompleteTask() {
     if (!currentTask) return;
-    persistStatus(currentTask.id, 'completed');
+    // persistStatus(currentTask.id, 'completed');
     closeConfirmationModal('completeTaskModal');
     closeTaskModal();
     window.location.href = "<?php echo URLROOT?>/serviceagent/report/" + currentTask.id;

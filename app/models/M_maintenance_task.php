@@ -34,6 +34,8 @@ class M_maintenance_task {
                 ORDER BY sr.request_date DESC
             ");
             $this->db->bind(':agent_id', $_SESSION['user_id'] ?? 0);
+
+          
             return $this->db->resultSet() ?: [];
         } catch (Exception $e) {
             error_log('M_maintenance_task::get_agent_tasks failed: ' . $e->getMessage());
