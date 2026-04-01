@@ -4,6 +4,7 @@ class HomeOwner extends Controller
     private $serviceModel;
     private $smsModel;
     private $dashboardModel;
+    private $profileModel;
 
     private $user = [
         'role' => ROLE_HOMEOWNER,
@@ -15,6 +16,7 @@ class HomeOwner extends Controller
         $this->serviceModel = $this->model('M_Service');
         $this->smsModel = $this->model('M_SMS');
         $this->dashboardModel = $this->model('M_Homeowner_Dashboard');
+        $this->profileModel = $this->model('M_Profile');
 
     }
 
@@ -141,8 +143,10 @@ class HomeOwner extends Controller
 
     public function profile()
     {
+        $user_data = $this->profileModel->getHomeownerProfile($_SESSION['user_id']);
         $data = [
             'user' => $this->user,
+            'user_data' => $user_data
         ];
 
         $this->view('pages/homeowner/profile', $data, 'dashboard');
