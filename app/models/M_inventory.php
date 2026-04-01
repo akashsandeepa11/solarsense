@@ -11,14 +11,14 @@ class M_inventory{
 
     // Get all categories from item_category table
     public function get_categories() {
-        $this->db->query("SELECT id, name FROM item_category ORDER BY name");
+        $this->db->query("SELECT id, name FROM item_categories ORDER BY name");
         return $this->db->resultSet();
     }
 
     // Add new category
     public function add_category($name) {
         try {
-            $this->db->query('INSERT INTO item_category (name) VALUES (:name)');
+            $this->db->query('INSERT INTO item_categories (name) VALUES (:name)');
             $this->db->bind(':name', $name);
             $this->db->execute();
             return $this->db->lastInsertId();
@@ -31,7 +31,7 @@ class M_inventory{
     // Delete category by id
     public function delete_category($id) {
         try {
-            $this->db->query('DELETE FROM item_category WHERE id = :id');
+            $this->db->query('DELETE FROM item_categories WHERE id = :id');
             $this->db->bind(':id', (int)$id);
             return $this->db->execute();
         } catch (Exception $e) {
@@ -81,7 +81,7 @@ class M_inventory{
         $this->db->query("
             SELECT i.*, c.name as category_name 
             FROM inventory i 
-            LEFT JOIN item_category c ON i.category_id = c.id 
+            LEFT JOIN item_categories c ON i.category_id = c.id 
             WHERE i.company_id = :company_id
         ");
         $this->db->bind(':company_id', 1);
@@ -116,7 +116,7 @@ class M_inventory{
         $this->db->query('
             SELECT i.*, c.name as category_name 
             FROM inventory i 
-            LEFT JOIN item_category c ON i.category_id = c.id 
+            LEFT JOIN item_categories c ON i.category_id = c.id 
             WHERE i.inventory_id = :inventory_id
         ');
         $this->db->bind(':inventory_id', $inventory_id);
@@ -124,20 +124,15 @@ class M_inventory{
         
         if ($row) {
             return [
-                'id' => $row->inventory_id,
-                'name' => $row->item_name,
-                'category_id' => $row->category_id,
+                'id'            => $row->inventory_id,
+                'name'          => $row->item_name,
+                'description'   => $row->description ?? '',
+                'category_id'   => $row->category_id,
                 'category_name' => $row->category_name,
-                'quantity' => $row->quantity,
-                'unit_price' => $row->unit_price,
-                'buying_price' => $row->buying_price ?? 0,
-                'opening_stock' => $row->quantity + 10,
-                'on_the_way' => 0,
-                'threshold' => 12,
-                'expiry_date' => 'N/A',
-                'image' => $row->item_image ?? null,
-                'supplier_name' => 'SolarTech Solutions',
-                'supplier_contact' => '011 234 5678',
+                'quantity'      => $row->quantity,
+                'unit_price'    => $row->unit_price,
+                'buying_price'  => $row->buying_price ?? 0,
+                'image'         => $row->item_image ?? null,
             ];
         }
         return null;

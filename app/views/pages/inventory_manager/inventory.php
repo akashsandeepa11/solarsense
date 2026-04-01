@@ -186,8 +186,10 @@ $categories = $data['categories'] ?? [];
                     </label>
                     <div class="image-upload-row" id="addImageUploadRow">
                         <div class="image-upload-box" id="addImageBox"
+                             style="width:80px;height:80px;flex-shrink:0;overflow:hidden;position:relative;"
                              onclick="document.getElementById('itemPhoto').click()">
-                            <img id="addImagePreview" src="" alt="Preview" style="display:none;">
+                            <img id="addImagePreview" src="" alt="Preview"
+                                 style="display:none;width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;">
                             <span class="remove-image-btn" id="addRemoveBtn"
                                   onclick="event.stopPropagation(); removeAddImage();" style="display:none;">
                                 <i class="fas fa-times"></i>
