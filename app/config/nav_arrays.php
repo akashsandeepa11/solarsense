@@ -51,7 +51,6 @@ $inventory_manager_nav = [
         ['title' => 'Dashboard', 'url' => '/inventorymanager/dashboard', 'icon' => 'fa-solid fa-gauge-high'],
         ['title' => 'Inventory', 'url' => '/inventorymanager/inventory', 'icon' => 'fa-solid fa-boxes-stacked'],
         ['title' => 'Purchases', 'url' => '/inventorymanager/purchases', 'icon' => 'fa-solid fa-cart-shopping'],
-        ['title' => 'Suppliers', 'url' => '/inventorymanager/suppliers', 'icon' => 'fa-solid fa-truck-fast'],
         ['title' => 'Reports', 'url' => '/inventorymanager/reports', 'icon' => 'fa-solid fa-file-lines'],
     ],
     'PERSONAL' => [
