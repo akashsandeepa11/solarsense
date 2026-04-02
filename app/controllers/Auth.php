@@ -206,8 +206,7 @@
                     if ($installerModel->add_company($data)) {
                         $data['success'] = true;
 
-                        // Redirect or load success view
-                        flash('register_success', 'Registration successful! We’ll contact you soon.');
+                        setToast('Registration successful! We’ll contact you soon.', 'success');
                         redirect('auth/login'); // or wherever you want
                         return;
                     } else {
@@ -244,7 +243,7 @@
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
                 // Initial load
                 $this->view('pages/auth/installer_registration', [
-                    'user' => $this->user
+                    'user' => $this->userModel
                 ], layout: 'main');
                 return;
             }

@@ -2,6 +2,7 @@
 class HomeOwner extends Controller
 {
     private $serviceModel;
+    private $smsModel;
 
     private $user = [
         'role' => ROLE_HOMEOWNER,
@@ -11,6 +12,7 @@ class HomeOwner extends Controller
     public function __construct()
     {
         $this->serviceModel = $this->model('M_Service');
+        $this->smsModel = $this->model('M_SMS');
     }
 
 

@@ -1,11 +1,5 @@
 <?php
-// Sample task data - In production, this would come from the database
-$taskId = $_GET['taskId'] ?? 'T-2025-001';
-$panelId = $_GET['panelId'] ?? 'P-1001';
-$customerName = 'John Doe';
-$address = '123 Main Street, Colombo 07';
-$issueDescription = 'Inverter Fault Detected';
-$taskDate = date('Y-m-d');
+    $task_id= $data['task_id'];
 ?>
 
 <div class="content-area" style="padding: 1.5rem;">
@@ -13,119 +7,17 @@ $taskDate = date('Y-m-d');
     <?php
     $config = [
         'title' => 'Service Report',
-        'description' => 'Complete the service report for task ' . $taskId,
+        'description' => 'Complete the service report for task ' . $task_id,
         'show_back' => true,
         'back_url' => URLROOT . '/serviceagent/tasks',
         'back_label' => 'Back to Tasks'
     ];
     include __DIR__ . '/../../inc/components/page_header.php';
     ?>
+    
+    <form action="<?php echo URLROOT; ?>/serviceagent/tasks/maintenance_report/<?php echo $task_id; ?>" method="POST">
+        <input type="hidden" name="report_form_submitted" value="1">
 
-    <form action="<?php echo URLROOT; ?>/serviceagent/submitReport" method="POST">
-        
-        <!-- Task Details Section -->
-        <div class="card shadow-sm rounded-xl mb-4">
-            <div class="card-header bg-white border-0 p-4">
-                <h5 class="mb-0 font-semibold d-flex align-items-center">
-                    <i class="fas fa-clipboard-list text-primary mr-2"></i>
-                    Task Details
-                </h5>
-            </div>
-            <div class="card-body p-4">
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <?php
-                        $inputConfig = [
-                            'id' => 'task-id',
-                            'name' => 'task_id',
-                            'label' => 'Task ID',
-                            'type' => 'text',
-                            'value' => $taskId,
-                            'icon' => 'fas fa-hashtag',
-                            'editable' => false,
-                            'required' => false
-                        ];
-                        include __DIR__ . '/../../inc/components/input_field.php';
-                        ?>
-                    </div>
-                    <div class="col-md-6">
-                        <?php
-                        $inputConfig = [
-                            'id' => 'panel-id',
-                            'name' => 'panel_id',
-                            'label' => 'Panel ID',
-                            'type' => 'text',
-                            'value' => $panelId,
-                            'icon' => 'fas fa-solar-panel',
-                            'editable' => false,
-                            'required' => false
-                        ];
-                        include __DIR__ . '/../../inc/components/input_field.php';
-                        ?>
-                    </div>
-                    <div class="col-md-6">
-                        <?php
-                        $inputConfig = [
-                            'id' => 'customer-name',
-                            'name' => 'customer_name',
-                            'label' => 'Customer Name',
-                            'type' => 'text',
-                            'value' => $customerName,
-                            'icon' => 'fas fa-user',
-                            'editable' => false,
-                            'required' => false
-                        ];
-                        include __DIR__ . '/../../inc/components/input_field.php';
-                        ?>
-                    </div>
-                    <div class="col-md-6">
-                        <?php
-                        $inputConfig = [
-                            'id' => 'task-date',
-                            'name' => 'task_date',
-                            'label' => 'Task Date',
-                            'type' => 'date',
-                            'value' => $taskDate,
-                            'icon' => 'fas fa-calendar',
-                            'editable' => false,
-                            'required' => false
-                        ];
-                        include __DIR__ . '/../../inc/components/input_field.php';
-                        ?>
-                    </div>
-                    <div class="col-12">
-                        <?php
-                        $inputConfig = [
-                            'id' => 'address',
-                            'name' => 'address',
-                            'label' => 'Address',
-                            'type' => 'text',
-                            'value' => $address,
-                            'icon' => 'fas fa-map-marker-alt',
-                            'editable' => false,
-                            'required' => false
-                        ];
-                        include __DIR__ . '/../../inc/components/input_field.php';
-                        ?>
-                    </div>
-                    <div class="col-12">
-                        <?php
-                        $textareaConfig = [
-                            'id' => 'issue-description',
-                            'name' => 'issue_description',
-                            'label' => 'Issue Description',
-                            'value' => $issueDescription,
-                            'icon' => 'fas fa-exclamation-circle',
-                            'editable' => false,
-                            'required' => false,
-                            'rows' => 2
-                        ];
-                        include __DIR__ . '/../../inc/components/textarea_field.php';
-                        ?>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Service Details Section -->
         <div class="card shadow-sm rounded-xl mb-4">
@@ -251,21 +143,7 @@ $taskDate = date('Y-m-d');
                         include __DIR__ . '/../../inc/components/select_field.php';
                         ?>
                     </div>
-                    <div class="col-md-6">
-                        <?php
-                        $inputConfig = [
-                            'id' => 'technician-signature',
-                            'name' => 'technician_signature',
-                            'label' => 'Technician Name',
-                            'type' => 'text',
-                            'value' => '',
-                            'icon' => 'fas fa-signature',
-                            'editable' => true,
-                            'required' => true
-                        ];
-                        include __DIR__ . '/../../inc/components/input_field.php';
-                        ?>
-                    </div>
+                   
                 </div>
 
                 <!-- Additional Information -->
@@ -286,7 +164,7 @@ $taskDate = date('Y-m-d');
             <a href="<?php echo URLROOT; ?>/serviceagent/tasks" class="btn btn-secondary px-4">
                 <i class="fas fa-times mr-2"></i>Cancel
             </a>
-            <button type="submit" class="btn btn-success px-4">
+            <button type="submit" name="submit_report" value="1" class="btn btn-success px-4">
                 <i class="fas fa-paper-plane mr-2"></i>Submit Report
             </button>
         </div>
@@ -302,18 +180,23 @@ $taskDate = date('Y-m-d');
     font-size: 1.25rem;
 }
 
-/* Ensure proper spacing for form elements */
-.input, .textarea, .select {
-    margin-bottom: 1.5rem;
+/* Service form section spacing improvements */
+.card-body .row {
+    gap: 1.5rem 0;
+    row-gap: 1.5rem;
 }
 
-/* Remove margin from last element in each row */
-.row .col-12:last-child .input,
-.row .col-12:last-child .textarea,
-.row .col-12:last-child .select,
-.row .col-md-6:last-child .input,
-.row .col-md-6:last-child .textarea,
-.row .col-md-6:last-child .select {
+.card-body [class*="col-"] {
+    display: flex;
+    flex-direction: column;
+}
+
+.card-body [class*="col-"] > * {
+    width: 100%;
+}
+
+/* Ensure consistent spacing between all form fields */
+.card-body [class*="col-"] {
     margin-bottom: 0;
 }
 
