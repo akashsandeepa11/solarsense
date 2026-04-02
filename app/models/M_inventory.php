@@ -210,6 +210,95 @@ class M_inventory{
         }
         return null;
     }
-}                    
+
+    // ── Orders (used by Purchases page) ──────────────────────────────────────
+
+    public function get_all_orders() {
+        $this->db->query("
+            SELECT o.order_id, o.user_id, o.total_amount, o.status, o.date,
+                   COUNT(oi.order_item_id) as item_count
+            FROM orders o
+            LEFT JOIN order_item oi ON oi.order_id = o.order_id
+            GROUP BY o.order_id, o.user_id, o.total_amount, o.status, o.date
+            ORDER BY o.date DESC, o.order_id DESC
+        ");
+        return $this->db->resultSet();
+    }
+
+    public function get_order_stats() {
+        $this->db->query("
+            SELECT
+                COUNT(*) as total_orders,
+                SUM(CASE WHEN status = 'pending'   THEN 1 ELSE 0 END) as pending_count,
+                SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_count,
+                SUM(total_amount) as total_value
+            FROM orders
+        ");
+        return $this->db->single();
+    }
+
+    public function get_orders_by_status($status) {
+        $this->db->query("
+            SELECT o.order_id, o.user_id, o.total_amount, o.status, o.date,
+                   COUNT(oi.order_item_id) as item_count
+            FROM orders o
+            LEFT JOIN order_item oi ON oi.order_id = o.order_id
+            WHERE o.status = :status
+            GROUP BY o.order_id, o.user_id, o.total_amount, o.status, o.date
+            ORDER BY o.date DESC
+        ");
+        $this->db->bind(':status', $status);
+        return $this->db->resultSet();
+    }
+
+    public function create_order($order, $cartItems) {
+        try {
+            $this->db->beginTransaction();
+
+            // 1) Insert into orders
+            $this->db->query("
+                INSERT INTO orders (user_id, total_amount, status, date)
+                VALUES (:user_id, :total_amount, :status, :date)
+            ");
+            $this->db->bind(':user_id',      $order['user_id']);
+            $this->db->bind(':total_amount', $order['total_amount']);
+            $this->db->bind(':status',       $order['status']);
+            $this->db->bind(':date',         $order['date']);
+            $this->db->execute();
+
+            $orderId = $this->db->lastInsertId();
+
+            foreach ($cartItems as $item) {
+                $inventoryId = (int)($item['id']  ?? 0);
+                $qty         = (int)($item['qty'] ?? 1);
+
+                // 2) Insert order_item — DB trigger automatically deducts inventory
+                $this->db->query("
+                    INSERT INTO order_item (order_id, inventory_id, quantity)
+                    VALUES (:order_id, :inventory_id, :quantity)
+                ");
+                $this->db->bind(':order_id',     $orderId);
+                $this->db->bind(':inventory_id', $inventoryId);
+                $this->db->bind(':quantity',     $qty);
+                $this->db->execute();
+                // Trigger 'reduce_inventory_on_order_item' fires here automatically
+            }
+
+            $this->db->commit();
+            return $orderId;
+
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
+    public function update_order_status($orderId, $status) {
+        $this->db->query("UPDATE orders SET status = :status WHERE order_id = :order_id");
+        $this->db->bind(':status',   $status);
+        $this->db->bind(':order_id', (int)$orderId);
+        $this->db->execute();
+    }
+}
 
 ?>

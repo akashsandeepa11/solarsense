@@ -6,7 +6,11 @@
     define("DB_HOST", getenv('DB_HOST')); 
     define("DB_USER", getenv('DB_USER')); 
     define("DB_PASSWORD", getenv('DB_PASSWORD')); 
-    define("DB_NAME", getenv('DB_NAME'));  
+    define("DB_NAME", getenv('DB_NAME'));
+    // PayHere payment gateway
+    define("PAYHERE_MERCHANT_ID",     getenv('PAYHERE_MERCHANT_ID'));
+    define("PAYHERE_MERCHANT_SECRET", getenv('PAYHERE_MERCHANT_SECRET'));
+    define("PAYHERE_SANDBOX",         getenv('PAYHERE_SANDBOX') === 'true');
     // APPROOT 
     define("APPROOT", dirname(dirname(__FILE__))); 
     // URLROOT - dynamic for both local and hosted environments

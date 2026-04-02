@@ -28,6 +28,10 @@ include __DIR__ . '/../../inc/components/page_header.php';
             <p>Items: <span id="summary-count">0</span></p>
             <p>Total: <strong>Rs. <span id="summary-total">0.00</span></strong></p>
             <button class="btn btn-primary checkout-btn" id="checkoutBtn" disabled>Proceed to Checkout</button>
+        <!-- hidden form posts cart to PHP for hash generation -->
+        <form id="checkoutForm" method="POST" action="<?php echo URLROOT; ?>/homeowner/checkout" style="display:none;">
+            <input type="hidden" name="cart" id="cartPayload">
+        </form>
         </div>
     </div>
 </div>
@@ -177,7 +181,10 @@ function renderCart() {
 }
 
 document.getElementById('checkoutBtn').addEventListener('click', () => {
-    alert('Checkout functionality coming soon.');
+    const cart = getCart();
+    if (cart.length === 0) return;
+    document.getElementById('cartPayload').value = JSON.stringify(cart);
+    document.getElementById('checkoutForm').submit();
 });
 
 renderCart();

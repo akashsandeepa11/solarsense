@@ -298,11 +298,20 @@
         }
 
         // --- Purchases Management Page ---
-        public function purchases(){
+        public function purchases($statusFilter = 'all'){
+            $orders = $statusFilter !== 'all'
+                ? $this->inventoryModel->get_orders_by_status($statusFilter)
+                : $this->inventoryModel->get_all_orders();
+
+            $stats  = $this->inventoryModel->get_order_stats();
+
             $data = [
-                'user' => $this->user,
+                'user'          => $this->user,
+                'orders'        => $orders  ?? [],
+                'stats'         => $stats,
+                'status_filter' => $statusFilter,
             ];
-            
+
             $this->view('pages/inventory_manager/purchases', $data, layout: 'dashboard');
         }
 
