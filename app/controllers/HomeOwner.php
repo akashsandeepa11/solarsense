@@ -6,6 +6,9 @@ class HomeOwner extends Controller
     private $dashboardModel;
     private $profileModel;
 
+    private $generationModel;
+    private $systemModel;
+
     private $user = [
         'role' => ROLE_HOMEOWNER,
     ];
@@ -17,6 +20,8 @@ class HomeOwner extends Controller
         $this->smsModel = $this->model('M_SMS');
         $this->dashboardModel = $this->model('M_Homeowner_Dashboard');
         $this->profileModel = $this->model('M_Profile');
+        $this->generationModel = $this->model('M_Solargeneration');
+        $this->systemModel = $this->model('M_Solarsystem');
 
     }
 
@@ -27,6 +32,19 @@ class HomeOwner extends Controller
             $year = isset($_GET['year']) ? (int) $_GET['year'] : (int) date('Y');
             $stats = $this->dashboardModel->getStats($_SESSION['user_id']);
             $monthly = $this->dashboardModel->getMonthlyGeneration($_SESSION['user_id'], $year);
+            $system = $this->systemModel->findById($_SESSION['user_id']);
+            $systemId = $system ? (int) $system['system_id'] : null;
+
+            // Extract the 12 monthly expected values, defaulting to 0 if not yet calculated
+
+            $expectedMonthly = array_fill(0, 12, 0);
+
+            if ($systemId !== null) {
+                $estimate = $this->generationModel->findLatestBySystem($systemId);
+            }
+
+            $data['expected_generation'] = $expectedMonthly;
+
 
             // Prepare chart arrays
             $labels = [];
@@ -41,7 +59,8 @@ class HomeOwner extends Controller
                 'stats' => $stats,
                 'chart_labels' => $labels,
                 'chart_generation' => $generation,
-                'selected_year'    => $year,
+                'selected_year' => $year,
+                'expected_generation' => $data['expected_generation']
             ];
 
             $this->view('pages/homeowner/dashboard', $data, layout: 'dashboard');
