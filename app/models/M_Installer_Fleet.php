@@ -9,75 +9,6 @@ class M_Installer_Fleet
         $this->db = new Database();
     }
 
-    //receive verification request
-//     public function add_installer_verification($companyData)
-//     {
-//         try {
-//             $this->db->beginTransaction();
-
-//             $this->db->query('
-//     INSERT INTO installer_company (
-//         company_name,
-//         address,
-//         num_employees,
-//         website,
-//         district,
-//         postal_code,
-//         register_date,
-//         contact,
-//         email,
-//         status,
-//         request_date,
-//         service_type,
-//         years_experience,
-//         complete_project,
-//         service_areas
-//     ) VALUES (
-//         :company_name,
-//         :address,
-//         :num_employees,
-//         :website,
-//         :district,
-//         :postal_code,
-//         NOW(),
-//         :contact,
-//         :email,
-//         :status,
-//         NOW(),
-//         :service_type,
-//         :years_experience,
-//         :complete_project,
-//         :service_areas
-//     )
-// ');
-
-
-//             $this->db->bind(':company_name', $companyData['company_name']);
-//             $this->db->bind(':address', $companyData['address']);
-//             $this->db->bind(':num_employees', $companyData['number_of_employees']);
-//             $this->db->bind(':website', $companyData['website']);
-//             $this->db->bind(':district', $companyData['district']);
-//             $this->db->bind(':postal_code', $companyData['postal_code']);
-//             $this->db->bind(':contact', $companyData['contact_number']);
-//             $this->db->bind(':email', $companyData['email']);
-//             $this->db->bind(':status', 'Pending');
-//             $this->db->bind(':service_type', $companyData['service_type']);
-//             $this->db->bind(':years_experience', $companyData['years_of_experience']);
-//             $this->db->bind(':complete_project', $companyData['completed_projects']);
-//             $this->db->bind(':service_areas', $companyData['service_areas']);
-
-//             $this->db->execute();
-//             $this->db->commit();
-
-//             return true;
-
-//         } catch (Exception $e) {
-//             $this->db->rollBack();
-//             error_log($e->getMessage());
-//             return false;
-//         }
-//     }
-
     public function get_verifications()
     {
         $this->db->query("SELECT company_id AS companyId, company_name, address, contact, email, request_date, status FROM installer_company ORDER BY request_date DESC");
@@ -108,7 +39,7 @@ class M_Installer_Fleet
             WHERE company_id = :company_id
         ");
             $this->db->bind(':company_id', $companyId);
-            $company = $this->db->single_assoc();
+            $company = $this->db->single();
 
             if (!$company) {
                 throw new Exception("Company not found.");
@@ -119,10 +50,10 @@ class M_Installer_Fleet
             INSERT INTO user (email, password, type, full_name)
             VALUES (:email, :password, :type, :full_name)
         ');
-            $this->db->bind(':email', $company['email']);
+            $this->db->bind(':email', $company->email);
             $this->db->bind(':password', password_hash($plainPassword, PASSWORD_DEFAULT));
             $this->db->bind(':type', ROLE_INSTALLER_ADMIN);
-            $this->db->bind(':full_name', $company['company_name']);
+            $this->db->bind(':full_name', $company->company_name);
             $this->db->execute();
 
             $userId = $this->db->lastInsertId();
@@ -141,7 +72,7 @@ class M_Installer_Fleet
 
             // 6. RETURN plaintext password + email
             return [
-                'email' => $company['email'],
+                'email' => $company->email,
                 'password' => $plainPassword
             ];
 

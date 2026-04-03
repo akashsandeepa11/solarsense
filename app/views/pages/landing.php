@@ -41,7 +41,7 @@
             </div>
 
             <div class="nav__buttons d-flex gap-2">
-                <a href="<?php echo URLROOT; ?>/auth/installer_registration" class="btn btn-primary-outline btn-sm">Installer Registration</a>
+                <a href="<?php echo URLROOT; ?>/auth/installer_registration" class="btn btn-primary-outline btn-sm">Solar Company Registration</a>
                 <a href="<?php echo URLROOT; ?>/auth/login" class="btn btn-primary btn-sm">Login</a>
             </div>
 
@@ -104,7 +104,7 @@
                     <div class="hero__image">
                         <div class="hero__image-wrapper">
                             <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&h=600&fit=crop" alt="Solar powered home">
-                            <div class="energy-indicator">
+                            <!-- <div class="energy-indicator">
                                 <div class="energy-indicator__icon">
                                     <i class="fas fa-bolt"></i>
                                 </div>
@@ -112,7 +112,7 @@
                                     <span class="energy-value">4.2kW</span>
                                     <span class="energy-label">Generated Today</span>
                                 </div>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                 </div>

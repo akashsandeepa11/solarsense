@@ -37,7 +37,7 @@ class Mail extends Controller
             $mail->Subject = 'Your Account Credentials - SolarSense';
 
             // debug
-            $mail->SMTPDebug = 2;
+            $mail->SMTPDebug = 0;
             $mail->Debugoutput = 'html';
 
 

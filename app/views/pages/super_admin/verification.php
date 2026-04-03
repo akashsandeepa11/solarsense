@@ -334,9 +334,10 @@ include __DIR__ . '/../../inc/models/confirmation_modal.php';
                 // Update confirmation action
                 const confirmBtn = document.querySelector('#verifyModal .btn-success');
                 if (confirmBtn) {
-                    confirmBtn.onclick = function() {
-                        window.location.href = "<?php echo URLROOT?>/superadmin/verify_company/" + currentVerificationId;
-                    };
+                    // Set the anchor href so default navigation works reliably
+                    confirmBtn.setAttribute('href', "<?php echo URLROOT; ?>/superadmin/verify_company/" + currentVerificationId);
+                    // Remove any existing onclick handler to avoid race with default navigation
+                    confirmBtn.onclick = null;
                 }
                 
                 showConfirmationModal('verifyModal');
@@ -375,9 +376,10 @@ include __DIR__ . '/../../inc/models/confirmation_modal.php';
                 // Update confirmation action
                 const confirmBtn = document.querySelector('#verifyModal .btn-success');
                 if (confirmBtn) {
-                    confirmBtn.onclick = function() {
-                        window.location.href = "<?php echo URLROOT?>/superadmin/verify_company/" + currentVerificationId;
-                    };
+                    // Set the anchor href so default navigation works reliably
+                    confirmBtn.setAttribute('href', "<?php echo URLROOT; ?>/superadmin/verify_company/" + currentVerificationId);
+                    // Remove any existing onclick handler to avoid race with default navigation
+                    confirmBtn.onclick = null;
                 }
                 
                 showConfirmationModal('verifyModal');
