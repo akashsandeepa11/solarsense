@@ -12,6 +12,39 @@
             $this->inventoryModel = $this->model('M_inventory');
         }
 
+        // public function generation_test(){
+        //     $data = [
+        //         'user' => $this->user,
+        //     ];
+        
+        //     require_once APPROOT . '/api/generation_api.php';
+        
+        //     $result = getSolarGenerationByMonth(
+        //         month: JAN, 
+        //         systemCapacity: 5,
+        //         moduleType: 0,
+        //         losses: 14,
+        //         arrayType: 1,
+        //         tilt: 10,
+        //         azimuth: 180,
+        //         lat: DISTRICTS[COLOMBO]['lat'],
+        //         lon: DISTRICTS[COLOMBO]['lon'],
+        //         apiKey: NREL_API_KEY
+        //     );
+
+        //     if ($result['success']) {
+        //         echo "Month: " . $result['month_number'] . PHP_EOL;
+        //         echo "Generation: " . round($result['generation_kwh'], 2) . " kWh" . PHP_EOL;
+        //     } else {
+        //         echo "Error: " . $result['message'] . PHP_EOL;
+            
+        //         if (isset($result['errors'])) {
+        //             print_r($result['errors']);
+        //         }
+        //     }
+            
+        // }
+
         public function dashboard($page='index'){
 
             if($page=='index'){

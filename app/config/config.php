@@ -32,4 +32,7 @@
     }
     // WEBSITE NAME 
     define("SITENAME", "SolarSense"); 
+
+    // NREL API Key
+    define("NREL_API_KEY", getenv('NREL_API_KEY'));
 ?>
