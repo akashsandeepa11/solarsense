@@ -8,6 +8,7 @@ class InstallerAdmin extends Controller
     private $fleetModel;
     private $authModel;
     private $teamModel;
+    private $managerModel;
 
     private $user = [
         'role' => ROLE_INSTALLER_ADMIN,
@@ -19,6 +20,7 @@ class InstallerAdmin extends Controller
         $this->fleetModel = $this->model('M_Fleet');
         $this->authModel = $this->model('M_Auth');
         $this->teamModel = $this->model('M_Team');
+        $this->managerModel = $this->model('M_Manager');
     }
 
     public function dashboard($page = 'dashboard')
@@ -1334,7 +1336,7 @@ class InstallerAdmin extends Controller
     }
 
     // Add Manager
-    public function add_manager($managerType = 'operation_managers')
+    public function add_manager($managerType)
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Process form submission
@@ -1351,8 +1353,10 @@ class InstallerAdmin extends Controller
                 'address' => trim($_POST['address'] ?? ''),
                 'district' => trim($_POST['district'] ?? ''),
                 'joinDate' => trim($_POST['joinDate'] ?? ''),
-                'status' => trim($_POST['status'] ?? 'Active'),
+                'specialization' => trim($_POST['specialization'] ?? ''),
                 'experienceLevel' => trim($_POST['experienceLevel'] ?? ''),
+                'teamSize' => trim($_POST['teamSize'] ?? ''),
+                'status' => trim($_POST['status'] ?? 'Active'),
                 'certifications' => trim($_POST['certifications'] ?? ''),
                 'emergencyContactName' => trim($_POST['emergencyContactName'] ?? ''),
                 'emergencyContactNumber' => trim($_POST['emergencyContactNumber'] ?? ''),
@@ -1365,16 +1369,21 @@ class InstallerAdmin extends Controller
                 'address_err' => '',
                 'district_err' => '',
                 'joinDate_err' => '',
-                'password_err' => '',
-                'confirmPassword_err' => '',
+                'specialization_err' => '',
+                'experienceLevel_err' => '',
+                'teamSize_err' => '',
+                'status_err' => ''
             ];
 
             // Add operation manager specific fields
             if ($managerType === 'operation_managers') {
                 $data['specialization'] = trim($_POST['specialization'] ?? '');
                 $data['teamSize'] = trim($_POST['teamSize'] ?? '');
+                $data['experienceLevel'] = trim($_POST['experienceLevel'] ?? '');
+                
                 $data['specialization_err'] = '';
                 $data['teamSize_err'] = '';
+                $data['experienceLevel_err'] = '';
             }
 
             // Add inventory manager specific fields
@@ -1404,6 +1413,11 @@ class InstallerAdmin extends Controller
             if (empty($data['nic'])) {
                 $data['nic_err'] = 'Please enter NIC/ID number';
             }
+
+            if (empty($data['address'])) {
+                $data['address_err'] = 'Please enter address';
+            }
+
             if (empty($data['district'])) {
                 $data['district_err'] = 'Please select district';
             }
@@ -1420,6 +1434,19 @@ class InstallerAdmin extends Controller
                 if (empty($data['teamSize'])) {
                     $data['teamSize_err'] = 'Please enter team size';
                 }
+                if (empty($data['experienceLevel'])) {
+                    $data['experienceLevel_err'] = 'Please select experience level';
+                }
+                if (empty($data['status'])) {
+                    $data['status_err'] = 'Please select status';
+                }
+                if (empty($data['emergencyContactName'])) {
+                    $data['emergencyContactName_err'] = 'Please enter emergency contact name';
+                }
+                if (empty($data['emergencyContactNumber'])) {
+                    $data['emergencyContactNumber_err'] = 'Please enter emergency contact number';
+                }
+
             }
 
             // Validate inventory manager specific fields
@@ -1432,6 +1459,16 @@ class InstallerAdmin extends Controller
                 }
             }
 
+            // Add creation date only for new managers
+            if (($data['mode'] ?? 'add') === 'add') {
+                $data['created_date'] = date('Y-m-d H:i:s');
+            }
+
+            // Prepare user data for model (don't overwrite $data used for the view/validation)
+            $userData = [
+                'email' => $data['email']
+            ];
+
             // Check if there are any errors
             $hasErrors = false;
             foreach ($data as $key => $value) {
@@ -1441,11 +1478,74 @@ class InstallerAdmin extends Controller
                 }
             }
 
-            if (!$hasErrors) {
-                // TODO: Add manager to database
-                // For now, just redirect with success message
-                flash('manager_message', 'Manager added successfully', 'alert alert-success');
-                redirect('installeradmin/managers/' . $managerType);
+            if(!$hasErrors) {
+                // Call model to save data
+                if ($data['mode'] === 'add'){
+                // Check if email already exists
+                    if ($this->authModel->findUserByEmail($data['email'])) {
+                        $data['email_err'] = 'Email is already registered';
+                        $this->view('pages/installer_admin/add_manager', $data, layout: 'dashboard');
+                        return;
+                    }
+
+                    // Check if NIC already exists
+                    if ($this->teamModel->nic_exists($data['nic'])) {
+                        $data['nic_err'] = 'NIC/ID Number is already registered';
+                        $this->view('pages/installer_admin/add_' . $managerType, $data, layout: 'dashboard');
+                        return;
+                    }
+
+                    if($managerType === 'operation_managers') {
+                        $createResult = $this->managerModel->add_operation_manager($data);
+                        if ($createResult && is_array($createResult) && !empty($createResult['success'])) {
+                            // Send credentials email
+                            $plainPassword = $createResult['password'] ?? '';
+                            $recipientEmail = $createResult['email'] ?? $data['email'];
+                            $mailSent = sendWelcomeEmail($recipientEmail, $recipientEmail, $plainPassword);
+
+                            if ($mailSent) {
+                                setToast('Operation Manager Added Successfully', 'success');
+                            } else {
+                                setToast('Operation Manager added but failed to send email.', 'warning');
+                            }
+
+                            redirect('installeradmin/managers/' . $managerType);
+                        } else {
+                            setToast('Failed to add operation manager. Please try again.', 'error');
+                            $this->view('pages/installer_admin/add_manager', $data, layout: 'dashboard');
+                        }
+                    } elseif ($managerType === 'inventory_managers') {
+                        $createResult = $this->managerModel->add_inventory_manager($data);
+                        if ($createResult && is_array($createResult) && !empty($createResult['success'])) {
+                            // Send credentials email
+                            $plainPassword = $createResult['password'] ?? '';
+                            $recipientEmail = $createResult['email'] ?? $data['email'];
+                            $mailSent = sendWelcomeEmail($recipientEmail, $recipientEmail, $plainPassword);
+
+                            if ($mailSent) {
+                                setToast('Inventory Manager Added Successfully', 'success');
+                            } else {
+                                setToast('Inventory Manager added but failed to send email.', 'warning');
+                            }
+
+                            redirect('installeradmin/managers/' . $managerType);
+                        } else {
+                            setToast('Failed to add inventory manager. Please try again.', 'error');
+                            $this->view('pages/installer_admin/add_manager', $data, layout: 'dashboard');
+                        }
+                    }
+                    
+                } 
+                // else {
+                //     // Update mode
+                //     if ($this->teamModel->update_operation_manager($data)) {
+                //         setToast('Operation Manager Updated Successfully', 'success');
+                //         redirect('installeradmin/managers/' . $managerType);
+                //     } else {
+                //         setToast('Failed to update operation manager. Please try again.', 'error');
+                //         $this->view('pages/installer_admin/add_manager', $data, layout: 'dashboard');
+                //     }
+                // }
             } else {
                 // Load view with errors
                 $this->view('pages/installer_admin/add_manager', $data, layout: 'dashboard');
