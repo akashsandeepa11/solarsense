@@ -789,8 +789,19 @@ class InstallerAdmin extends Controller
                         return;
                     }
 
-                    if ($this->teamModel->add_service_agent($userData, $agentData)) {
-                        setToast('Service Agent Added Successfully', 'success');
+                    $createResult = $this->teamModel->add_service_agent($userData, $agentData);
+                    if ($createResult && is_array($createResult) && !empty($createResult['success'])) {
+                        // Send credentials email
+                        $plainPassword = $createResult['password'] ?? '';
+                        $recipientEmail = $createResult['email'] ?? $data['email'];
+                        $mailSent = sendWelcomeEmail($recipientEmail, $recipientEmail, $plainPassword);
+
+                        if ($mailSent) {
+                            setToast('Service Agent Added Successfully', 'success');
+                        } else {
+                            setToast('Service Agent added but failed to send email.', 'warning');
+                        }
+
                         redirect('installeradmin/team');
                     } else {
                         setToast('Failed to add service agent. Please try again.', 'error');
