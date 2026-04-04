@@ -1,5 +1,12 @@
 <?php
-    // --- PHP Setup for Dummy Data ---
+    $total_op_managers = isset($data['total_op_managers']) ? $data['total_op_managers'] : '0';
+    $active_tasks = isset($data['active_tasks']) ? $data['active_tasks'] : '0';
+    $pending_tasks = isset($data['pending_tasks']) ? $data['pending_tasks'] : '0';
+    $completed_tasks = isset($data['completed_tasks']) ? $data['completed_tasks'] : '0';
+    
+    $total_inv_managers = isset($data['total_inv_managers']) ? $data['total_inv_managers'] : '0';
+    $active_inv = isset($data['active_inv']) ? $data['active_inv'] : '0';
+    $low_stock_items = isset($data['low_stock_items']) ? $data['low_stock_items'] : '0';
 
     // Get manager type from controller
     $managerType = isset($data['managerType']) ? $data['managerType'] : 'operation_managers';
@@ -7,18 +14,17 @@
 
     // Summary Card Data for Operation Managers
     $operation_managers_stats = [
-        ['label' => 'Total Operation Managers', 'value' => '12', 'icon' => 'fas fa-person-dots-from-line', 'color' => 'primary'],
-        ['label' => 'Active Operations', 'value' => '8', 'icon' => 'fas fa-list-check', 'color' => 'success'],
-        ['label' => 'Pending Tasks', 'value' => '5', 'icon' => 'fas fa-clipboard-list', 'color' => 'warning'],
-        ['label' => 'Completed This Month', 'value' => '34', 'icon' => 'fas fa-check-circle', 'color' => 'success']
+        ['label' => 'Total Operation Managers', 'value' => $total_op_managers, 'icon' => 'fas fa-person-dots-from-line', 'color' => 'primary'],
+        ['label' => 'Active Operations', 'value' => $active_tasks, 'icon' => 'fas fa-list-check', 'color' => 'success'],
+        ['label' => 'Pending Tasks', 'value' => $pending_tasks, 'icon' => 'fas fa-clipboard-list', 'color' => 'warning'],
+        ['label' => 'Completed This Month', 'value' => $completed_tasks, 'icon' => 'fas fa-check-circle', 'color' => 'success']
     ];
 
     // Summary Card Data for Inventory Managers
     $inventory_managers_stats = [
-        ['label' => 'Total Inventory Managers', 'value' => '8', 'icon' => 'fas fa-person-dolly', 'color' => 'primary'],
-        ['label' => 'Active Inventory', 'value' => '245', 'icon' => 'fas fa-boxes-stacked', 'color' => 'success'],
-        ['label' => 'Low Stock Items', 'value' => '3', 'icon' => 'fas fa-exclamation-triangle', 'color' => 'warning'],
-        ['label' => 'Stock Requests', 'value' => '12', 'icon' => 'fas fa-truck-fast', 'color' => 'info']
+        ['label' => 'Total Inventory Managers', 'value' => $total_inv_managers, 'icon' => 'fas fa-person-dolly', 'color' => 'primary'],
+        ['label' => 'Active Inventory', 'value' => $active_inv, 'icon' => 'fas fa-boxes-stacked', 'color' => 'success'],
+        ['label' => 'Low Stock Items', 'value' => $low_stock_items, 'icon' => 'fas fa-exclamation-triangle', 'color' => 'warning'],
     ];
 
     // Determine which stats to show
@@ -158,8 +164,7 @@
             ['key' => 'specialization', 'label' => 'Specialization'],
             ['key' => 'district', 'label' => 'District'],
             ['key' => 'status', 'label' => 'Status'],
-            ['key' => 'pending_tasks', 'label' => 'Pending Tasks'],
-            ['key' => 'performance', 'label' => 'Performance Score']
+            ['key' => 'pending_tasks', 'label' => 'Pending Tasks']
         ] : [
             ['key' => 'name', 'label' => 'Manager Name'],
             ['key' => 'warehouse', 'label' => 'Warehouse Location'],
@@ -192,13 +197,6 @@
                                     <span class="status-dot ' . getStatusClass($row['status'] ?? 'inactive') . ' mr-2"></span>
                                     ' . htmlspecialchars($row['status'] ?? 'N/A') . '
                                 </div>';
-                    }
-                ],
-                [
-                    'key' => 'performance',
-                    'render' => function($row) {
-                        $performance = isset($row['performance']) ? $row['performance'] : '0';
-                        return htmlspecialchars($performance) . '%';
                     }
                 ],
                 [

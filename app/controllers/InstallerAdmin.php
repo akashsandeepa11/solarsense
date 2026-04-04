@@ -3,7 +3,6 @@
 require_once APPROOT . '/helpers/Mail_Helper.php';
 
 class InstallerAdmin extends Controller
-
 {
     private $fleetModel;
     private $authModel;
@@ -628,31 +627,51 @@ class InstallerAdmin extends Controller
 
     // --- Team Management ---
     public function team($page = 'dashboard', $agentId = null)
-    {
+{
+    // 1. Get the current logged-in user's company ID
+    $userId = $_SESSION['user_id'] ?? null;
+    $companyId = $this->teamModel->get_company_id_by_user($userId);
 
-        if ($page === 'add_service_agent') {
-            return $this->add_service_agent();
-        }
-
-        if ($page === 'agent_details') {
-            return $this->agent_details($agentId);
-        }
-
-        if ($page === 'edit_agent') {
-            return $this->edit_agent($agentId);
-        }
-
-        if ($page === 'delete_agent') {
-            return $this->delete_agent($agentId);
-        }
-
-        $data = [
-            'user' => $this->user,
-            'agents' => $this->teamModel->get_service_agents_by_company(1)
-        ];
-
-        $this->view('pages/common/team', $data, layout: 'dashboard');
+    if (!$companyId) {
+        setToast('Unauthorized access or company not found.', 'error');
+        redirect('pages/login');
+        return;
     }
+
+    // 2. Routing logic for sub-pages
+    if ($page === 'add_service_agent') {
+        return $this->add_service_agent();
+    }
+    if ($page === 'agent_details') {
+        return $this->agent_details($agentId);
+    }
+    if ($page === 'edit_agent') {
+        return $this->edit_agent($agentId);
+    }
+    if ($page === 'delete_agent') {
+        return $this->delete_agent($agentId);
+    }
+
+    // 3. Fetch statistics using the companyId
+    $total_agents_row = $this->teamModel->get_total_agents($companyId);
+    $active_agents_row = $this->teamModel->get_active_agents($companyId);
+    $total_tasks_row = $this->teamModel->get_total_tasks($companyId);
+    $pending_tasks_row = $this->teamModel->get_pending_tasks($companyId);
+
+    // 4. Prepare data for the view
+    $data = [
+        'user' => $this->user,
+        'agents' => $this->teamModel->get_service_agents_by_company($companyId),
+        'stats' => [
+            'total_agents' => $total_agents_row->total_agents ?? 0,
+            'active_agents' => $active_agents_row->active_agents ?? 0,
+            'total_tasks' => $total_tasks_row->total_tasks ?? 0,
+            'pending_tasks' => $pending_tasks_row->pending_tasks ?? 0
+        ]
+    ];
+
+    $this->view('pages/common/team', $data, layout: 'dashboard');
+}
 
     public function add_service_agent()
     {
@@ -1110,6 +1129,23 @@ class InstallerAdmin extends Controller
 
     public function managers($tab = 'operation_managers', $id = null, $action = null)
     {
+        $total_op_managers = $this->managerModel->get_total_operation_managers();
+        $active_tasks = $this->managerModel->get_active_service();
+        $pending_tasks = $this->managerModel->get_pending_service();
+        $completed_tasks = $this->managerModel->get_completed_service();
+
+        $total_inv_managers = $this->managerModel->get_total_inventory_managers();
+        $active_inv = $this->managerModel->get_inventory();
+        $low_stock_items = $this->managerModel->get_low_stock_items();
+
+        $userId = $_SESSION['user_id'] ?? null;
+    $companyId = $this->teamModel->get_company_id_by_user($userId);
+
+    if (!$companyId) {
+        setToast('Unauthorized access or company not found.', 'error');
+        redirect('pages/login');
+        return;
+    }
 
         // Handle add action
         if ($id === 'add') {
@@ -1142,111 +1178,107 @@ class InstallerAdmin extends Controller
             return $this->inventory_managers();
         }
 
+        $data = [
+            'user' => $this->user,
+            'op_managers' => $this->managerModel->get_operation_manager_by_company_id($companyId),
+            'inv_managers' => $this->managerModel->get_inventory_manager_by_company_id($companyId),
+            'total_op_managers' => $total_op_managers,
+            'active_tasks' => $active_tasks,
+            'pending_tasks' => $pending_tasks,
+            'completed_tasks' => $completed_tasks, 
+            'total_inv_managers' => $total_inv_managers,
+            'active_inv' => $active_inv,
+            'low_stock_items' => $low_stock_items
+        ];
+
 
         redirect('installeradmin/managers/operation_managers');
     }
 
     // --- Manager Management ---
+    // --- Manager Management ---
     public function operation_managers()
     {
-        // Sample data for Operation Managers
-        $sample_operation_managers = [
-            [
-                'id' => 1,
-                'name' => 'John Smith',
-                'email' => 'john.smith@solarsense.com',
-                'specialization' => 'Installation',
-                'district' => 'Colombo',
-                'status' => 'active',
-                'pending_tasks' => 3,
-                'performance' => 95
-            ],
-            [
-                'id' => 2,
-                'name' => 'Sarah Johnson',
-                'email' => 'sarah.j@solarsense.com',
-                'specialization' => 'Maintenance',
-                'district' => 'Kandy',
-                'status' => 'active',
-                'pending_tasks' => 2,
-                'performance' => 88
-            ],
-            [
-                'id' => 3,
-                'name' => 'Michael Brown',
-                'email' => 'michael.b@solarsense.com',
-                'specialization' => 'Repair',
-                'district' => 'Galle',
-                'status' => 'on leave',
-                'pending_tasks' => 1,
-                'performance' => 92
-            ],
-            [
-                'id' => 4,
-                'name' => 'Lisa Chen',
-                'email' => 'lisa.chen@solarsense.com',
-                'specialization' => 'Installation',
-                'district' => 'Colombo',
-                'status' => 'active',
-                'pending_tasks' => 5,
-                'performance' => 85
-            ]
-        ];
+        // 1. Get company context
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
 
+        if (!$companyId) {
+            redirect('pages/login');
+            return;
+        }
+
+        // 2. Fetch list of managers from database
+        $dbManagers = $this->managerModel->get_operation_manager_by_company_id($companyId);
+        
+        // 3. Prepare summary stats for the view
         $data = [
             'user' => $this->user,
             'managerType' => 'operation_managers',
-            'managers' => $sample_operation_managers
+            'managers' => [],
+            'total_op_managers' => $this->managerModel->get_total_operation_managers(),
+            'active_tasks' => $this->managerModel->get_active_service(),
+            'pending_tasks' => $this->managerModel->get_pending_service(),
+            'completed_tasks' => $this->managerModel->get_completed_service()
         ];
+
+        // 4. Map database objects to the array format expected by managers_list.php
+        foreach ($dbManagers as $manager) {
+            $data['managers'][] = [
+                'id' => $manager->user_id,
+                'name' => $manager->full_name,
+                'email' => $manager->email,
+                'specialization' => ucfirst($manager->specialization),
+                'district' => $manager->district,
+                'status' => ucfirst($manager->status),
+                'pending_tasks' => 0 // Placeholder: Requires per-manager task query
+            ];
+        }
 
         $this->view('pages/installer_admin/managers_list', $data, layout: 'dashboard');
     }
 
     public function inventory_managers()
     {
-        // Sample data for Inventory Managers
-        $sample_inventory_managers = [
-            [
-                'id' => 1,
-                'name' => 'David Wilson',
-                'email' => 'david.w@solarsense.com',
-                'warehouse' => 'Main Warehouse - Colombo',
-                'status' => 'active',
-                'inventory_items' => 245,
-                'low_stock' => 3,
-                'efficiency' => 92
-            ],
-            [
-                'id' => 2,
-                'name' => 'Emma Davis',
-                'email' => 'emma.d@solarsense.com',
-                'warehouse' => 'Branch Warehouse - Kandy',
-                'status' => 'active',
-                'inventory_items' => 156,
-                'low_stock' => 5,
-                'efficiency' => 88
-            ],
-            [
-                'id' => 3,
-                'name' => 'James Miller',
-                'email' => 'james.m@solarsense.com',
-                'warehouse' => 'Branch Warehouse - Galle',
-                'status' => 'away',
-                'inventory_items' => 98,
-                'low_stock' => 8,
-                'efficiency' => 75
-            ]
-        ];
+        // 1. Get company context
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
 
+        if (!$companyId) {
+            redirect('pages/login');
+            return;
+        }
+
+        // 2. Fetch list of managers from database
+        $dbManagers = $this->managerModel->get_inventory_manager_by_company_id($companyId);
+
+        // 3. Prepare summary stats for the view
         $data = [
             'user' => $this->user,
             'managerType' => 'inventory_managers',
-            'managers' => $sample_inventory_managers
+            'managers' => [],
+            'total_inv_managers' => $this->managerModel->get_total_inventory_managers(),
+            'active_inv' => $this->managerModel->get_inventory(),
+            'low_stock_items' => $this->managerModel->get_low_stock_items()
         ];
+
+        // 4. Map database objects to the array format expected by managers_list.php
+        foreach ($dbManagers as $manager) {
+            $data['managers'][] = [
+                'id' => $manager->user_id,
+                'name' => $manager->full_name,
+                'email' => $manager->email,
+                'warehouse' => $manager->warehouse_location,
+                'status' => ucfirst($manager->status),
+                'inventory_items' => 0, // Placeholder
+                'low_stock' => 0,      // Placeholder
+                'efficiency' => 0      // Placeholder
+            ];
+        }
 
         $this->view('pages/installer_admin/managers_list', $data, layout: 'dashboard');
     }
-
+    
     // Manager Detail View Methods
     public function operation_managers_detail($managerId = null)
     {
@@ -1391,7 +1423,7 @@ class InstallerAdmin extends Controller
                 $data['specialization'] = trim($_POST['specialization'] ?? '');
                 $data['teamSize'] = trim($_POST['teamSize'] ?? '');
                 $data['experienceLevel'] = trim($_POST['experienceLevel'] ?? '');
-                
+
                 $data['specialization_err'] = '';
                 $data['teamSize_err'] = '';
                 $data['experienceLevel_err'] = '';
@@ -1489,10 +1521,10 @@ class InstallerAdmin extends Controller
                 }
             }
 
-            if(!$hasErrors) {
+            if (!$hasErrors) {
                 // Call model to save data
-                if ($data['mode'] === 'add'){
-                // Check if email already exists
+                if ($data['mode'] === 'add') {
+                    // Check if email already exists
                     if ($this->authModel->findUserByEmail($data['email'])) {
                         $data['email_err'] = 'Email is already registered';
                         $this->view('pages/installer_admin/add_manager', $data, layout: 'dashboard');
@@ -1506,7 +1538,7 @@ class InstallerAdmin extends Controller
                         return;
                     }
 
-                    if($managerType === 'operation_managers') {
+                    if ($managerType === 'operation_managers') {
                         $createResult = $this->managerModel->add_operation_manager($data);
                         if ($createResult && is_array($createResult) && !empty($createResult['success'])) {
                             // Send credentials email
@@ -1545,8 +1577,8 @@ class InstallerAdmin extends Controller
                             $this->view('pages/installer_admin/add_manager', $data, layout: 'dashboard');
                         }
                     }
-                    
-                } 
+
+                }
                 // else {
                 //     // Update mode
                 //     if ($this->teamModel->update_operation_manager($data)) {

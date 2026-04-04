@@ -219,5 +219,199 @@ class M_Manager{
             return false;
         }
     }
+
+    public function get_total_operation_managers() {
+        $installerAdminId = $_SESSION['user_id'] ?? null;
+        if (empty($installerAdminId)) {
+            error_log('get_total_operation_managers failed: Installer admin user_id is missing from session');
+            return 0;
+        }
+
+        try {
+            $this->db->query('
+                SELECT COUNT(om.user_id) AS total 
+                FROM operation_manager om
+                JOIN installer_admin ia ON om.company_id = ia.company_id
+                WHERE ia.user_id = :user_id
+            ');
+            $this->db->bind(':user_id', $installerAdminId);
+            $row = $this->db->single();
+            return $row->total ?? 0;
+        } catch (Exception $e) {
+            error_log('get_total_operation_managers failed: ' . $e->getMessage());
+            return 0;
+        }
+    }
+
+    public function get_active_service() {
+        $installerAdminId = $_SESSION['user_id'] ?? null;
+        if (empty($installerAdminId)) {
+            error_log('get_active_service failed: Installer admin user_id is missing from session');
+            return 0;
+        }
+
+        try {
+            $this->db->query('
+                SELECT COUNT(sr.service_request_id) AS total 
+                FROM service_req sr
+                JOIN installer_admin ia ON sr.company_id = ia.company_id
+                WHERE ia.user_id = :user_id AND sr.status = "Active"
+            ');
+            $this->db->bind(':user_id', $installerAdminId);
+            $row = $this->db->single();
+            return $row->total ?? 0;
+        } catch (Exception $e) {
+            error_log('get_active_service_req failed: ' . $e->getMessage());
+            return 0;
+        }
+    }
+
+    public function get_pending_service(){
+        $installerAdminId = $_SESSION['user_id'] ?? null;
+        if (empty($installerAdminId)) {
+            error_log('get_pending_service failed: Installer admin user_id is missing from session');
+            return 0;
+        }
+
+        try {
+            $this->db->query('
+                SELECT COUNT(sr.service_request_id) AS total 
+                FROM service_req sr
+                JOIN installer_admin ia ON sr.company_id = ia.company_id
+                WHERE ia.user_id = :user_id AND sr.status = "Pending"
+            ');
+            $this->db->bind(':user_id', $installerAdminId);
+            $row = $this->db->single();
+            return $row->total ?? 0;
+        } catch (Exception $e) {
+            error_log('get_pending_service failed: ' . $e->getMessage());
+            return 0;
+        }
+    }
+
+    public function get_completed_service(){
+        $installerAdminId = $_SESSION['user_id'] ?? null;
+        if (empty($installerAdminId)) {
+            error_log('get_completed_service failed: Installer admin user_id is missing from session');
+            return 0;
+        }
+
+        try {
+            $this->db->query('
+                SELECT COUNT(sr.service_request_id) AS total 
+                FROM service_req sr
+                JOIN installer_admin ia ON sr.company_id = ia.company_id
+                WHERE ia.user_id = :user_id AND sr.status = "Completed"
+            ');
+            $this->db->bind(':user_id', $installerAdminId);
+            $row = $this->db->single();
+            return $row->total ?? 0;
+        } catch (Exception $e) {
+            error_log('get_completed_service failed: ' . $e->getMessage());
+            return 0;
+        }
+    }
+
+    public function get_operation_manager_by_company_id($companyId) {
+        try {
+            $this->db->query('
+                SELECT om.*, u.email, u.full_name 
+                FROM operation_manager om
+                JOIN user u ON om.user_id = u.user_id
+                WHERE om.company_id = :company_id
+            ');
+            $this->db->bind(':company_id', $companyId);
+            return $this->db->resultSet();
+        } catch (Exception $e) {
+            error_log('get_operation_manager_by_company_id failed: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+     public function get_inventory_manager_by_company_id($companyId) {
+        try {
+            $this->db->query('
+                SELECT im.*, u.email, u.full_name 
+                FROM inventory_manager im
+                JOIN user u ON im.user_id = u.user_id
+                WHERE im.company_id = :company_id
+            ');
+            $this->db->bind(':company_id', $companyId);
+            return $this->db->resultSet();
+        } catch (Exception $e) {
+            error_log('get_inventory_manager_by_company_id failed: ' . $e->getMessage());
+            return [];
+        }
+     }
+
+     public function get_total_inventory_managers() {
+        $installerAdminId = $_SESSION['user_id'] ?? null;
+        if (empty($installerAdminId)) {
+            error_log('get_total_inventory_managers failed: Installer admin user_id is missing from session');
+            return 0;
+        }
+
+        try {
+            $this->db->query('
+                SELECT COUNT(im.user_id) AS total 
+                FROM inventory_manager im
+                JOIN installer_admin ia ON im.company_id = ia.company_id
+                WHERE ia.user_id = :user_id
+            ');
+            $this->db->bind(':user_id', $installerAdminId);
+            $row = $this->db->single();
+            return $row->total ?? 0;
+        } catch (Exception $e) {
+            error_log('get_total_inventory_managers failed: ' . $e->getMessage());
+            return 0;
+        }
+     }
+
+     public function get_inventory(){
+        //get count of inventory items for the company
+        $installerAdminId = $_SESSION['user_id'] ?? null;
+        if (empty($installerAdminId)) {
+            error_log('get_inventory failed: Installer admin user_id is missing from session');
+            return 0;
+        }
+        try {
+            $this->db->query('
+                SELECT COUNT(in.inventory_id) AS total 
+                FROM inventory in
+                JOIN installer_company ic ON in.company_id = ic.company_id
+                JOIN installer_admin ia ON ic.company_id = ia.company_id
+                WHERE ia.user_id = :user_id
+            ');
+            $this->db->bind(':user_id', $installerAdminId);
+            $row = $this->db->single();
+            return $row->total ?? 0;
+        } catch (Exception $e) {
+            error_log('get_inventory failed: ' . $e->getMessage());
+            return 0;
+        }
+     }
+
+     public function get_low_stock_items() {
+        $installerAdminId = $_SESSION['user_id'] ?? null;
+        if (empty($installerAdminId)) {
+            error_log('get_low_stock_items failed: Installer admin user_id is missing from session');
+            return 0;
+        }
+        try {
+            $this->db->query('
+                SELECT COUNT(in.item_name) AS total
+                FROM inventory in
+                JOIN installer_company ic ON in.company_id = ic.company_id
+                JOIN installer_admin ia ON ic.company_id = ia.company_id
+                WHERE ia.user_id = :user_id AND in.quantity < 10
+            ');
+            $this->db->bind(':user_id', $installerAdminId);
+            $row = $this->db->single();
+            return $row->total ?? 0;
+        } catch (Exception $e) {
+            error_log('get_low_stock_items failed: ' . $e->getMessage());
+            return 0;
+        }
+     }
 }
 ?>
