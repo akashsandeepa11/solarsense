@@ -26,7 +26,8 @@ class M_SMS
                 monthly_bill,
                 total_due,
                 units_cf,
-                raw_sms
+                raw_sms,
+                expected_generation
             ) VALUES (
                 :user_id,
                 :created_at,
@@ -41,7 +42,8 @@ class M_SMS
                 :monthly_bill,
                 :total_due,
                 :units_cf,
-                :raw_sms
+                :raw_sms,
+                :expected_generation
             )
         ");
 
@@ -110,6 +112,37 @@ class M_SMS
         $this->db->query("SELECT * FROM sms WHERE user_id = :user_id ORDER BY created_at DESC");
         $this->db->bind(':user_id', $_SESSION['user_id']);
         return $this->db->resultSet();
+    }
+
+    public function check_duplicate_reading_date($user_id, $reading_date)
+    {
+        $this->db->query("SELECT COUNT(*) as cnt FROM sms WHERE user_id = :user_id AND reading_date = :reading_date");
+        $this->db->bind(':user_id', $user_id);
+        $this->db->bind(':reading_date', $reading_date);
+        $row = $this->db->single();
+        return $row->cnt > 0;
+    }
+
+    public function get_chart_data(int $userId, int $limit = 12): array
+    {
+        $this->db->query("
+            SELECT
+                DATE_FORMAT(reading_date, '%b %Y')          AS label,
+                reading_date,
+                consumption_units,
+                (export_reading - prev_export_reading)      AS grid_export,
+                (import_reading - prev_import_reading)      AS grid_import,
+                expected_generation,
+                monthly_bill
+            FROM sms
+            WHERE user_id = :user_id
+            ORDER BY reading_date DESC
+            LIMIT {$limit}
+        ");
+        $this->db->bind(':user_id', $userId);
+        $rows = $this->db->resultSet();
+
+        return array_reverse((array) $rows);
     }
 }
 ?>

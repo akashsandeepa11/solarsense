@@ -1,146 +1,141 @@
 <?php
-// --- PHP Setup for Dummy Data ---
-// In a real controller, this data would be fetched from the database.
+define('SOLAR_TARIFF_RATE_LKR', 37.50);
 
-// --- Define the solar tariff rate ---
-define('SOLAR_TARIFF_RATE_LKR', 37.50); // LKR 37.50 per kWh exported
-
-// User Info
 $user_name = "Akash Sandeepa";
 
-// Power Cut Alert
 $power_cut = [
-    'district' => 'Colombo',
+    'district'   => 'Colombo',
     'start_time' => '2:00 PM',
-    'end_time' => '4:00 PM'
+    'end_time'   => '4:00 PM'
 ];
 
-// Daily Solar Forecast
 $daily_forecast = [
-    'temperature' => 31, // Celsius
-    'condition' => 'Sunny',
-    'estimated_generation' => 22 // kWh
+    'temperature'          => 31,
+    'condition'            => 'Sunny',
+    'estimated_generation' => 22
 ];
 
-// Monthly Performance Summary (from last SMS)
-$grid_export_kwh = 310;
-$monthly_income_lkr = $grid_export_kwh * SOLAR_TARIFF_RATE_LKR;
+// --- Build chart arrays from DB data ---
+$labels              = [];
+$actual_generation   = [];
+$expected_generation = [];
+$grid_import         = [];
+$grid_export         = [];
+$monthly_bills       = [];
 
-// Stat Cards for Key Metrics (using stat_card component)
+foreach ($chart_data as $row) {
+    $labels[]              = $row->label;
+    $actual_generation[]   = (float) $row->consumption_units;
+    $expected_generation[] = (float) ($row->expected_generation ?? 0);
+    $grid_import[]         = (int)   $row->grid_import;
+    $grid_export[]         = (int)   $row->grid_export;
+    $monthly_bills[]       = (float) $row->monthly_bill;
+}
+
+$performance_chart_data = [
+    'labels'              => $labels,
+    'actual_generation'   => $actual_generation,
+    'expected_generation' => $expected_generation,
+    'grid_import'         => $grid_import,
+];
+
+// --- Stat card values from the most recent SMS row ---
+$latest              = !empty($chart_data) ? end($chart_data) : null;
+$latest_consumption  = $latest ? (float) $latest->consumption_units       : 0;
+$latest_export       = $latest ? (int)   $latest->grid_export             : 0;
+$latest_import       = $latest ? (int)   $latest->grid_import             : 0;
+$latest_bill         = $latest ? (float) $latest->monthly_bill            : 0;
+$latest_expected     = $latest ? (float) ($latest->expected_generation ?? 0) : 0;
+$monthly_income_lkr  = $latest_export * SOLAR_TARIFF_RATE_LKR;
+
+// --- System health: actual vs expected (last month) ---
+$performance_pct = ($latest_expected > 0)
+    ? min(100, round(($latest_consumption / $latest_expected) * 100))
+    : 0;
+
+// --- Lifetime profit: sum of all grid-export income ---
+$total_export_kwh   = array_sum($grid_export);
+$total_income_lkr   = $total_export_kwh * SOLAR_TARIFF_RATE_LKR;
+$yearly_goal        = 500000; // LKR – adjust as needed
+$yearly_goal_pct    = min(100, round(($total_income_lkr / $yearly_goal) * 100));
+
+$system_health   = ['performance_vs_expected' => $performance_pct];
+$profit_tracker  = [
+    'total_accumulated'   => 'LKR ' . number_format($total_income_lkr),
+    'yearly_goal_progress' => $yearly_goal_pct,
+];
+
 $stat_metrics = [
     [
-        'label' => 'Total Solar Generation',
-        'value' => '450 kWh',
-        'icon' => 'fas fa-solar-panel',
+        'label' => 'Actual Consumption',
+        'value' => number_format($latest_consumption) . ' kWh',
+        'icon'  => 'fas fa-solar-panel',
         'color' => 'primary',
-        'trend' => ['direction' => 'up', 'percentage' => 12]
+        'trend' => ['direction' => 'up', 'percentage' => 0]
     ],
     [
         'label' => 'Grid Export',
-        'value' => $grid_export_kwh . ' kWh',
-        'icon' => 'fas fa-arrow-up',
+        'value' => $latest_export . ' kWh',
+        'icon'  => 'fas fa-arrow-up',
         'color' => 'success',
-        'trend' => ['direction' => 'up', 'percentage' => 8]
+        'trend' => ['direction' => 'up', 'percentage' => 0]
     ],
     [
         'label' => 'Grid Import',
-        'value' => '85 kWh',
-        'icon' => 'fas fa-arrow-down',
+        'value' => $latest_import . ' kWh',
+        'icon'  => 'fas fa-arrow-down',
         'color' => 'warning',
-        'trend' => ['direction' => 'down', 'percentage' => 5]
+        'trend' => ['direction' => 'down', 'percentage' => 0]
     ],
     [
         'label' => 'Monthly Income',
         'value' => 'LKR ' . number_format($monthly_income_lkr),
-        'icon' => 'fas fa-coins',
+        'icon'  => 'fas fa-coins',
         'color' => 'accent',
-        'trend' => ['direction' => 'up', 'percentage' => 15]
+        'trend' => ['direction' => 'up', 'percentage' => 0]
     ],
 ];
 
-// System Health & Financials
-$system_health = [
-    'performance_vs_expected' => 98, // Percentage
-];
-$profit_tracker = [
-    'total_accumulated' => 'LKR 145,750',
-    'yearly_goal_progress' => 78 // Percentage
-];
-
-// Historical Chart Data for Actual vs. Expected Generation
-$performance_chart_data = [
-    'labels' => ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
-    'actual_generation' => [420, 480, 460, 510, 490, 450],
-    'expected_generation' => [430, 470, 465, 500, 495, 455],
-    'grid_import' => [120, 95, 110, 70, 75, 85],
-];
-
-// Logic to determine bar colors based on performance
+// --- Bar colors based on actual vs expected ---
 $bar_colors = [];
-for ($i = 0; $i < count($performance_chart_data['actual_generation']); $i++) {
-    $actual = $performance_chart_data['actual_generation'][$i];
-    $expected = $performance_chart_data['expected_generation'][$i];
-    $performance_ratio = $actual / $expected;
-
-    if ($performance_ratio >= 0.9) {
-        $bar_colors[] = 'rgba(34, 197, 94, 0.7)'; // Success color
-    } elseif ($performance_ratio >= 0.75) {
-        $bar_colors[] = 'rgba(245, 158, 11, 0.7)'; // Warning color
-    } else {
-        $bar_colors[] = 'rgba(239, 68, 68, 0.7)'; // Error color
-    }
+foreach ($actual_generation as $i => $actual) {
+    $expected = $expected_generation[$i] ?? 0;
+    $ratio    = ($expected > 0) ? ($actual / $expected) : 1;
+    if ($ratio >= 0.9)       $bar_colors[] = 'rgba(34, 197, 94, 0.7)';
+    elseif ($ratio >= 0.75)  $bar_colors[] = 'rgba(245, 158, 11, 0.7)';
+    else                     $bar_colors[] = 'rgba(239, 68, 68, 0.7)';
 }
 
-// Recent Faults & Alerts
 $recent_alerts = [
-    ['date' => 'July 15th', 'description' => 'Performance 15% below expected for weather conditions.'],
-    ['date' => 'June 28th', 'description' => 'High grid import detected during peak sun hours.'],
-    ['date' => 'June 22nd', 'description' => 'Inverter efficiency lower than usual. Schedule maintenance.'],
+    ['date' => 'July 15th',  'description' => 'Performance 15% below expected for weather conditions.'],
+    ['date' => 'June 28th',  'description' => 'High grid import detected during peak sun hours.'],
+    ['date' => 'June 22nd',  'description' => 'Inverter efficiency lower than usual. Schedule maintenance.'],
 ];
 
-// Quick Action Buttons
 $quick_actions = [
-    [
-        'label' => 'Request Maintenance',
-        'url' => URLROOT . '/homeowner/service',
-        'icon' => 'fas fa-wrench',
-        'class' => 'btn-secondary'
-    ],
-    [
-        'label' => 'View Accessories Store',
-        'url' => URLROOT . '/homeowner/shop',
-        'icon' => 'fas fa-shopping-cart',
-        'class' => 'btn-secondary'
-    ],
-    [
-        'label' => 'Download Report',
-        'url' => URLROOT . '/homeowner/dashboard/report',
-        'icon' => 'fas fa-file-pdf',
-        'class' => 'btn-secondary'
-    ],
+    ['label' => 'Request Maintenance',    'url' => URLROOT . '/homeowner/service',          'icon' => 'fas fa-wrench',        'class' => 'btn-secondary'],
+    ['label' => 'View Accessories Store', 'url' => URLROOT . '/homeowner/shop',             'icon' => 'fas fa-shopping-cart', 'class' => 'btn-secondary'],
+    ['label' => 'Download Report',        'url' => URLROOT . '/homeowner/dashboard/report', 'icon' => 'fas fa-file-pdf',      'class' => 'btn-secondary'],
 ];
 
-// Chart Filter Options - Month and Date Range
-$currentMonth = isset($_GET['month']) ? (int)$_GET['month'] : date('m');
-$currentYear = isset($_GET['year']) ? (int)$_GET['year'] : date('Y');
-$startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
-$endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t');
+$currentMonth = isset($_GET['month']) ? (int)$_GET['month'] : (int)date('m');
+$currentYear  = isset($_GET['year'])  ? (int)$_GET['year']  : (int)date('Y');
+$startDate    = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
+$endDate      = isset($_GET['end_date'])   ? $_GET['end_date']   : date('Y-m-t');
 
-// Months array for dropdown
 $months = [
-    1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April',
-    5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August',
-    9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December'
+    1=>'January',2=>'February',3=>'March',4=>'April',
+    5=>'May',6=>'June',7=>'July',8=>'August',
+    9=>'September',10=>'October',11=>'November',12=>'December'
 ];
 
-// Generate year options (current year and 4 previous years)
 $years = [];
 for ($i = 0; $i < 5; $i++) {
     $year = date('Y') - $i;
     $years[$year] = $year;
 }
-
 ?>
+
 
 <!-- Link to your custom CSS file for this page -->
 <link rel="stylesheet" href="<?php echo URLROOT?>/public/css/pages/homeowner/dashboard.css">

@@ -25,6 +25,7 @@ class Controller{
     public function view($view, $data = [], $layout = 'main') {
         // Capture the content of the page view
         ob_start();
+        extract($data);
         require_once dirname(__DIR__) . "/views/{$view}.php";
         $content = ob_get_clean();
             

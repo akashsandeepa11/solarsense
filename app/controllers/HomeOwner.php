@@ -2,15 +2,18 @@
 class HomeOwner extends Controller
 {
     private $serviceModel;
+    private $smsModel;
+    private $solarSystemModel;
 
     private $user = [
         'role' => ROLE_HOMEOWNER,
     ];
 
-    
     public function __construct()
     {
-        $this->serviceModel = $this->model('M_Service');
+        $this->serviceModel      = $this->model('M_Service');
+        $this->smsModel          = $this->model('M_SMS');
+        $this->solarSystemModel  = $this->model('M_SolarSystem');
     }
 
 
@@ -19,7 +22,8 @@ class HomeOwner extends Controller
 
         if ($page == 'index') {
             $data = [
-                'user' => $this->user,
+                'user'       => $this->user,
+                'chart_data' => $this->smsModel->get_chart_data((int) $_SESSION['user_id']),
             ];
 
             $this->view('pages/homeowner/dashboard', $data, layout: 'dashboard');
@@ -28,7 +32,7 @@ class HomeOwner extends Controller
                 'user' => $this->user,
             ];
 
-            $this->view('pages/homeowner/uploadsms', $data, 'dashboard');
+            $this->uploadSMS();
         }
     }
 
@@ -146,32 +150,46 @@ class HomeOwner extends Controller
 
     public function uploadSMS(): void
     {
-        echo "uploadSMS called - Method: " . $_SERVER['REQUEST_METHOD'];
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            echo "POST data: " . print_r($_POST, true);
             $sms = trim($_POST['smsContent'] ?? '');
 
             if (empty($sms)) {
-                die('SMS content missing');
+                setToast('SMS content is missing.', 'error');
+                redirect('homeowner/dashboard/uploadsms');
+                return;
             }
 
-            $data = $this->smsModel->parse_sms($sms);
+            $parsed = $this->smsModel->parse_sms($sms);
 
-            if (!$data) {
-                die('Invalid CEB SMS format');
+            if (!$parsed) {
+                setToast('Invalid CEB SMS format. Please paste a valid bill SMS.', 'error');
+                redirect('homeowner/dashboard/uploadsms');
+                return;
             }
 
-            $data['user_id'] = $_SESSION['user_id'];
-            $data['created_at'] = date('Y-m-d H:i:s');
-            $data['raw_sms'] = $sms;
+            $userId = $_SESSION['user_id'];
 
-            if ($this->smsModel->upload_sms($data)) {
-                redirect('homeowner/uploadsms');
+            // Duplicate check — same user + reading_date already in DB
+            if ($this->smsModel->check_duplicate_reading_date($userId, $parsed['reading_date'])) {
+                setToast('This SMS has already been uploaded (reading date: ' . $parsed['reading_date'] . ').', 'error');
+                redirect('homeowner/dashboard/uploadsms');
+                return;
+            }
+
+            $parsed['user_id']    = $userId;
+            $parsed['created_at'] = date('Y-m-d H:i:s');
+            $parsed['raw_sms']    = $sms;
+            $parsed['expected_generation'] = $this->calculateExpectedGeneration($parsed['reading_date']);
+            
+            if ($this->smsModel->upload_sms($parsed)) {
+                setToast('SMS uploaded successfully!', 'success');
+                redirect('homeowner/dashboard/uploadsms');
             } else {
-                die('Failed to save SMS');
+                setToast('Failed to save SMS. Please try again.', 'error');
+                redirect('homeowner/dashboard/uploadsms');
             }
         } else {
-            // For GET requests, show the form
+            // GET — show the upload form
             $data = [
                 'user' => $this->user,
             ];
@@ -305,6 +323,36 @@ class HomeOwner extends Controller
         ];
 
         $this->view('pages/common/notifications', $data, layout: 'dashboard');
+    }
+
+    private function calculateExpectedGeneration(string $readingDate): ?float
+    {
+        require_once APPROOT . '/api/generation_api.php';
+
+        $userId = $_SESSION['user_id'];
+        $system = $this->solarSystemModel->get_by_user($userId);
+
+        if (!$system) {
+            return null; // no solar system on record for this user
+        }
+
+        $month    = (int) date('n', strtotime($readingDate));
+        $district = DISTRICTS[$system->district] ?? DISTRICTS[COLOMBO];
+
+        $result = getSolarGenerationByMonth(
+            month:          $month,
+            systemCapacity: (float) $system->capacity,
+            moduleType:     (int)   $system->module_type,
+            losses:         (float) $system->losses_pct,
+            arrayType:      (int)   $system->array_type,
+            tilt:           (float) $system->tilt,
+            azimuth:        (float) $system->azimuth,
+            lat:            $district['lat'],
+            lon:            $district['lon'],
+            apiKey:         NREL_API_KEY
+        );
+
+        return $result['success'] ? round($result['generation_kwh'], 2) : null;
     }
 }
 

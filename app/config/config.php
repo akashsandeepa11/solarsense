@@ -7,6 +7,15 @@
     define("DB_USER", getenv('DB_USER')); 
     define("DB_PASSWORD", getenv('DB_PASSWORD')); 
     define("DB_NAME", getenv('DB_NAME'));  
+
+    // NREL PVWatts API key
+    define("NREL_API_KEY", getenv('NREL_API_KEY'));
+
+    // PayHere
+    define("PAYHERE_MERCHANT_ID",     getenv('PAYHERE_MERCHANT_ID'));
+    define("PAYHERE_MERCHANT_SECRET", getenv('PAYHERE_MERCHANT_SECRET'));
+    define("PAYHERE_SANDBOX",         filter_var(getenv('PAYHERE_SANDBOX'), FILTER_VALIDATE_BOOLEAN));
+
     // APPROOT 
     define("APPROOT", dirname(dirname(__FILE__))); 
     // URLROOT - dynamic for both local and hosted environments
@@ -28,4 +37,4 @@
     }
     // WEBSITE NAME 
     define("SITENAME", "SolarSense"); 
-?>
+?>

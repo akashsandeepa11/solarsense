@@ -69,7 +69,7 @@
                 <div class="card-body">
                     <h3 class="card-title text-2xl font-semibold mb-6">Import CEB Bill Message</h3>
 
-                    <form id="smsUploadForm" action="<?php echo URLROOT ?>/homeowner/uploadSMS" method="POST" novalidate enctype="multipart/form-data">
+                    <form id="smsUploadForm" action="<?php echo URLROOT ?>/homeowner/dashboard/uploadsms" method="POST" novalidate enctype="multipart/form-data">
                         <!-- SMS Content Textarea -->
                         <div class="mb-4">
                             <?php
