@@ -105,7 +105,13 @@ class M_Fleet{
             // Commit the transaction
             $this->db->commit();
 
-            return true;
+            // Return success with created user details (including plaintext password for emailing)
+            return [
+                'success' => true,
+                'user_id' => $userId,
+                'password' => $plainPassword,
+                'email' => $userData['email'] ?? ''
+            ];
 
         } catch (Exception $e) {
             $this->db->rollBack();

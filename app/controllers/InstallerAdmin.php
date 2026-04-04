@@ -1,8 +1,10 @@
 <?php
 
-class InstallerAdmin extends Controller
-{
+require_once APPROOT . '/helpers/Mail_Helper.php';
 
+class InstallerAdmin extends Controller
+
+{
     private $fleetModel;
     private $authModel;
     private $teamModel;
@@ -281,8 +283,19 @@ class InstallerAdmin extends Controller
                 'inv_eff_pct' => $data['invEffPCT']
             ];
             // Call model to save data
-            if ($this->fleetModel->add_customer($userData, $customerData, $panelData)) {
-                setToast('Customer Added Successfully', 'success');
+            $createResult = $this->fleetModel->add_customer($userData, $customerData, $panelData);
+            if ($createResult && is_array($createResult) && !empty($createResult['success'])) {
+                // Send credentials email
+                $plainPassword = $createResult['password'] ?? '';
+                $recipientEmail = $createResult['email'] ?? $userData['email'];
+                $mailSent = sendWelcomeEmail($recipientEmail, $recipientEmail, $plainPassword);
+
+                if ($mailSent) {
+                    setToast('Customer Added Successfully', 'success');
+                } else {
+                    setToast('Customer added but failed to send email.', 'warning');
+                }
+
                 redirect('installeradmin/fleet');
             } else {
                 setToast('Something went wrong during registration.', 'error');
