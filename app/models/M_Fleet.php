@@ -132,6 +132,44 @@ class M_Fleet{
         }
     }
 
+    public function get_total_customers($companyId) {
+        try {
+            $this->db->query('SELECT COUNT(*) as total FROM homeowner WHERE company_id = :company_id');
+            $this->db->bind(':company_id', $companyId);
+            $result = $this->db->single();
+            return $result->total ?? 0;
+        } catch (Exception $e) {
+            error_log('Get total customers failed: ' . $e->getMessage());
+            return 0;
+        }
+    }
+
+    public function get_completed_services($companyId) {
+        //get the services completed for each customer
+        try {
+            $this->db->query('SELECT COUNT(*) as total FROM service_req sr JOIN homeowner h ON sr.company_id = h.company_id WHERE h.company_id = :company_id AND sr.status = "completed"');
+            $this->db->bind(':company_id', $companyId);
+            $result = $this->db->single();
+            return $result->total ?? 0;
+        } catch (Exception $e) {
+            error_log('Get completed services failed: ' . $e->getMessage());
+            return 0;
+        }
+    }
+
+        public function get_pending_services($companyId) {
+            //get the services pending for each customer
+            try {
+                $this->db->query('SELECT COUNT(*) as total FROM service_req sr JOIN homeowner h ON sr.company_id = h.company_id WHERE h.company_id = :company_id AND sr.status = "pending"');
+                $this->db->bind(':company_id', $companyId);
+                $result = $this->db->single();
+                return $result->total ?? 0;
+            } catch (Exception $e) {
+                error_log('Get pending services failed: ' . $e->getMessage());
+                return 0;
+            }
+        }
+
     public function update_customer($userId, $userData, $customerData, $panelData) {
         try {
             // Start transaction
@@ -270,47 +308,47 @@ class M_Fleet{
     }
 
     public function get_customer_by_company($companyId) {
-        try { 
-            $this->db->query('SELECT 
-                            u.user_id,
-                            u.full_name,
-                            u.email,
-                            h.district,
-                            s.capacity,
-                            sm.date
-                        FROM user u
-                        JOIN homeowner h ON u.user_id = h.user_id
-                        JOIN solar_system s ON u.user_id = s.user_id
-                        LEFT JOIN (
-                            SELECT user_id, MAX(date) as date
-                            FROM sms
-                            GROUP BY user_id
-                        ) sm ON u.user_id = sm.user_id
-                        WHERE h.company_id = :company_id');
-            $this->db->bind(':company_id', $companyId);
-            $results = $this->db->resultSet();
+    try { 
+        $this->db->query('SELECT 
+                        u.user_id,
+                        u.full_name,
+                        u.email,
+                        h.district,
+                        s.capacity,
+                        sm.last_reading
+                    FROM user u
+                    JOIN homeowner h ON u.user_id = h.user_id
+                    JOIN solar_system s ON u.user_id = s.user_id
+                    LEFT JOIN (
+                        SELECT user_id, MAX(reading_date) as last_reading
+                        FROM sms
+                        GROUP BY user_id
+                    ) sm ON u.user_id = sm.user_id
+                    WHERE h.company_id = :company_id');
+        
+        $this->db->bind(':company_id', $companyId);
+        $results = $this->db->resultSet();
 
-            // Format the results to match the expected structure
-            $formattedResults = [];
-            foreach ($results as $row) {
-                $formattedResults[] = [
-                    'id' => $row->user_id,
-                    'name' => $row->full_name,
-                    'location' => $row->district,
-                    'size' => $row->capacity,
-                    'health' => 'Healthy',  // Default dummy value
-                    'performance' => '100',  // Default dummy value
-                    'last_upload' => $row->date ?? '2025-08-20 09:45',  // Use actual date or default if NULL
-                    'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode(str_replace(' ', '+', $row->full_name)) . '&background=00bcd4&color=fff'
-                ];
-            }
-            
-            return $formattedResults;
-        } catch (Exception $e) {
-            error_log('Get customer by company failed: ' . $e->getMessage());
-            return false;
+        $formattedResults = [];
+        foreach ($results as $row) {
+            $formattedResults[] = [
+                'id' => $row->user_id,
+                'name' => $row->full_name,
+                'location' => $row->district,
+                'size' => $row->capacity,
+                'health' => 'Healthy', // Placeholder for health logic
+                'performance' => '100', // Placeholder for performance calculation
+                'last_upload' => $row->last_reading ?? 'No readings yet',
+                'avatar' => getAvatarUrl($row->full_name)
+            ];
         }
+        
+        return $formattedResults;
+    } catch (Exception $e) {
+        error_log('Get customer by company failed: ' . $e->getMessage());
+        return [];
     }
+}
 
     public function delete_customer($userId)
 {

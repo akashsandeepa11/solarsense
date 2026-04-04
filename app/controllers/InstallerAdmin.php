@@ -59,28 +59,33 @@ class InstallerAdmin extends Controller
     // --- Fleet Management ---
     public function fleet($page = 'dashboard', $customerId = null)
     {
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
 
-        if ($page === 'add_customer') {
+        // Fetch statistics (Returns integers from the model)
+        $total_clients = $this->fleetModel->get_total_customers($companyId);
+        $pending_maintenance = $this->fleetModel->get_pending_services($companyId);
+        $completed_services = $this->fleetModel->get_completed_services($companyId);
+
+        // Routing for sub-pages
+        if ($page === 'add_customer')
             return $this->add_customer();
-        }
-
-        if ($page === 'customer_details') {
+        if ($page === 'customer_details')
             return $this->customerdetails($customerId);
-        }
-
-        if ($page === 'edit_customer') {
+        if ($page === 'edit_customer')
             return $this->edit_customer($customerId);
-        }
-
-        if ($page === 'delete_customer') {
+        if ($page === 'delete_customer')
             return $this->delete_customer($customerId);
-        }
 
         $data = [
             'user' => $this->user,
-            'customers' => $this->fleetModel->get_customer_by_company(1)
+            'customers' => $this->fleetModel->get_customer_by_company($companyId),
+            'stats' => [
+                'total_clients' => $total_clients ?? 0,
+                'pending_maintenace' => $pending_maintenance ?? 0,
+                'completed_services' => $completed_services ?? 0
+            ]
         ];
-
 
         $this->view('pages/common/fleet_dashboard', $data, layout: 'dashboard');
     }
@@ -627,51 +632,51 @@ class InstallerAdmin extends Controller
 
     // --- Team Management ---
     public function team($page = 'dashboard', $agentId = null)
-{
-    // 1. Get the current logged-in user's company ID
-    $userId = $_SESSION['user_id'] ?? null;
-    $companyId = $this->teamModel->get_company_id_by_user($userId);
+    {
+        // 1. Get the current logged-in user's company ID
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
 
-    if (!$companyId) {
-        setToast('Unauthorized access or company not found.', 'error');
-        redirect('pages/login');
-        return;
-    }
+        if (!$companyId) {
+            setToast('Unauthorized access or company not found.', 'error');
+            redirect('pages/login');
+            return;
+        }
 
-    // 2. Routing logic for sub-pages
-    if ($page === 'add_service_agent') {
-        return $this->add_service_agent();
-    }
-    if ($page === 'agent_details') {
-        return $this->agent_details($agentId);
-    }
-    if ($page === 'edit_agent') {
-        return $this->edit_agent($agentId);
-    }
-    if ($page === 'delete_agent') {
-        return $this->delete_agent($agentId);
-    }
+        // 2. Routing logic for sub-pages
+        if ($page === 'add_service_agent') {
+            return $this->add_service_agent();
+        }
+        if ($page === 'agent_details') {
+            return $this->agent_details($agentId);
+        }
+        if ($page === 'edit_agent') {
+            return $this->edit_agent($agentId);
+        }
+        if ($page === 'delete_agent') {
+            return $this->delete_agent($agentId);
+        }
 
-    // 3. Fetch statistics using the companyId
-    $total_agents_row = $this->teamModel->get_total_agents($companyId);
-    $active_agents_row = $this->teamModel->get_active_agents($companyId);
-    $total_tasks_row = $this->teamModel->get_total_tasks($companyId);
-    $pending_tasks_row = $this->teamModel->get_pending_tasks($companyId);
+        // 3. Fetch statistics using the companyId
+        $total_agents_row = $this->teamModel->get_total_agents($companyId);
+        $active_agents_row = $this->teamModel->get_active_agents($companyId);
+        $total_tasks_row = $this->teamModel->get_total_tasks($companyId);
+        $pending_tasks_row = $this->teamModel->get_pending_tasks($companyId);
 
-    // 4. Prepare data for the view
-    $data = [
-        'user' => $this->user,
-        'agents' => $this->teamModel->get_service_agents_by_company($companyId),
-        'stats' => [
-            'total_agents' => $total_agents_row->total_agents ?? 0,
-            'active_agents' => $active_agents_row->active_agents ?? 0,
-            'total_tasks' => $total_tasks_row->total_tasks ?? 0,
-            'pending_tasks' => $pending_tasks_row->pending_tasks ?? 0
-        ]
-    ];
+        // 4. Prepare data for the view
+        $data = [
+            'user' => $this->user,
+            'agents' => $this->teamModel->get_service_agents_by_company($companyId),
+            'stats' => [
+                'total_agents' => $total_agents_row->total_agents ?? 0,
+                'active_agents' => $active_agents_row->active_agents ?? 0,
+                'total_tasks' => $total_tasks_row->total_tasks ?? 0,
+                'pending_tasks' => $pending_tasks_row->pending_tasks ?? 0
+            ]
+        ];
 
-    $this->view('pages/common/team', $data, layout: 'dashboard');
-}
+        $this->view('pages/common/team', $data, layout: 'dashboard');
+    }
 
     public function add_service_agent()
     {
@@ -1139,13 +1144,13 @@ class InstallerAdmin extends Controller
         $low_stock_items = $this->managerModel->get_low_stock_items();
 
         $userId = $_SESSION['user_id'] ?? null;
-    $companyId = $this->teamModel->get_company_id_by_user($userId);
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
 
-    if (!$companyId) {
-        setToast('Unauthorized access or company not found.', 'error');
-        redirect('pages/login');
-        return;
-    }
+        if (!$companyId) {
+            setToast('Unauthorized access or company not found.', 'error');
+            redirect('pages/login');
+            return;
+        }
 
         // Handle add action
         if ($id === 'add') {
@@ -1185,7 +1190,7 @@ class InstallerAdmin extends Controller
             'total_op_managers' => $total_op_managers,
             'active_tasks' => $active_tasks,
             'pending_tasks' => $pending_tasks,
-            'completed_tasks' => $completed_tasks, 
+            'completed_tasks' => $completed_tasks,
             'total_inv_managers' => $total_inv_managers,
             'active_inv' => $active_inv,
             'low_stock_items' => $low_stock_items
@@ -1210,7 +1215,7 @@ class InstallerAdmin extends Controller
 
         // 2. Fetch list of managers from database
         $dbManagers = $this->managerModel->get_operation_manager_by_company_id($companyId);
-        
+
         // 3. Prepare summary stats for the view
         $data = [
             'user' => $this->user,
@@ -1278,7 +1283,7 @@ class InstallerAdmin extends Controller
 
         $this->view('pages/installer_admin/managers_list', $data, layout: 'dashboard');
     }
-    
+
     // Manager Detail View Methods
     public function operation_managers_detail($managerId = null)
     {
