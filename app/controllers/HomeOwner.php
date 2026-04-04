@@ -21,9 +21,26 @@ class HomeOwner extends Controller
     {
 
         if ($page == 'index') {
+            $userId       = (int) $_SESSION['user_id'];
+            $availYears   = $this->smsModel->get_available_years($userId);
+
+            // If DB has no years yet, fall back to current year in the list
+            if (empty($availYears)) {
+                $availYears = [(int) date('Y')];
+            }
+
+            // Use GET param if set and valid, otherwise fall back to most recent year with data
+            if (isset($_GET['year']) && in_array((int) $_GET['year'], $availYears)) {
+                $selectedYear = (int) $_GET['year'];
+            } else {
+                $selectedYear = (int) $availYears[0]; // most recent year that has records
+            }
+
             $data = [
-                'user'       => $this->user,
-                'chart_data' => $this->smsModel->get_chart_data((int) $_SESSION['user_id']),
+                'user'            => $this->user,
+                'chart_data'      => $this->smsModel->get_chart_data($userId, 12, $selectedYear),
+                'selected_year'   => $selectedYear,
+                'available_years' => $availYears,
             ];
 
             $this->view('pages/homeowner/dashboard', $data, layout: 'dashboard');

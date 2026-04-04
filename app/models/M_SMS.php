@@ -123,8 +123,10 @@ class M_SMS
         return $row->cnt > 0;
     }
 
-    public function get_chart_data(int $userId, int $limit = 12): array
+    public function get_chart_data(int $userId, int $limit = 12, ?int $year = null): array
     {
+        $year = $year ?? (int) date('Y');
+
         $this->db->query("
             SELECT
                 DATE_FORMAT(reading_date, '%b %Y')          AS label,
@@ -136,13 +138,28 @@ class M_SMS
                 monthly_bill
             FROM sms
             WHERE user_id = :user_id
+              AND YEAR(reading_date) = :year
             ORDER BY reading_date DESC
             LIMIT {$limit}
         ");
         $this->db->bind(':user_id', $userId);
+        $this->db->bind(':year', $year);
         $rows = $this->db->resultSet();
 
         return array_reverse((array) $rows);
+    }
+
+    public function get_available_years(int $userId): array
+    {
+        $this->db->query("
+            SELECT DISTINCT YEAR(reading_date) AS yr
+            FROM sms
+            WHERE user_id = :user_id
+            ORDER BY yr DESC
+        ");
+        $this->db->bind(':user_id', $userId);
+        $rows = $this->db->resultSet();
+        return array_column((array) $rows, 'yr');
     }
 }
 ?>

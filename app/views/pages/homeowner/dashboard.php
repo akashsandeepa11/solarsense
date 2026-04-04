@@ -25,7 +25,7 @@ $monthly_bills       = [];
 
 foreach ($chart_data as $row) {
     $labels[]              = $row->label;
-    $actual_generation[]   = (float) $row->consumption_units;
+    $actual_generation[]   = (float) $row->grid_export;
     $expected_generation[] = (float) ($row->expected_generation ?? 0);
     $grid_import[]         = (int)   $row->grid_import;
     $grid_export[]         = (int)   $row->grid_export;
@@ -118,22 +118,8 @@ $quick_actions = [
     ['label' => 'Download Report',        'url' => URLROOT . '/homeowner/dashboard/report', 'icon' => 'fas fa-file-pdf',      'class' => 'btn-secondary'],
 ];
 
-$currentMonth = isset($_GET['month']) ? (int)$_GET['month'] : (int)date('m');
-$currentYear  = isset($_GET['year'])  ? (int)$_GET['year']  : (int)date('Y');
-$startDate    = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
-$endDate      = isset($_GET['end_date'])   ? $_GET['end_date']   : date('Y-m-t');
-
-$months = [
-    1=>'January',2=>'February',3=>'March',4=>'April',
-    5=>'May',6=>'June',7=>'July',8=>'August',
-    9=>'September',10=>'October',11=>'November',12=>'December'
-];
-
-$years = [];
-for ($i = 0; $i < 5; $i++) {
-    $year = date('Y') - $i;
-    $years[$year] = $year;
-}
+// $selected_year and $available_years are injected by the controller
+$currentYear = $selected_year ?? (int) date('Y');
 ?>
 
 
@@ -176,60 +162,28 @@ for ($i = 0; $i < 5; $i++) {
     <div class="row">
         <!-- Left Column -->
         <div class="col-lg-8">
-            <!-- Chart Filter Component -->
-            <?php
-            $filterConfig = [
-                'filters' => [
-                    [
-                        'id' => 'monthFilter',
-                        'name' => 'month',
-                        'label' => 'Month',
-                        'options' => array_map(function($num, $name) use ($currentMonth) {
-                            return [
-                                'value' => $num,
-                                'label' => $name,
-                                'selected' => $currentMonth == $num
-                            ];
-                        }, array_keys($months), $months)
-                    ],
-                    [
-                        'id' => 'yearFilter',
-                        'name' => 'year',
-                        'label' => 'Year',
-                        'options' => array_map(function($year) use ($currentYear) {
-                            return [
-                                'value' => $year,
-                                'label' => $year,
-                                'selected' => $currentYear == $year
-                            ];
-                        }, array_keys($years))
-                    ]
-                ],
-                'buttons' => [
-                    [
-                        'label' => 'Apply Filters',
-                        'icon' => 'fas fa-filter',
-                        'class' => 'btn-primary',
-                        'type' => 'submit'
-                    ]
-                ],
-                'form_method' => 'GET',
-                'auto_submit' => true,
-                'reset_on_clear' => true
-            ];
-            $config = $filterConfig;
-            require APPROOT . '/views/inc/components/filter_bar.php';
-            ?>
-
             <!-- Main Performance Chart -->
             <div class="card shadow-lg rounded-xl">
                 <div class="card-body">
-                    <h3 class="card-title text-2xl font-semibold mb-4">
-                        Performance: Actual vs. Expected
-                        <span class="text-sm text-secondary font-normal">
-                            (<?php echo $months[$currentMonth]; ?> <?php echo $currentYear; ?>)
-                        </span>
-                    </h3>
+                    <!-- Chart header: title + inline year filter -->
+                    <div class="d-flex align-center justify-between mb-4" style="flex-wrap:wrap;gap:0.75rem;">
+                        <h3 class="card-title text-2xl font-semibold" style="margin:0;">
+                            Performance: Actual vs. Expected
+                            <span class="text-sm text-secondary font-normal">(<?php echo $currentYear; ?>)</span>
+                        </h3>
+                        <form method="GET" action="" class="d-flex align-center gap-2" style="gap:0.5rem;">
+                            <label for="yearFilter" class="text-sm font-medium" style="white-space:nowrap;">Year:</label>
+                            <select id="yearFilter" name="year"
+                                    onchange="this.form.submit()"
+                                    style="padding:0.35rem 0.6rem;border-radius:6px;border:1px solid var(--border-color,#ccc);font-size:0.9rem;background:var(--card-bg,#fff);color:inherit;">
+                                <?php foreach ($available_years as $yr): ?>
+                                    <option value="<?php echo $yr; ?>" <?php echo ($yr == $currentYear) ? 'selected' : ''; ?>>
+                                        <?php echo $yr; ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </form>
+                    </div>
                     <div class="chart-container">
                         <canvas id="performanceComparisonChart"></canvas>
                     </div>
@@ -332,16 +286,16 @@ for ($i = 0; $i < 5; $i++) {
                             pointRadius: 0,
                             yAxisID: 'y', // Main axis
                         },
-                        {
-                            type: 'line',
-                            label: 'Grid Import (kWh)',
-                            data: <?php echo json_encode($performance_chart_data['grid_import']); ?>,
-                            borderColor: 'rgba(239, 68, 68, 1)', // error color
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            fill: true,
-                            tension: 0.4,
-                            yAxisID: 'y1', // Secondary axis
-                        },
+                        // {
+                        //     type: 'line',
+                        //     label: 'Grid Import (kWh)',
+                        //     data: <?php echo json_encode($performance_chart_data['grid_import']); ?>,
+                        //     borderColor: 'rgba(239, 68, 68, 1)', // error color
+                        //     backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        //     fill: true,
+                        //     tension: 0.4,
+                        //     yAxisID: 'y1', // Secondary axis
+                        // },
                         {
                             type: 'bar',
                             label: 'Actual Generation (kWh)',
@@ -362,12 +316,6 @@ for ($i = 0; $i < 5; $i++) {
                             beginAtZero: true,
                             position: 'left',
                             title: { display: true, text: 'Energy Generation (kWh)' }
-                        },
-                        y1: {
-                            beginAtZero: true,
-                            position: 'right',
-                            title: { display: true, text: 'Grid Import (kWh)' },
-                            grid: { drawOnChartArea: false } // Hide grid lines for this axis
                         }
                     },
                     plugins: { 
