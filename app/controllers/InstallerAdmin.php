@@ -24,12 +24,27 @@ class InstallerAdmin extends Controller
 
     public function dashboard($page = 'dashboard')
     {
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
+
+        if (!$companyId) {
+            redirect('pages/login');
+            return;
+        }
+
+        $dashboardModel = $this->model('M_InstallerAdmin_Dashboard');
+
         $data = [
             'user' => $this->user,
+            'stats' => $dashboardModel->getStats($companyId),
+            'alerts' => $dashboardModel->getAlerts($companyId), 
+            'performance_snapshot' => $dashboardModel->getPerformanceSnapshot($companyId), 
+            'service_agents' => $dashboardModel->getServiceTeamStatus($companyId), 
+            'new_customers_data' => $dashboardModel->getNewCustomersChartData($companyId), 
+            'service_tasks_data' => $dashboardModel->getServiceTasksChartData($companyId) // Fetch task status data
         ];
 
         if ($page == 'system_performance') {
-
             return $this->view('pages/common/system_performance', $data, layout: 'dashboard');
         }
 

@@ -5,47 +5,76 @@
 $selectedMonth = isset($_GET['month']) ? (int)$_GET['month'] : date('n');
 $selectedYear = isset($_GET['year']) ? (int)$_GET['year'] : date('Y');
 
-// Business Summary Cards
+// --- PHP Setup for Data ---
+$stats = $data['stats'];
+
 $summary_cards = [
-    ['label' => 'Total Active Clients', 'value' => 128, 'icon' => 'fas fa-users', 'color' => 'primary'],
-    ['label' => 'Systems with Critical Faults', 'value' => 4, 'icon' => 'fas fa-exclamation-triangle', 'color' => 'error'],
-    ['label' => 'Pending Maintenance', 'value' => 9, 'icon' => 'fas fa-wrench', 'color' => 'warning'],
-    ['label' => 'Pending Installations', 'value' => 5, 'icon' => 'fas fa-tools', 'color' => 'warning'],
-    ['label' => 'Active Service Agents', 'value' => 6, 'icon' => 'fas fa-users-cog', 'color' => 'accent'],
-    ['label' => 'Monthly Recurring Revenue', 'value' => 'LKR 1.2M', 'icon' => 'fas fa-coins', 'color' => 'success'],
-    ['label' => 'Total Energy Generated', 'value' => '2,456 MWh', 'icon' => 'fas fa-bolt', 'color' => 'success'],
-    ['label' => 'Systems Underperforming', 'value' => 12, 'icon' => 'fas fa-chart-line', 'color' => 'warning'],
-    ['label' => 'Pending Complaints', 'value' => 3, 'icon' => 'fas fa-comment-dots', 'color' => 'error'],
-    ['label' => 'System Uptime Rate', 'value' => '98.5%', 'icon' => 'fas fa-shield-alt', 'color' => 'success'],
+    ['label' => 'Total Active Clients', 'value' => $stats['active_clients'], 'icon' => 'fas fa-users', 'color' => 'primary'],
+    ['label' => 'Critical Faults', 'value' => $stats['critical_faults'], 'icon' => 'fas fa-exclamation-triangle', 'color' => 'error'],
+    ['label' => 'Underperforming Systems', 'value' => $stats['underperforming'], 'icon' => 'fas fa-chart-line', 'color' => 'warning'],
+    ['label' => 'Pending Tasks', 'value' => $stats['pending_tasks'], 'icon' => 'fas fa-wrench', 'color' => 'warning'],
+    ['label' => 'Pending Installations', 'value' => '2', 'icon' => 'fas fa-tools', 'color' => 'warning'],
+    ['label' => 'Active Agents', 'value' => $stats['active_agents'], 'icon' => 'fas fa-users-cog', 'color' => 'accent'],
+    ['label' => 'Total Energy', 'value' => number_format($stats['total_energy']) . ' MWh', 'icon' => 'fas fa-bolt', 'color' => 'success'],
+    ['label' => 'Pending Complaints', 'value' => $stats['pending_complaints'], 'icon' => 'fas fa-comment-dots', 'color' => 'error']
 ];
 
 // High-Priority Alerts
-$alerts = [
-    ['client' => 'Kamal Perera', 'issue' => 'System Offline > 24hrs', 'priority' => 'high'],
-    ['client' => 'Suresh Kumar', 'issue' => 'Inverter Fault Detected', 'priority' => 'high'],
-    ['client' => 'Nimali Silva', 'issue' => 'Performance degraded by 35%', 'priority' => 'medium'],
-];
+// Inside dashboard.php, replace the hardcoded $alerts array:
+$alerts = [];
+if (!empty($data['alerts'])) {
+    foreach ($data['alerts'] as $alert) {
+        $alerts[] = [
+            'client' => $alert->email, // Displaying client email as requested
+            'issue' => $alert->issue,
+            'priority' => $alert->priority
+        ];
+    }
+}
 
 // Chart Data (Dynamic based on selected month/year)
+$labels = [];
+$counts = [];
+
+if (!empty($data['new_customers_data'])) {
+    foreach ($data['new_customers_data'] as $row) {
+        $labels[] = $row->month_label;
+        $counts[] = $row->customer_count;
+    }
+}
+
 $new_customers_chart_data = [
-    'labels' => ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
-    'data' => [5, 8, 6, 10, 9, 12],
+    'labels' => $labels,
+    'data' => $counts,
 ];
+// --- Inside dashboard.php, replace the static $service_tasks_chart_data array ---
+$task_labels = ['Pending', 'In Progress', 'Completed'];
+$task_counts = [0, 0, 0]; // Default values
+
+if (!empty($data['service_tasks_data'])) {
+    foreach ($data['service_tasks_data'] as $row) {
+        if ($row->status == 'Pending') $task_counts[0] = $row->task_count;
+        if ($row->status == 'In Progress') $task_counts[1] = $row->task_count;
+        if ($row->status == 'Completed') $task_counts[2] = $row->task_count;
+    }
+}
+
 $service_tasks_chart_data = [
-    'labels' => ['Pending', 'In Progress', 'Completed'],
-    'data' => [9, 4, 23],
-    'colors' => ['#f59e0b', '#00bcd4', '#22c55e']
+    'labels' => $task_labels,
+    'data' => $task_counts,
+    'colors' => ['#f59e0b', '#00bcd4', '#22c55e'] // Warning, Accent, Success
 ];
 
 // Service Team Status
-$service_agents = [
-    ['name' => 'Anura Kumara', 'status' => 'Available'],
-    ['name' => 'Bhanu Rajapaksha', 'status' => 'On Task'],
-    ['name' => 'Charith Weerasinghe', 'status' => 'Available'],
-    ['name' => 'Dasun Shanaka', 'status' => 'On Task'],
-    ['name' => 'Eshan Priyantha', 'status' => 'Offline'],
-    ['name' => 'Fathima Noor', 'status' => 'Available'],
-];
+$service_agents = [];
+if (!empty($data['service_agents'])) {
+    foreach ($data['service_agents'] as $agent) {
+        $service_agents[] = [
+            'name' => $agent->name,
+            'status' => ucfirst($agent->status)
+        ];
+    }
+}
 
 // Fleet-Wide Energy Generation Chart Data (in MWh)
 $fleet_generation_data = [
@@ -53,17 +82,31 @@ $fleet_generation_data = [
     'data' => [56.4, 62.1, 60.5, 68.2, 65.7, 61.3],
 ];
 
-// Best & Worst Performing Systems
-$best_performers = [
-    ['name' => 'Ravi Fernando', 'performance' => 108, 'status_class' => 'text-success'],
-    ['name' => 'Samanthi De Silva', 'performance' => 105, 'status_class' => 'text-success'],
-    ['name' => 'John Doe', 'performance' => 103, 'status_class' => 'text-success'],
-];
-$worst_performers = [
-    ['name' => 'Nimali Silva', 'performance' => 65, 'status_class' => 'text-error'],
-    ['name' => 'Suresh Kumar', 'performance' => 78, 'status_class' => 'text-warning'],
-    ['name' => 'Kamal Perera', 'performance' => 82, 'status_class' => 'text-warning'],
-];
+// --- Inside dashboard.php, replace the static arrays ---
+$snapshot = $data['performance_snapshot'];
+
+// Best Performers
+$best_performers = [];
+foreach ($snapshot['best'] as $item) {
+    $best_performers[] = [
+        'name' => $item->full_name,
+        'performance' => $item->performance,
+        'status_class' => 'text-success'
+    ];
+}
+
+// Worst Performers
+$worst_performers = [];
+foreach ($snapshot['worst'] as $item) {
+    $worst_performers[] = [
+        'name' => $item->full_name,
+        'performance' => $item->performance,
+        // Systems below 50% are marked with 'text-error' (Critical)
+        'status_class' => ($item->performance < 50) ? 'text-error' : 'text-warning'
+    ];
+}
+
+
 
 function getAgentStatusClass($status) {
     switch ($status) {
@@ -152,7 +195,6 @@ function getAgentStatusClass($status) {
                                 <i class="fas fa-exclamation-circle text-error text-xl"></i>
                                 <div>
                                     <div class="font-semibold"><?php echo htmlspecialchars($alert['client']); ?></div>
-                                    <div class="text-secondary text-sm"><?php echo htmlspecialchars($alert['issue']); ?></div>
                                 </div>
                             </div>
                             <a href="#" class="btn btn-sm btn-secondary rounded-lg">View Details</a>
