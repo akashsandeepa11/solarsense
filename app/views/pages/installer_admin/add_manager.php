@@ -1,6 +1,4 @@
 <?php
-    // --- PHP LOGIC FOR THE FORM ---
-
     // Determine manager type from URL or data
     $managerType = $data['managerType'] ?? 'operation_managers';
     $isOperationManager = $managerType === 'operation_managers';
@@ -94,19 +92,6 @@
                         </div>
                         <div class="col-md-6 form-group">
                             <?php $inputConfig = ['id' => 'joinDate', 'name' => 'joinDate', 'label' => 'Join Date', 'type' => 'date', 'icon' => 'fas fa-calendar-alt', 'value' => $data['joinDate'] ?? '', 'error' => $data['joinDate_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Credentials Section -->
-                <div class="form-section mb-10">
-                    <h3 class="text-lg font-semibold mb-6"><i class="fas fa-lock text-primary mr-2"></i>Login Credentials <?php if($isEditMode): ?><span class="text-secondary text-sm">(Leave blank to keep current password)</span><?php endif; ?></h3>
-                    <div class="row">
-                        <div class="col-md-6 form-group">
-                            <?php $inputConfig = ['id' => 'password', 'name' => 'password', 'label' => 'Password', 'type' => 'password', 'icon' => 'fas fa-lock', 'value' => $data['password'] ?? '', 'error' => $data['password_err'] ?? '', 'required' => !$isEditMode]; require APPROOT . '/views/inc/components/input_field.php'; ?>
-                        </div>
-                        <div class="col-md-6 form-group">
-                            <?php $inputConfig = ['id' => 'confirmPassword', 'name' => 'confirmPassword', 'label' => 'Confirm Password', 'type' => 'password', 'icon' => 'fas fa-lock', 'value' => $data['confirmPassword'] ?? '', 'error' => $data['confirmPassword_err'] ?? '', 'required' => !$isEditMode]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                     </div>
                 </div>

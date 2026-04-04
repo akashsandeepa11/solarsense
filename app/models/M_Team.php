@@ -14,10 +14,11 @@ class M_Team{
      * @param array $userData - Contains: email, password
      * @param array $agentData - Contains: full_name, contact, nic, address, district, 
      *                          specialization, experience_years, availability, certifications, status
-     * @return bool - true on success, false on failure
+     * @return array|bool - On success returns an array with keys 'success','user_id','password','email'; on failure returns false
      */
     public function add_service_agent($userData, $agentData) {
         try {
+            $plainPassword = substr(bin2hex(random_bytes(6)), 0, 10);
             // Start transaction
             $this->db->beginTransaction();
 
@@ -25,13 +26,41 @@ class M_Team{
             // Columns: email, password, type
             $this->db->query('INSERT INTO user (email, password, type, full_name) VALUES (:email, :password, :type, :full_name)');
             $this->db->bind(':email', $userData['email']);
-            $this->db->bind(':password', $userData['password']);
+            $this->db->bind(':password', password_hash($plainPassword, PASSWORD_DEFAULT)); 
             $this->db->bind(':type', ROLE_SERVICE_AGENT);
             $this->db->bind(':full_name', $agentData['full_name']);
             $this->db->execute();
 
             // Get the inserted user ID
             $userId = $this->db->lastInsertId();
+
+            // Get company id for the current installer admin
+            $installerAdminId = $_SESSION['user_id'] ?? null;
+            $this->db->query('SELECT company_id FROM installer_admin WHERE user_id = :user_id');
+            $this->db->bind(':user_id', $installerAdminId);
+            $companyRow = $this->db->single();
+            $companyId = $companyRow->company_id ?? null;
+
+            if (empty($installerAdminId)) {
+                throw new Exception('Installer admin user_id is missing from session');
+            }
+
+            if (empty($companyId)) {
+                // Log details for easier debugging
+                $debug = 'InstallerAdmin lookup failed - user_id: ' . var_export($installerAdminId, true) . ', companyRow: ' . var_export($companyRow, true);
+                error_log($debug);
+                throw new Exception('Company ID not found for installer admin user_id: ' . var_export($installerAdminId, true));
+            }
+
+            // Verify the company actually exists in the installer_company table
+            $this->db->query('SELECT company_id FROM installer_company WHERE company_id = :company_id');
+            $this->db->bind(':company_id', $companyId);
+            $companyExists = $this->db->single();
+            if (empty($companyExists) || empty($companyExists->company_id)) {
+                $debug = 'Installer company not found - company_id: ' . var_export($companyId, true) . ', installer_admin_row: ' . var_export($companyRow, true);
+                error_log($debug);
+                throw new Exception('Installer company not found for company_id: ' . var_export($companyId, true));
+            }
 
             // 2. Insert into `service_agent` table
             // Columns: user_id, company_id, full_name, email, nic, address, contact, district, 
@@ -44,7 +73,7 @@ class M_Team{
             ');
             
             $this->db->bind(':user_id', $userId);
-            $this->db->bind(':company_id', 1); // Default company_id - adjust as needed
+            $this->db->bind(':company_id', $companyId);
             $this->db->bind(':nic', $agentData['nic']);
             $this->db->bind(':address', $agentData['address']);
             $this->db->bind(':contact', $agentData['contact_number']);
@@ -61,7 +90,13 @@ class M_Team{
             // Commit the transaction
             $this->db->commit();
 
-            return true;
+            // Return success with created user details (including plaintext password for emailing)
+            return [
+                'success' => true,
+                'user_id' => $userId,
+                'password' => $plainPassword,
+                'email' => $userData['email'] ?? ''
+            ];
 
         } catch (Exception $e) {
             $this->db->rollBack();

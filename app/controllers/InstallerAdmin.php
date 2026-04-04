@@ -654,7 +654,6 @@ class InstallerAdmin extends Controller
 
     public function add_service_agent()
     {
-
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Form is submitting
             // Validate the data
@@ -670,8 +669,6 @@ class InstallerAdmin extends Controller
                 'contactNumber' => trim($_POST['contactNumber'] ?? ''),
                 'address' => trim($_POST['address'] ?? ''),
                 'nic' => trim($_POST['nic'] ?? ''),
-                'password' => trim($_POST['password'] ?? ''),
-                'confirmPassword' => trim($_POST['confirmPassword'] ?? ''),
                 'district' => trim($_POST['district'] ?? ''),
                 'specialization' => trim($_POST['specialization'] ?? ''),
                 'experienceYears' => trim($_POST['experienceYears'] ?? ''),
@@ -684,8 +681,6 @@ class InstallerAdmin extends Controller
                 'contactNumber_err' => '',
                 'address_err' => '',
                 'nic_err' => '',
-                'password_err' => '',
-                'confirmPassword_err' => '',
                 'district_err' => '',
                 'specialization_err' => '',
                 'experienceYears_err' => '',
@@ -693,7 +688,6 @@ class InstallerAdmin extends Controller
                 'certifications_err' => ''
             ];
 
-            // Validation Logic
             // Validate Full Name
             if (empty($data['fullName'])) {
                 $data['fullName_err'] = 'Full Name is required';
@@ -728,32 +722,6 @@ class InstallerAdmin extends Controller
                 $data['district_err'] = 'District is required';
             }
 
-            // Validate Password (required only in add mode)
-            if ($data['mode'] === 'add') {
-                if (empty($data['password'])) {
-                    $data['password_err'] = 'Password is required';
-                } elseif (strlen($data['password']) < 6) {
-                    $data['password_err'] = 'Password must be at least 6 characters';
-                }
-
-                // Validate Confirm Password (required only in add mode)
-                if (empty($data['confirmPassword'])) {
-                    $data['confirmPassword_err'] = 'Confirm Password is required';
-                } elseif ($data['password'] !== $data['confirmPassword']) {
-                    $data['confirmPassword_err'] = 'Passwords do not match';
-                }
-            } else {
-                // In edit mode, password is optional
-                if (!empty($data['password'])) {
-                    if (strlen($data['password']) < 6) {
-                        $data['password_err'] = 'Password must be at least 6 characters';
-                    }
-                    if ($data['password'] !== $data['confirmPassword']) {
-                        $data['confirmPassword_err'] = 'Passwords do not match';
-                    }
-                }
-            }
-
             // Validate Specialization
             if (empty($data['specialization'])) {
                 $data['specialization_err'] = 'Specialization is required';
@@ -775,7 +743,6 @@ class InstallerAdmin extends Controller
             if (
                 empty($data['fullName_err']) && empty($data['email_err']) && empty($data['contactNumber_err']) &&
                 empty($data['nic_err']) && empty($data['address_err']) && empty($data['district_err']) &&
-                empty($data['password_err']) && empty($data['confirmPassword_err']) &&
                 empty($data['specialization_err']) && empty($data['experienceYears_err']) && empty($data['availability_err'])
             ) {
 
@@ -794,11 +761,6 @@ class InstallerAdmin extends Controller
                     'status' => 'active'
                 ];
 
-                // Add password only if provided (new or updated password)
-                if (!empty($data['password'])) {
-                    $agentData['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
-                }
-
                 // Add creation date only for new agents
                 if ($data['mode'] === 'add') {
                     $agentData['created_date'] = date('Y-m-d H:i:s');
@@ -806,8 +768,7 @@ class InstallerAdmin extends Controller
 
                 // Prepare user data for model
                 $userData = [
-                    'email' => $data['email'],
-                    'password' => password_hash($data['password'], PASSWORD_DEFAULT)
+                    'email' => $data['email']
                 ];
 
                 // Call model to save data
@@ -860,8 +821,6 @@ class InstallerAdmin extends Controller
                 'contactNumber' => '',
                 'address' => '',
                 'nic' => '',
-                'password' => '',
-                'confirmPassword' => '',
                 'district' => '',
                 'specialization' => '',
                 'experienceYears' => '',
@@ -873,8 +832,6 @@ class InstallerAdmin extends Controller
                 'contactNumber_err' => '',
                 'address_err' => '',
                 'nic_err' => '',
-                'password_err' => '',
-                'confirmPassword_err' => '',
                 'district_err' => '',
                 'specialization_err' => '',
                 'experienceYears_err' => '',
@@ -1394,8 +1351,6 @@ class InstallerAdmin extends Controller
                 'address' => trim($_POST['address'] ?? ''),
                 'district' => trim($_POST['district'] ?? ''),
                 'joinDate' => trim($_POST['joinDate'] ?? ''),
-                'password' => trim($_POST['password'] ?? ''),
-                'confirmPassword' => trim($_POST['confirmPassword'] ?? ''),
                 'status' => trim($_POST['status'] ?? 'Active'),
                 'experienceLevel' => trim($_POST['experienceLevel'] ?? ''),
                 'certifications' => trim($_POST['certifications'] ?? ''),
@@ -1449,19 +1404,6 @@ class InstallerAdmin extends Controller
             if (empty($data['nic'])) {
                 $data['nic_err'] = 'Please enter NIC/ID number';
             }
-
-            if (empty($data['password'])) {
-                $data['password_err'] = 'Please enter password';
-            } elseif (strlen($data['password']) < 6) {
-                $data['password_err'] = 'Password must be at least 6 characters';
-            }
-
-            if (empty($data['confirmPassword'])) {
-                $data['confirmPassword_err'] = 'Please confirm password';
-            } elseif ($data['password'] !== $data['confirmPassword']) {
-                $data['confirmPassword_err'] = 'Passwords do not match';
-            }
-
             if (empty($data['district'])) {
                 $data['district_err'] = 'Please select district';
             }
