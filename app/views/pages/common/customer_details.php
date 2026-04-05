@@ -1,3 +1,8 @@
+<?php
+// Real data from controller
+$customer      = $data['customer']      ?? null;
+$serviceAgents = $data['service_agents'] ?? [];
+?>
 
 <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/installer_admin/customer_details.css">
 
@@ -104,8 +109,62 @@
             </div>
         </div>
 
-        <!-- Right Column: System Stats & Activity -->
+        <!-- Right Column: Service Agents & System Stats -->
         <div class="col-md-7">
+
+            <!-- Service Agents Table -->
+            <div class="card mb-6">
+                <div class="card-header border-bottom">
+                    <h3 class="card-title">Assigned Service Agents</h3>
+                </div>
+                <div class="card-body p-0">
+                    <?php if (!empty($serviceAgents)): ?>
+                    <table style="width:100%;border-collapse:collapse;">
+                        <thead>
+                            <tr>
+                                <th style="padding:.75rem 1rem;background:#f9fafb;font-weight:600;color:#374151;font-size:.875rem;border-bottom:1px solid #f3f4f6;">Agent</th>
+                                <th style="padding:.75rem 1rem;background:#f9fafb;font-weight:600;color:#374151;font-size:.875rem;border-bottom:1px solid #f3f4f6;">Specialization</th>
+                                <th style="padding:.75rem 1rem;background:#f9fafb;font-weight:600;color:#374151;font-size:.875rem;border-bottom:1px solid #f3f4f6;">Contact</th>
+                                <th style="padding:.75rem 1rem;background:#f9fafb;font-weight:600;color:#374151;font-size:.875rem;border-bottom:1px solid #f3f4f6;">Tasks</th>
+                                <th style="padding:.75rem 1rem;background:#f9fafb;font-weight:600;color:#374151;font-size:.875rem;border-bottom:1px solid #f3f4f6;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($serviceAgents as $agent): ?>
+                            <tr>
+                                <td style="padding:.75rem 1rem;border-bottom:1px solid #f3f4f6;font-size:.875rem;">
+                                    <div class="d-flex align-center gap-2">
+                                        <img src="<?php echo getAvatarUrl($agent->full_name); ?>"
+                                             alt="<?php echo htmlspecialchars($agent->full_name); ?>"
+                                             style="width:32px;height:32px;border-radius:50%;">
+                                        <div>
+                                            <div class="font-semibold"><?php echo htmlspecialchars($agent->full_name); ?></div>
+                                            <div class="text-sm text-secondary"><?php echo htmlspecialchars($agent->email); ?></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="padding:.75rem 1rem;border-bottom:1px solid #f3f4f6;font-size:.875rem;"><?php echo htmlspecialchars($agent->specialization ?? '—'); ?></td>
+                                <td style="padding:.75rem 1rem;border-bottom:1px solid #f3f4f6;font-size:.875rem;"><?php echo htmlspecialchars($agent->contact ?? '—'); ?></td>
+                                <td style="padding:.75rem 1rem;border-bottom:1px solid #f3f4f6;font-size:.875rem;">
+                                    <span class="badge bg-info"><?php echo (int)$agent->completed_tasks; ?>/<?php echo (int)$agent->total_tasks; ?></span>
+                                </td>
+                                <td style="padding:.75rem 1rem;border-bottom:1px solid #f3f4f6;font-size:.875rem;">
+                                    <?php $sc = ($agent->agent_status === 'Active') ? 'bg-success' : 'bg-warning'; ?>
+                                    <span class="badge <?php echo $sc; ?>"><?php echo htmlspecialchars($agent->agent_status ?? 'Unknown'); ?></span>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                    <?php else: ?>
+                    <div class="p-6 text-center text-secondary">
+                        <i class="fas fa-user-slash fa-2x mb-2"></i>
+                        <p>No service agents have been assigned to this customer yet.</p>
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
             <!-- Performance Stats -->
             <div class="stats-grid mb-6 row gap-4">
                 <div class="col-md-4">

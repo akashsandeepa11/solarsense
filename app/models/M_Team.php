@@ -401,27 +401,28 @@ class M_Team
     public function get_service_agents_by_company($companyId)
     {
         try {
-            // We join with service_req (aliased as sr) to count tasks per agent
-            $this->db->query('SELECT 
-                            u.user_id AS id,
-                            u.email,
-                            u.full_name,
-                            sa.contact,
-                            sa.status as agent_status,
-                            COUNT(sr.req_id) as assigned_tasks,
-                            SUM(CASE WHEN sr.status = "Completed" THEN 1 ELSE 0 END) as completed_tasks,
-                            SUM(CASE WHEN sr.status = "Pending" THEN 1 ELSE 0 END) as pending_tasks
-                        FROM user u
-                        INNER JOIN service_agent sa ON u.user_id = sa.user_id
-                        LEFT JOIN service_req sr ON sa.user_id = sr.agent_id
-                        WHERE sa.company_id = :company_id
-                        GROUP BY u.user_id, u.email, u.full_name, sa.contact, sa.status');
+            $this->db->query("
+                SELECT
+                    u.user_id AS id,
+                    u.email,
+                    u.full_name,
+                    sa.contact,
+                    sa.status AS agent_status,
+                    COUNT(sr.task_id)                                                  AS assigned_tasks,
+                    SUM(CASE WHEN sr.status = 'Completed' THEN 1 ELSE 0 END)          AS completed_tasks,
+                    SUM(CASE WHEN sr.status = 'Pending'   THEN 1 ELSE 0 END)          AS pending_tasks
+                FROM user u
+                INNER JOIN service_agent sa ON u.user_id = sa.user_id
+                LEFT JOIN service_req sr    ON sa.user_id = sr.agent_id
+                WHERE sa.company_id = :company_id
+                GROUP BY u.user_id, u.email, u.full_name, sa.contact, sa.status
+            ");
 
             $this->db->bind(':company_id', $companyId);
-            return $this->db->resultSet();
+            return $this->db->resultSet() ?: [];
         } catch (Exception $e) {
             error_log('Get service agents by company failed: ' . $e->getMessage());
-            return false;
+            return [];
         }
     }
 
@@ -593,6 +594,36 @@ class M_Team
         } catch (Exception $e) {
             error_log('Check NIC exists failed: ' . $e->getMessage());
             return false;
+        }
+    }
+    /**
+     * Get service agents assigned to a specific customer via service_req
+     */
+    public function get_service_agents_by_customer($customerId)
+    {
+        try {
+            $this->db->query("
+                SELECT
+                    u.user_id,
+                    u.full_name,
+                    u.email,
+                    sa.contact,
+                    sa.specialization,
+                    sa.status                                                          AS agent_status,
+                    COUNT(sr.task_id)                                                  AS total_tasks,
+                    SUM(CASE WHEN sr.status = 'Completed' THEN 1 ELSE 0 END)          AS completed_tasks,
+                    SUM(CASE WHEN sr.status = 'Pending'   THEN 1 ELSE 0 END)          AS pending_tasks
+                FROM service_req sr
+                JOIN user u              ON sr.agent_id  = u.user_id
+                LEFT JOIN service_agent sa ON sa.user_id = u.user_id
+                WHERE sr.homeowner_id = :customer_id
+                GROUP BY u.user_id, u.full_name, u.email, sa.contact, sa.specialization, sa.status
+            ");
+            $this->db->bind(':customer_id', $customerId);
+            return $this->db->resultSet() ?: [];
+        } catch (Exception $e) {
+            error_log('get_service_agents_by_customer failed: ' . $e->getMessage());
+            return [];
         }
     }
 }

@@ -107,9 +107,26 @@ class InstallerAdmin extends Controller
 
     public function customerdetails($customerId = null)
     {
+        if (empty($customerId)) {
+            setToast('Invalid customer ID', 'error');
+            redirect('installeradmin/fleet');
+            return;
+        }
+
+        $customer      = $this->fleetModel->get_customer_details($customerId);
+        $serviceAgents = $this->teamModel->get_service_agents_by_customer($customerId);
+
+        if (!$customer) {
+            setToast('Customer not found', 'error');
+            redirect('installeradmin/fleet');
+            return;
+        }
+
         $data = [
-            'user' => $this->user,
-            'customerId' => $customerId
+            'user'           => $this->user,
+            'customerId'     => $customerId,
+            'customer'       => $customer,
+            'service_agents' => $serviceAgents,
         ];
 
         $this->view('pages/common/customer_details', $data, layout: 'dashboard');
