@@ -3,6 +3,7 @@
 <div class="container-fluid p-8">
   <!-- Page Header -->
   <?php
+  $user_data = $data['user_data'];
   $config = [
       'title' => 'My Profile',
       'description' => 'Manage your personal information and solar system details'
@@ -22,7 +23,7 @@
                   [
                       'id' => 'full-name',
                       'label' => 'Full Name',
-                      'value' => 'Kavidu Sandun',
+                      'value' => $user_data->full_name ?? '',
                       'type' => 'text',
                       'editable' => true,
                       'required' => true,
@@ -31,7 +32,7 @@
                   [
                       'id' => 'email',
                       'label' => 'Email',
-                      'value' => 'nadithnemal2002@gmail.com',
+                      'value' => $user_data->email ?? '',
                       'type' => 'email',
                       'editable' => true,
                       'required' => true,
@@ -40,7 +41,7 @@
                   [
                       'id' => 'phone',
                       'label' => 'Phone number',
-                      'value' => '+54 548 654 65',
+                      'value' => $user_data->phone_number ?? '',
                       'type' => 'tel',
                       'editable' => true,
                       'required' => false,
@@ -49,7 +50,7 @@
                   [
                       'id' => 'address',
                       'label' => 'Address',
-                      'value' => 'No. 47, Lakeview Lane, Colombo 07, Sri Lanka',
+                      'value' => $user_data->address ?? '',
                       'type' => 'text',
                       'editable' => true,
                       'required' => true,
@@ -58,7 +59,7 @@
                   [
                       'id' => 'district',
                       'label' => 'District',
-                      'value' => 'Colombo',
+                      'value' => $user_data->district ?? '',
                       'type' => 'text',
                       'editable' => false
                   ]
@@ -70,42 +71,42 @@
                   [
                       'id' => 'system-capacity',
                       'label' => 'System Capacity',
-                      'value' => '5 kWp',
+                      'value' => $user_data->system_capacity ? $user_data->system_capacity . ' kWp' : '',
                       'type' => 'text',
                       'editable' => false
                   ],
                   [
                       'id' => 'panel-tilt',
                       'label' => 'Panel Tilt',
-                      'value' => '30°',
+                      'value' => $user_data->system_tilt ? $user_data->system_tilt . '°' : '',
                       'type' => 'text',
                       'editable' => false
                   ],
                   [
                       'id' => 'panel-azimuth',
                       'label' => 'Panel Azimuth',
-                      'value' => 'North',
+                      'value' => $user_data->system_azimuth ? $user_data->system_azimuth . '°' : '',
                       'type' => 'text',
                       'editable' => false
                   ],
                   [
                       'id' => 'installation-date',
                       'label' => 'Installation Date',
-                      'value' => '01/05/2017',
+                      'value' => $user_data->installation_date ?? '',
                       'type' => 'date',
                       'editable' => false
                   ],
                   [
                       'id' => 'panel-brand',
                       'label' => 'Panel Brand',
-                      'value' => 'SunPower',
+                      'value' => $user_data->panel_brand ?? '',
                       'type' => 'text',
                       'editable' => false
                   ],
                   [
                       'id' => 'inverter-brand',
                       'label' => 'Inverter Brand',
-                      'value' => 'SMA',
+                      'value' => $user_data->inverter_brand ?? '',
                       'type' => 'text',
                       'editable' => false
                   ]
@@ -117,7 +118,7 @@
                   [
                       'id' => 'ceb-account',
                       'label' => 'CEB Account',
-                      'value' => '123456VC',
+                      'value' => $user_data->ceb_account ?? '',
                       'type' => 'text',
                       'editable' => false
                   ],
@@ -180,12 +181,12 @@
 
           <!-- Profile Info -->
           <div class="text-center">
-            <img src="<?php echo htmlspecialchars(getAvatarUrl('Kavidu Sandun', 140)); ?>" alt="Profile" style="object-fit:cover;">
+            <img src="<?php echo htmlspecialchars(getAvatarUrl($user_data->full_name, 140)); ?>" alt="Profile" style="object-fit:cover;">
 
-            <h5 class="mb-1 fw-bold" id="summary-name">Kavidu Sandun</h5>
-            <p class="text-muted small mb-1" id="summary-emailKavidu Sandun@gmail.com</p>
-            <p class="text-muted small mb-1" id="summary-location">No. 47, Lakeview Lane, Colombo 07, Sri Lanka</p>
-            <p class="text-muted small mb-4" id="summary-phone">+54 548 654 65</p>
+            <h5 class="mb-1 fw-bold" id="summary-name"><?php echo htmlspecialchars($user_data->full_name); ?></h5>
+            <p class="text-muted small mb-1" id="summary-email"><?php echo htmlspecialchars($user_data->email ); ?></p>
+            <p class="text-muted small mb-1" id="summary-location"><?php echo htmlspecialchars($user_data->address); ?></p>
+            <p class="text-muted small mb-4" id="summary-phone"><?php echo htmlspecialchars($user_data->phone_number); ?></p>
           </div>
 
           <!-- Divider -->

@@ -4,6 +4,9 @@ class HomeOwner extends Controller
     private $serviceModel;
     private $smsModel;
     private $solarSystemModel;
+    private $dashboardModel;
+    private $inventoryModel;
+    private $profileModel;
 
     private $user = [
         'role' => ROLE_HOMEOWNER,
@@ -14,6 +17,9 @@ class HomeOwner extends Controller
         $this->serviceModel      = $this->model('M_Service');
         $this->smsModel          = $this->model('M_SMS');
         $this->solarSystemModel  = $this->model('M_SolarSystem');
+        $this->dashboardModel    = $this->model('M_Homeowner_Dashboard');
+        $this->inventoryModel    = $this->model('M_Inventory');
+        $this->profileModel      = $this->model('M_Profile');
     }
 
 
@@ -23,7 +29,8 @@ class HomeOwner extends Controller
         
             $userId     = (int) $_SESSION['user_id'];
             $availYears = $this->smsModel->get_available_years($userId);
-            $system = $this->solarSystemModel->get_by_user($userId);
+            $stats = $this->dashboardModel->getStats($_SESSION['user_id']);
+            $system = $this->solarSystemModel->findById($userId);
         
             if (empty($availYears)) {
                 $availYears = [(int) date('Y')];
@@ -43,6 +50,7 @@ class HomeOwner extends Controller
         
             $data = [
                 'user'            => $this->user,
+                'stats'           => $stats,
                 'chart_data'      => $this->smsModel->get_chart_data($userId, 12, $selectedYear),
                 'selected_year'   => $selectedYear,
                 'available_years' => $availYears,
@@ -241,8 +249,10 @@ class HomeOwner extends Controller
 
     public function profile()
     {
+        $user_data = $this->profileModel->getHomeownerProfile($_SESSION['user_id']);
         $data = [
             'user' => $this->user,
+            'user_data' => $user_data
         ];
 
         $this->view('pages/homeowner/profile', $data, 'dashboard');
@@ -309,6 +319,7 @@ class HomeOwner extends Controller
             // GET — show the upload form
             $data = [
                 'user' => $this->user,
+                'recentUploads' => $this->smsModel->sms_history()
             ];
             $this->view('pages/homeowner/uploadsms', $data, 'dashboard');
         }

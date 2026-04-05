@@ -60,48 +60,7 @@ $performance_pct = ($latest_expected > 0)
     ? min(100, round(($latest_consumption / $latest_expected) * 100))
     : 0;
 
-// --- Lifetime profit: sum of all grid-export income ---
-$total_export_kwh   = array_sum($grid_export);
-$total_income_lkr   = $total_export_kwh * SOLAR_TARIFF_RATE_LKR;
-$yearly_goal        = 500000; // LKR – adjust as needed
-$yearly_goal_pct    = min(100, round(($total_income_lkr / $yearly_goal) * 100));
-
 $system_health   = ['performance_vs_expected' => $performance_pct];
-$profit_tracker  = [
-    'total_accumulated'   => 'LKR ' . number_format($total_income_lkr),
-    'yearly_goal_progress' => $yearly_goal_pct,
-];
-
-$stat_metrics = [
-    [
-        'label' => 'Actual Consumption',
-        'value' => number_format($latest_consumption) . ' kWh',
-        'icon'  => 'fas fa-solar-panel',
-        'color' => 'primary',
-        'trend' => ['direction' => 'up', 'percentage' => 0]
-    ],
-    [
-        'label' => 'Grid Export',
-        'value' => $latest_export . ' kWh',
-        'icon'  => 'fas fa-arrow-up',
-        'color' => 'success',
-        'trend' => ['direction' => 'up', 'percentage' => 0]
-    ],
-    [
-        'label' => 'Grid Import',
-        'value' => $latest_import . ' kWh',
-        'icon'  => 'fas fa-arrow-down',
-        'color' => 'warning',
-        'trend' => ['direction' => 'down', 'percentage' => 0]
-    ],
-    [
-        'label' => 'Monthly Income',
-        'value' => 'LKR ' . number_format($monthly_income_lkr),
-        'icon'  => 'fas fa-coins',
-        'color' => 'accent',
-        'trend' => ['direction' => 'up', 'percentage' => 0]
-    ],
-];
 
 // --- Bar colors based on actual vs expected ---
 $bar_colors = [];
@@ -112,6 +71,36 @@ foreach ($actual_generation as $i => $actual) {
     elseif ($ratio >= 0.75)  $bar_colors[] = 'rgba(245, 158, 11, 0.7)';
     else                     $bar_colors[] = 'rgba(239, 68, 68, 0.7)';
 }
+
+// $selected_year and $available_years are injected by the controller
+$currentYear = $selected_year ?? (int) date('Y');
+
+$stats = $data['stats'];
+
+$total_export     = $stats->total_export     ?? 0;
+$total_import     = $stats->total_import     ?? 0;
+$total_generation = $stats->total_generation ?? 0;
+
+$stat_metrics = [
+    [
+        'label' => 'Total Solar Generation',
+        'value' => $total_generation . ' kWh',
+        'icon'  => 'fas fa-solar-panel',
+        'color' => 'primary'
+    ],
+    [
+        'label' => 'Grid Export',
+        'value' => $total_export . ' kWh',
+        'icon'  => 'fas fa-arrow-up',
+        'color' => 'success'
+    ],
+    [
+        'label' => 'Grid Import',
+        'value' => $total_import . ' kWh',
+        'icon'  => 'fas fa-arrow-down',
+        'color' => 'warning'
+    ]
+];
 
 $recent_alerts = [
     ['date' => 'July 15th',  'description' => 'Performance 15% below expected for weather conditions.'],
@@ -124,14 +113,11 @@ $quick_actions = [
     ['label' => 'View Accessories Store', 'url' => URLROOT . '/homeowner/shop',             'icon' => 'fas fa-shopping-cart', 'class' => 'btn-secondary'],
     ['label' => 'Download Report',        'url' => URLROOT . '/homeowner/dashboard/report', 'icon' => 'fas fa-file-pdf',      'class' => 'btn-secondary'],
 ];
-
-// $selected_year and $available_years are injected by the controller
-$currentYear = $selected_year ?? (int) date('Y');
 ?>
 
 
 <!-- Link to your custom CSS file for this page -->
-<link rel="stylesheet" href="<?php echo URLROOT?>/public/css/pages/homeowner/dashboard.css">
+<link rel="stylesheet" href="<?php echo URLROOT ?>/public/css/pages/homeowner/dashboard.css">
 <!-- Include Chart.js for the charts to render -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -144,7 +130,7 @@ $currentYear = $selected_year ?? (int) date('Y');
         'description' => 'Here\'s your solar performance overview.',
         'buttons' => [
             [
-                'label' => '+ Upload New SMS',
+                'label' => 'Upload New SMS',
                 'url' => URLROOT . '/homeowner/dashboard/uploadsms',
                 'icon' => 'fas fa-cloud-upload-alt',
                 'class' => 'btn-primary'
@@ -230,20 +216,21 @@ $currentYear = $selected_year ?? (int) date('Y');
                     <h3 class="card-title text-xl font-semibold">System Health</h3>
                     <p class="text-secondary text-sm mb-2">Performance vs. Expected</p>
                     <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: <?php echo $system_health['performance_vs_expected']; ?>%;">
-                            <span class="progress-bar-label"><?php echo $system_health['performance_vs_expected']; ?>%</span>
+                        <div class="progress-bar"
+                            style="width: <?php echo $system_health['performance_vs_expected']; ?>%;">
+                            <span
+                                class="progress-bar-label"><?php echo $system_health['performance_vs_expected']; ?>%</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Lifetime Profit Tracker -->
-            <div class="card shadow-lg rounded-xl">
+            <!-- <div class="card shadow-lg rounded-xl">
                 <div class="card-body">
                     <h3 class="card-title text-xl font-semibold">Lifetime Profit Tracker</h3>
                     <p class="text-secondary text-sm">Total Accumulated Savings</p>
                     <p class="text-3xl font-bold text-success mb-3"><?php echo $profit_tracker['total_accumulated']; ?></p>
-                    <!-- --- NEW DETAIL --- -->
                     <p class="text-secondary text-sm mt-n2 mb-2">This month's contribution: <strong>LKR <?php echo number_format($monthly_income_lkr); ?></strong></p>
                     <div class="progress-bar-container">
                         <div class="progress-bar bg-accent" style="width: <?php echo $profit_tracker['yearly_goal_progress']; ?>%;">
@@ -251,17 +238,17 @@ $currentYear = $selected_year ?? (int) date('Y');
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
     </div>
-    
+
     <!-- Quick Actions & Recent Alerts -->
     <div class="row mt-6">
         <div class="col-lg-8">
-             <div class="card shadow-lg rounded-xl h-100">
+            <div class="card shadow-lg rounded-xl h-100">
                 <div class="card-body">
                     <h3 class="card-title text-2xl font-semibold mb-4">Recent Faults & Alerts</h3>
-                    <?php foreach($recent_alerts as $alert): ?>
+                    <?php foreach ($recent_alerts as $alert): ?>
                         <?php require APPROOT . '/views/inc/components/alert_item.php'; ?>
                     <?php endforeach; ?>
                 </div>
@@ -271,8 +258,8 @@ $currentYear = $selected_year ?? (int) date('Y');
             <div class="card shadow-lg rounded-xl h-100">
                 <div class="card-body d-flex flex-column justify-around gap-2">
                     <?php foreach ($quick_actions as $action): ?>
-                        <a href="<?php echo htmlspecialchars($action['url']); ?>" 
-                           class="btn <?php echo htmlspecialchars($action['class']); ?> btn-lg btn-block">
+                        <a href="<?php echo htmlspecialchars($action['url']); ?>"
+                            class="btn <?php echo htmlspecialchars($action['class']); ?> btn-lg btn-block">
                             <i class="<?php echo htmlspecialchars($action['icon']); ?> mr-2"></i>
                             <?php echo htmlspecialchars($action['label']); ?>
                         </a>
@@ -280,11 +267,10 @@ $currentYear = $selected_year ?? (int) date('Y');
                 </div>
             </div>
         </div>
-</div>
+    </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Performance Comparison Chart
         const performanceCtx = document.getElementById('performanceComparisonChart');
         if (performanceCtx) {
             new Chart(performanceCtx, {
@@ -295,33 +281,23 @@ $currentYear = $selected_year ?? (int) date('Y');
                             type: 'line',
                             label: 'Expected Generation (kWh)',
                             data: <?php echo json_encode($performance_chart_data['expected_generation']); ?>,
-                            borderColor: 'rgba(12, 84, 163, 1)', // secondary color
+                            borderColor: 'rgba(12, 84, 163, 1)',
                             borderWidth: 2,
-                            borderDash: [5, 5], // Makes the line dashed
+                            borderDash: [5, 5],
                             fill: false,
                             tension: 0.4,
-                            pointRadius: 0,
-                            yAxisID: 'y', // Main axis
+                            pointRadius: 3,
+                            yAxisID: 'y',
                         },
-                        // {
-                        //     type: 'line',
-                        //     label: 'Grid Import (kWh)',
-                        //     data: <?php echo json_encode($performance_chart_data['grid_import']); ?>,
-                        //     borderColor: 'rgba(239, 68, 68, 1)', // error color
-                        //     backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                        //     fill: true,
-                        //     tension: 0.4,
-                        //     yAxisID: 'y1', // Secondary axis
-                        // },
                         {
                             type: 'bar',
                             label: 'Actual Generation (kWh)',
                             data: <?php echo json_encode($performance_chart_data['actual_generation']); ?>,
-                            backgroundColor: <?php echo json_encode($bar_colors); ?>, // Dynamic colors
+                            backgroundColor: <?php echo json_encode($bar_colors); ?>,
                             borderColor: 'rgba(254, 150, 48, 1)',
                             borderWidth: 1,
                             borderRadius: 5,
-                            yAxisID: 'y', // Main axis
+                            yAxisID: 'y',
                         }
                     ]
                 },
@@ -335,8 +311,8 @@ $currentYear = $selected_year ?? (int) date('Y');
                             title: { display: true, text: 'Energy Generation (kWh)' }
                         }
                     },
-                    plugins: { 
-                        legend: { position: 'bottom' } 
+                    plugins: {
+                        legend: { position: 'bottom' }
                     }
                 }
             });
