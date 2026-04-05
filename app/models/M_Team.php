@@ -1,9 +1,11 @@
 <?php
-class M_Team{
+class M_Team
+{
     private $db;
     private $stmt;
 
-    public function __construct(){
+    public function __construct()
+    {
         $this->db = new Database();
     }
 
@@ -14,10 +16,12 @@ class M_Team{
      * @param array $userData - Contains: email, password
      * @param array $agentData - Contains: full_name, contact, nic, address, district, 
      *                          specialization, experience_years, availability, certifications, status
-     * @return bool - true on success, false on failure
+     * @return array|bool - On success returns an array with keys 'success','user_id','password','email'; on failure returns false
      */
-    public function add_service_agent($userData, $agentData) {
+    public function add_service_agent($userData, $agentData)
+    {
         try {
+            $plainPassword = substr(bin2hex(random_bytes(6)), 0, 10);
             // Start transaction
             $this->db->beginTransaction();
 
@@ -25,13 +29,41 @@ class M_Team{
             // Columns: email, password, type
             $this->db->query('INSERT INTO user (email, password, type, full_name) VALUES (:email, :password, :type, :full_name)');
             $this->db->bind(':email', $userData['email']);
-            $this->db->bind(':password', $userData['password']);
+            $this->db->bind(':password', password_hash($plainPassword, PASSWORD_DEFAULT));
             $this->db->bind(':type', ROLE_SERVICE_AGENT);
             $this->db->bind(':full_name', $agentData['full_name']);
             $this->db->execute();
 
             // Get the inserted user ID
             $userId = $this->db->lastInsertId();
+
+            // Get company id for the current installer admin
+            $installerAdminId = $_SESSION['user_id'] ?? null;
+            $this->db->query('SELECT company_id FROM installer_admin WHERE user_id = :user_id');
+            $this->db->bind(':user_id', $installerAdminId);
+            $companyRow = $this->db->single();
+            $companyId = $companyRow->company_id ?? null;
+
+            if (empty($installerAdminId)) {
+                throw new Exception('Installer admin user_id is missing from session');
+            }
+
+            if (empty($companyId)) {
+                // Log details for easier debugging
+                $debug = 'InstallerAdmin lookup failed - user_id: ' . var_export($installerAdminId, true) . ', companyRow: ' . var_export($companyRow, true);
+                error_log($debug);
+                throw new Exception('Company ID not found for installer admin user_id: ' . var_export($installerAdminId, true));
+            }
+
+            // Verify the company actually exists in the installer_company table
+            $this->db->query('SELECT company_id FROM installer_company WHERE company_id = :company_id');
+            $this->db->bind(':company_id', $companyId);
+            $companyExists = $this->db->single();
+            if (empty($companyExists) || empty($companyExists->company_id)) {
+                $debug = 'Installer company not found - company_id: ' . var_export($companyId, true) . ', installer_admin_row: ' . var_export($companyRow, true);
+                error_log($debug);
+                throw new Exception('Installer company not found for company_id: ' . var_export($companyId, true));
+            }
 
             // 2. Insert into `service_agent` table
             // Columns: user_id, company_id, full_name, email, nic, address, contact, district, 
@@ -42,9 +74,9 @@ class M_Team{
                 VALUES 
                 (:user_id, :company_id, :nic, :address, :contact, :district, :specialization, :experience_years, :availability, :certifications, :status, :register_date)
             ');
-            
+
             $this->db->bind(':user_id', $userId);
-            $this->db->bind(':company_id', 1); // Default company_id - adjust as needed
+            $this->db->bind(':company_id', $companyId);
             $this->db->bind(':nic', $agentData['nic']);
             $this->db->bind(':address', $agentData['address']);
             $this->db->bind(':contact', $agentData['contact_number']);
@@ -55,29 +87,35 @@ class M_Team{
             $this->db->bind(':certifications', $agentData['certifications'] ?? NULL);
             $this->db->bind(':status', $agentData['status']);
             $this->db->bind(':register_date', date('Y-m-d'));
-            
+
             $this->db->execute();
 
             // Commit the transaction
             $this->db->commit();
 
-            return true;
+            // Return success with created user details (including plaintext password for emailing)
+            return [
+                'success' => true,
+                'user_id' => $userId,
+                'password' => $plainPassword,
+                'email' => $userData['email'] ?? ''
+            ];
 
         } catch (Exception $e) {
             $this->db->rollBack();
             $errorMsg = 'Add service agent failed: ' . $e->getMessage();
             error_log($errorMsg);
-            
+
             // Write to a file we can read easily
             if (!is_dir(dirname(__DIR__) . '/logs')) {
                 mkdir(dirname(__DIR__) . '/logs', 0755, true);
             }
             file_put_contents(
-                dirname(__DIR__) . '/logs/add_service_agent_error.log', 
+                dirname(__DIR__) . '/logs/add_service_agent_error.log',
                 date('Y-m-d H:i:s') . ' - ' . $errorMsg . "\n",
                 FILE_APPEND
             );
-            
+
             return false;
         }
     }
@@ -93,7 +131,8 @@ class M_Team{
      * @param array $agentData - Contains agent details to update
      * @return bool - true on success, false on failure
      */
-    public function update_service_agent($userId, $userData, $agentData) {
+    public function update_service_agent($userId, $userData, $agentData)
+    {
         try {
             // Start transaction
             $this->db->beginTransaction();
@@ -129,7 +168,7 @@ class M_Team{
                     status = :status
                 WHERE user_id = :user_id
             ');
-            
+
             $this->db->bind(':nic', $agentData['nic']);
             $this->db->bind(':address', $agentData['address']);
             $this->db->bind(':contact', $agentData['contact_number']);
@@ -140,7 +179,7 @@ class M_Team{
             $this->db->bind(':certifications', $agentData['certifications'] ?? NULL);
             $this->db->bind(':status', $agentData['status']);
             $this->db->bind(':user_id', $userId);
-            
+
             $this->db->execute();
 
             // Commit the transaction
@@ -152,17 +191,17 @@ class M_Team{
             $this->db->rollBack();
             $errorMsg = 'Update service agent failed: ' . $e->getMessage();
             error_log($errorMsg);
-            
+
             // Write to a file we can read easily
             if (!is_dir(dirname(__DIR__) . '/logs')) {
                 mkdir(dirname(__DIR__) . '/logs', 0755, true);
             }
             file_put_contents(
-                dirname(__DIR__) . '/logs/update_service_agent_error.log', 
+                dirname(__DIR__) . '/logs/update_service_agent_error.log',
                 date('Y-m-d H:i:s') . ' - ' . $errorMsg . "\n",
                 FILE_APPEND
             );
-            
+
             return false;
         }
     }
@@ -176,7 +215,8 @@ class M_Team{
      * @param bool $deleteUser - Whether to also delete from user table (default: true)
      * @return bool - true on success, false on failure
      */
-    public function delete_service_agent($userId) {
+    public function delete_service_agent($userId)
+    {
         try {
             // Start transaction
             $this->db->beginTransaction();
@@ -187,7 +227,7 @@ class M_Team{
             $this->db->execute();
 
             // 2. Delete from user table
-            $this->db->query('DELETE FROM user WHERE user_id = :user_id'); 
+            $this->db->query('DELETE FROM user WHERE user_id = :user_id');
             $this->db->bind(':user_id', $userId);
             $this->db->execute();
 
@@ -206,7 +246,7 @@ class M_Team{
                 mkdir(dirname(__DIR__) . '/logs', 0755, true);
             }
             file_put_contents(
-                dirname(__DIR__) . '/logs/delete_service_agent_error.log', 
+                dirname(__DIR__) . '/logs/delete_service_agent_error.log',
                 date('Y-m-d H:i:s') . ' - ' . $errorMsg . "\n",
                 FILE_APPEND
             );
@@ -215,6 +255,14 @@ class M_Team{
         }
     }
 
+    // Add this method to class M_Team in M_Team.php
+    public function get_company_id_by_user($userId)
+    {
+        $this->db->query('SELECT company_id FROM installer_admin WHERE user_id = :user_id');
+        $this->db->bind(':user_id', $userId);
+        $row = $this->db->single();
+        return $row->company_id ?? null;
+    }
 
     /**
      * Get service agent by user ID (basic info - used for edit form population)
@@ -222,7 +270,8 @@ class M_Team{
      * @param int $userId - User ID
      * @return object|false - Agent data or false if not found
      */
-    public function get_service_agent($userId) {
+    public function get_service_agent($userId)
+    {
         try {
             $this->db->query('
                 SELECT u.user_id, u.email, sa.* 
@@ -231,7 +280,7 @@ class M_Team{
                 WHERE sa.user_id = :user_id
             ');
             $this->db->bind(':user_id', $userId);
-            
+
             return $this->db->single();
 
         } catch (Exception $e) {
@@ -247,7 +296,8 @@ class M_Team{
      * @param int $userId - User ID
      * @return object|false - Complete agent data object or false if not found
      */
-    public function get_service_agent_complete($userId) {
+    public function get_service_agent_complete($userId)
+    {
         try {
             $this->db->query('
                 SELECT 
@@ -271,9 +321,9 @@ class M_Team{
                 WHERE sa.user_id = :user_id
             ');
             $this->db->bind(':user_id', $userId);
-            
+
             $result = $this->db->single();
-            
+
             if (!$result) {
                 return false;
             }
@@ -293,7 +343,8 @@ class M_Team{
      * @param int $userId - User ID
      * @return array - Comprehensive agent data with field name variations
      */
-    public function get_service_agent_all_fields($userId) {
+    public function get_service_agent_all_fields($userId)
+    {
         try {
             $this->db->query('
                 SELECT u.user_id, u.email, u.full_name as user_full_name, u.type, sa.* 
@@ -302,9 +353,9 @@ class M_Team{
                 WHERE sa.user_id = :user_id
             ');
             $this->db->bind(':user_id', $userId);
-            
+
             $result = $this->db->single();
-            
+
             if (!$result) {
                 return [];
             }
@@ -316,7 +367,7 @@ class M_Team{
                 'email' => $result->email,
                 'user_full_name' => $result->user_full_name,
                 'user_type' => $result->type,
-                
+
                 // Service Agent table fields
                 'full_name' => $result->full_name,
                 'nic' => $result->nic,
@@ -335,7 +386,7 @@ class M_Team{
                 'register_date' => $result->register_date,
                 'created_date' => $result->created_date,
                 'company_id' => $result->company_id,
-                
+
                 // Original object for backward compatibility
                 'raw' => $result
             ];
@@ -347,29 +398,33 @@ class M_Team{
     }
 
     // create function for get_service_agents_by_company
-    public function get_service_agents_by_company($companyId) {
-        try { 
-        $this->db->query('SELECT 
-                                u.user_id,
-                                u.email,
-                                u.type,
-                                u.full_name,
-                                sa.contact,
-                                sa.status
-                            FROM user u
-                            INNER JOIN service_agent sa ON u.user_id = sa.user_id
-                            WHERE sa.company_id = :company_id
-                            ');
-        $this->db->bind(':company_id', $companyId);
-        $results = $this->db->resultSet();
-        return $results;
+    public function get_service_agents_by_company($companyId)
+    {
+        try {
+            // We join with service_req (aliased as sr) to count tasks per agent
+            $this->db->query('SELECT 
+                            u.user_id AS id,
+                            u.email,
+                            u.full_name,
+                            sa.contact,
+                            sa.status as agent_status,
+                            COUNT(sr.req_id) as assigned_tasks,
+                            SUM(CASE WHEN sr.status = "Completed" THEN 1 ELSE 0 END) as completed_tasks,
+                            SUM(CASE WHEN sr.status = "Pending" THEN 1 ELSE 0 END) as pending_tasks
+                        FROM user u
+                        INNER JOIN service_agent sa ON u.user_id = sa.user_id
+                        LEFT JOIN service_req sr ON sa.user_id = sr.agent_id
+                        WHERE sa.company_id = :company_id
+                        GROUP BY u.user_id, u.email, u.full_name, sa.contact, sa.status');
+
+            $this->db->bind(':company_id', $companyId);
+            return $this->db->resultSet();
         } catch (Exception $e) {
             error_log('Get service agents by company failed: ' . $e->getMessage());
             return false;
         }
     }
 
-                           
 
     /**
      * Get all service agents
@@ -377,7 +432,8 @@ class M_Team{
      * @param array $filters - Optional filters (district, specialization, status, availability)
      * @return array - Array of agents or empty array
      */
-    public function get_all_service_agents($filters = []) {
+    public function get_all_service_agents($filters = [])
+    {
         try {
             $query = '
                 SELECT u.user_id, u.email, sa.* 
@@ -426,7 +482,72 @@ class M_Team{
         }
     }
 
-    
+    public function get_total_agents($companyId)
+    {
+        try {
+            $this->db->query('
+                SELECT COUNT(*) as total_agents
+                FROM service_agent
+                WHERE company_id = :company_id
+            ');
+            $this->db->bind(':company_id', $companyId);
+            return $this->db->single();
+        } catch (Exception $e) {
+            error_log('Get agent stats failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function get_active_agents($companyId)
+    {
+        try {
+            $this->db->query('
+                SELECT COUNT(*) as active_agents
+                FROM service_agent
+                WHERE company_id = :company_id AND status = "Active"
+            ');
+            $this->db->bind(':company_id', $companyId);
+            return $this->db->single();
+        } catch (Exception $e) {
+            error_log('Get active agents failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function get_total_tasks($companyId)
+    {
+        try {
+            $this->db->query('
+                SELECT COUNT(*) as total_tasks
+                FROM service_req t
+                JOIN service_agent sa ON t.agent_id = sa.user_id
+                WHERE sa.company_id = :company_id
+            ');
+            $this->db->bind(':company_id', $companyId);
+            return $this->db->single();
+        } catch (Exception $e) {
+            error_log('Get total tasks failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function get_pending_tasks($companyId)
+    {
+        try {
+            $this->db->query('
+                SELECT COUNT(*) as pending_tasks
+                FROM service_req t
+                JOIN service_agent sa ON t.agent_id = sa.user_id
+                WHERE sa.company_id = :company_id AND t.status = "Pending"
+            ');
+            $this->db->bind(':company_id', $companyId);
+            return $this->db->single();
+        } catch (Exception $e) {
+            error_log('Get pending tasks failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
 
     /**
      * Check if email already exists
@@ -434,11 +555,12 @@ class M_Team{
      * @param string $email - Email to check
      * @return bool - true if exists, false if not
      */
-    public function email_exists($email) {
+    public function email_exists($email)
+    {
         try {
             $this->db->query('SELECT user_id FROM user WHERE email = :email');
             $this->db->bind(':email', $email);
-            
+
             return $this->db->single() ? true : false;
 
         } catch (Exception $e) {
@@ -454,7 +576,8 @@ class M_Team{
      * @param int $excludeUserId - Optional: user ID to exclude from check (for updates)
      * @return bool - true if exists, false if not
      */
-    public function nic_exists($nic, $excludeUserId = null) {
+    public function nic_exists($nic, $excludeUserId = null)
+    {
         try {
             if ($excludeUserId) {
                 $this->db->query('SELECT user_id FROM service_agent WHERE nic = :nic AND user_id != :exclude_user_id');
@@ -462,9 +585,9 @@ class M_Team{
             } else {
                 $this->db->query('SELECT user_id FROM service_agent WHERE nic = :nic');
             }
-            
+
             $this->db->bind(':nic', $nic);
-            
+
             return $this->db->single() ? true : false;
 
         } catch (Exception $e) {

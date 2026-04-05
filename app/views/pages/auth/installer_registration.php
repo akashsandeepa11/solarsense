@@ -30,7 +30,7 @@ $all_districts = [
     "Vavuniya"
 ];
 
-$pageTitle = 'Solar Installer Company Registration';
+$pageTitle = 'Solar Company Registration';
 $pageDescription = 'Join Sri Lanka\'s leading solar management platform - Register your installation company to access our comprehensive tools';
 $buttonText = 'Submit Registration Request';
 $buttonIcon = 'fas fa-paper-plane';

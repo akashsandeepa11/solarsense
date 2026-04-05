@@ -1,12 +1,13 @@
 <?php
 
+require_once APPROOT . '/helpers/Mail_Helper.php';
+
 class InstallerAdmin extends Controller
 {
-
     private $fleetModel;
     private $authModel;
     private $teamModel;
-    private $profileModel;
+    private $managerModel;
 
     private $user = [
         'role' => ROLE_INSTALLER_ADMIN,
@@ -18,18 +19,32 @@ class InstallerAdmin extends Controller
         $this->fleetModel = $this->model('M_Fleet');
         $this->authModel = $this->model('M_Auth');
         $this->teamModel = $this->model('M_Team');
-        $this->profileModel = $this->model('M_Profile');
+        $this->managerModel = $this->model('M_Manager');
     }
-
 
     public function dashboard($page = 'dashboard')
     {
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
+
+        if (!$companyId) {
+            redirect('pages/login');
+            return;
+        }
+
+        $dashboardModel = $this->model('M_InstallerAdmin_Dashboard');
+
         $data = [
             'user' => $this->user,
+            'stats' => $dashboardModel->getStats($companyId),
+            'alerts' => $dashboardModel->getAlerts($companyId), 
+            'performance_snapshot' => $dashboardModel->getPerformanceSnapshot($companyId), 
+            'service_agents' => $dashboardModel->getServiceTeamStatus($companyId), 
+            'new_customers_data' => $dashboardModel->getNewCustomersChartData($companyId), 
+            'service_tasks_data' => $dashboardModel->getServiceTasksChartData($companyId) // Fetch task status data
         ];
 
         if ($page == 'system_performance') {
-
             return $this->view('pages/common/system_performance', $data, layout: 'dashboard');
         }
 
@@ -59,28 +74,33 @@ class InstallerAdmin extends Controller
     // --- Fleet Management ---
     public function fleet($page = 'dashboard', $customerId = null)
     {
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
 
-        if ($page === 'add_customer') {
+        // Fetch statistics (Returns integers from the model)
+        $total_clients = $this->fleetModel->get_total_customers($companyId);
+        $pending_maintenance = $this->fleetModel->get_pending_services($companyId);
+        $completed_services = $this->fleetModel->get_completed_services($companyId);
+
+        // Routing for sub-pages
+        if ($page === 'add_customer')
             return $this->add_customer();
-        }
-
-        if ($page === 'customer_details') {
+        if ($page === 'customer_details')
             return $this->customerdetails($customerId);
-        }
-
-        if ($page === 'edit_customer') {
+        if ($page === 'edit_customer')
             return $this->edit_customer($customerId);
-        }
-
-        if ($page === 'delete_customer') {
+        if ($page === 'delete_customer')
             return $this->delete_customer($customerId);
-        }
 
         $data = [
             'user' => $this->user,
-            'customers' => $this->fleetModel->get_customer_by_company(1)
+            'customers' => $this->fleetModel->get_customer_by_company($companyId),
+            'stats' => [
+                'total_clients' => $total_clients ?? 0,
+                'pending_maintenace' => $pending_maintenance ?? 0,
+                'completed_services' => $completed_services ?? 0
+            ]
         ];
-
 
         $this->view('pages/common/fleet_dashboard', $data, layout: 'dashboard');
     }
@@ -98,7 +118,6 @@ class InstallerAdmin extends Controller
     public function add_customer(): void
     {
 
-
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Form is submitting
             // Validate the data
@@ -112,8 +131,6 @@ class InstallerAdmin extends Controller
                 'contactNumber' => trim($_POST['contactNumber'] ?? ''),
                 'physicalAddress' => trim($_POST['physicalAddress'] ?? ''),
                 'nic' => trim($_POST['nic'] ?? ''),
-                'password' => trim($_POST['password'] ?? ''),
-                'confirmPassword' => trim($_POST['confirmPassword'] ?? ''),
                 'district' => trim($_POST['district'] ?? ''),
                 'systemCapacity' => trim($_POST['systemCapacity'] ?? ''),
                 'panelTilt' => trim($_POST['panelTilt'] ?? ''),
@@ -121,6 +138,11 @@ class InstallerAdmin extends Controller
                 'installationDate' => trim($_POST['installationDate'] ?? ''),
                 'panelBrand' => trim($_POST['panelBrand'] ?? ''),
                 'inverterBrand' => trim($_POST['inverterBrand'] ?? ''),
+                'moduleType' => trim($_POST['moduleType'] ?? ''),
+                'arrayType' => trim($_POST['arrayType'] ?? ''),
+                'lossesPCT' => trim($_POST['lossesPCT'] ?? ''),
+                'dcAcRatio' => trim($_POST['dcAcRatio'] ?? ''),
+                'invEffPCT' => trim($_POST['invEffPCT'] ?? ''),
                 'cebAccount' => trim($_POST['cebAccount'] ?? ''),
 
                 // Error fields
@@ -129,8 +151,6 @@ class InstallerAdmin extends Controller
                 'contactNumber_err' => '',
                 'physicalAddress_err' => '',
                 'nic_err' => '',
-                'password_err' => '',
-                'confirmPassword_err' => '',
                 'district_err' => '',
                 'systemCapacity_err' => '',
                 'panelTilt_err' => '',
@@ -138,6 +158,11 @@ class InstallerAdmin extends Controller
                 'installationDate_err' => '',
                 'panelBrand_err' => '',
                 'inverterBrand_err' => '',
+                'moduleType_err' => '',
+                'arrayType_err' => '',
+                'lossesPCT_err' => '',
+                'dcAcRatio_err' => '',
+                'invEffPCT_err' => '',
                 'cebAccount_err' => ''
             ];
 
@@ -186,16 +211,6 @@ class InstallerAdmin extends Controller
                 $data['district_err'] = "Please select a district";
             }
 
-            if (empty($data['password']) || strlen($data['password']) < 6) {
-                $data['password_err'] = "Password must be at least 6 characters";
-            }
-
-            if (empty($data['confirmPassword'])) {
-                $data['confirmPassword_err'] = "Please confirm password";
-            } elseif ($data['password'] !== $data['confirmPassword']) {
-                $data['confirmPassword_err'] = "Passwords do not match";
-            }
-
             if (empty($data['systemCapacity']) || !is_numeric($data['systemCapacity'])) {
                 $data['systemCapacity_err'] = "Please enter valid system capacity";
             }
@@ -220,18 +235,39 @@ class InstallerAdmin extends Controller
                 $data['inverterBrand_err'] = "Please select inverter brand";
             }
 
-            if (empty($data['cebAccount'])) {
+            if (empty($data['moduleType']) || !is_numeric($data['moduleType'])) {
+                $data['moduleType_err'] = "Please select module type";
+            }
+
+            if (empty($data['arrayType']) || !is_numeric($data['arrayType'])) {
+                $data['arrayType_err'] = "Please select array type";
+            }
+
+            if (empty($data['lossesPCT']) || !is_numeric($data['lossesPCT'])) {
+                $data['lossesPCT_err'] = "Please enter losses percentage";
+            }
+
+            if (empty($data['dcAcRatio']) || !is_numeric($data['dcAcRatio'])) {
+                $data['dcAcRatio_err'] = "Please enter DC/AC ratio";
+            }
+
+            if (empty($data['invEffPCT']) || !is_numeric($data['invEffPCT'])) {
+                $data['invEffPCT_err'] = "Please enter inverter efficiency percentage";
+            }
+
+            if (empty($data['cebAccount']) || !is_numeric($data['cebAccount'])) {
                 $data['cebAccount_err'] = "Please enter CEB account number";
             }
 
             // Check for any errors
             $hasErrors = !empty($data['fullName_err']) || !empty($data['email_err']) ||
                 !empty($data['contactNumber_err']) || !empty($data['physicalAddress_err']) ||
-                !empty($data['nic_err']) || !empty($data['password_err']) ||
-                !empty($data['confirmPassword_err']) || !empty($data['district_err']) ||
+                !empty($data['nic_err']) || !empty($data['district_err']) ||
                 !empty($data['systemCapacity_err']) || !empty($data['panelTilt_err']) ||
                 !empty($data['panelAzimuth_err']) || !empty($data['installationDate_err']) ||
-                !empty($data['panelBrand_err']) || !empty($data['inverterBrand_err']) ||
+                !empty($data['panelBrand_err']) || !empty($data['inverterBrand_err']) || !empty($data['moduleType_err']) ||
+                !empty($data['arrayType_err']) || !empty($data['lossesPCT_err']) ||
+                !empty($data['dcAcRatio_err']) || !empty($data['invEffPCT_err']) ||
                 !empty($data['cebAccount_err']);
 
             if ($hasErrors) {
@@ -242,8 +278,7 @@ class InstallerAdmin extends Controller
 
             // All validation passed - save to database
             $userData = [
-                'email' => $data['email'],
-                'password' => password_hash($data['password'], PASSWORD_DEFAULT)
+                'email' => $data['email']
             ];
 
             $customerData = [
@@ -262,11 +297,26 @@ class InstallerAdmin extends Controller
                 'panel_brand' => $data['panelBrand'],
                 'inverter_brand' => $data['inverterBrand'],
                 'installation_date' => $data['installationDate'],
+                'module_type' => $data['moduleType'],
+                'array_type' => $data['arrayType'],
+                'losses_pct' => $data['lossesPCT'],
+                'dc_ac_ratio' => $data['dcAcRatio'],
+                'inv_eff_pct' => $data['invEffPCT']
             ];
-
             // Call model to save data
-            if ($this->fleetModel->add_customer($userData, $customerData, $panelData)) {
-                setToast('Customer Added Successfully', 'success');
+            $createResult = $this->fleetModel->add_customer($userData, $customerData, $panelData);
+            if ($createResult && is_array($createResult) && !empty($createResult['success'])) {
+                // Send credentials email
+                $plainPassword = $createResult['password'] ?? '';
+                $recipientEmail = $createResult['email'] ?? $userData['email'];
+                $mailSent = sendWelcomeEmail($recipientEmail, $recipientEmail, $plainPassword);
+
+                if ($mailSent) {
+                    setToast('Customer Added Successfully', 'success');
+                } else {
+                    setToast('Customer added but failed to send email.', 'warning');
+                }
+
                 redirect('installeradmin/fleet');
             } else {
                 setToast('Something went wrong during registration.', 'error');
@@ -283,8 +333,6 @@ class InstallerAdmin extends Controller
                 'contactNumber' => '',
                 'physicalAddress' => '',
                 'nic' => '',
-                'password' => '',
-                'confirmPassword' => '',
                 'district' => '',
                 'systemCapacity' => '',
                 'panelTilt' => '',
@@ -299,8 +347,6 @@ class InstallerAdmin extends Controller
                 'contactNumber_err' => '',
                 'physicalAddress_err' => '',
                 'nic_err' => '',
-                'password_err' => '',
-                'confirmPassword_err' => '',
                 'district_err' => '',
                 'systemCapacity_err' => '',
                 'panelTilt_err' => '',
@@ -561,7 +607,7 @@ class InstallerAdmin extends Controller
             }
             return;
         }
-
+        
         $this->view('pages/installer_admin/add_customer', $data, layout: 'dashboard');
     }
 
@@ -602,26 +648,46 @@ class InstallerAdmin extends Controller
     // --- Team Management ---
     public function team($page = 'dashboard', $agentId = null)
     {
+        // 1. Get the current logged-in user's company ID
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
 
+        if (!$companyId) {
+            setToast('Unauthorized access or company not found.', 'error');
+            redirect('pages/login');
+            return;
+        }
+
+        // 2. Routing logic for sub-pages
         if ($page === 'add_service_agent') {
             return $this->add_service_agent();
         }
-
         if ($page === 'agent_details') {
             return $this->agent_details($agentId);
         }
-
         if ($page === 'edit_agent') {
             return $this->edit_agent($agentId);
         }
-
         if ($page === 'delete_agent') {
             return $this->delete_agent($agentId);
         }
 
+        // 3. Fetch statistics using the companyId
+        $total_agents_row = $this->teamModel->get_total_agents($companyId);
+        $active_agents_row = $this->teamModel->get_active_agents($companyId);
+        $total_tasks_row = $this->teamModel->get_total_tasks($companyId);
+        $pending_tasks_row = $this->teamModel->get_pending_tasks($companyId);
+
+        // 4. Prepare data for the view
         $data = [
             'user' => $this->user,
-            'agents' => $this->teamModel->get_service_agents_by_company(1)
+            'agents' => $this->teamModel->get_service_agents_by_company($companyId),
+            'stats' => [
+                'total_agents' => $total_agents_row->total_agents ?? 0,
+                'active_agents' => $active_agents_row->active_agents ?? 0,
+                'total_tasks' => $total_tasks_row->total_tasks ?? 0,
+                'pending_tasks' => $pending_tasks_row->pending_tasks ?? 0
+            ]
         ];
 
         $this->view('pages/common/team', $data, layout: 'dashboard');
@@ -629,7 +695,6 @@ class InstallerAdmin extends Controller
 
     public function add_service_agent()
     {
-
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Form is submitting
             // Validate the data
@@ -645,8 +710,6 @@ class InstallerAdmin extends Controller
                 'contactNumber' => trim($_POST['contactNumber'] ?? ''),
                 'address' => trim($_POST['address'] ?? ''),
                 'nic' => trim($_POST['nic'] ?? ''),
-                'password' => trim($_POST['password'] ?? ''),
-                'confirmPassword' => trim($_POST['confirmPassword'] ?? ''),
                 'district' => trim($_POST['district'] ?? ''),
                 'specialization' => trim($_POST['specialization'] ?? ''),
                 'experienceYears' => trim($_POST['experienceYears'] ?? ''),
@@ -659,8 +722,6 @@ class InstallerAdmin extends Controller
                 'contactNumber_err' => '',
                 'address_err' => '',
                 'nic_err' => '',
-                'password_err' => '',
-                'confirmPassword_err' => '',
                 'district_err' => '',
                 'specialization_err' => '',
                 'experienceYears_err' => '',
@@ -668,7 +729,6 @@ class InstallerAdmin extends Controller
                 'certifications_err' => ''
             ];
 
-            // Validation Logic
             // Validate Full Name
             if (empty($data['fullName'])) {
                 $data['fullName_err'] = 'Full Name is required';
@@ -703,32 +763,6 @@ class InstallerAdmin extends Controller
                 $data['district_err'] = 'District is required';
             }
 
-            // Validate Password (required only in add mode)
-            if ($data['mode'] === 'add') {
-                if (empty($data['password'])) {
-                    $data['password_err'] = 'Password is required';
-                } elseif (strlen($data['password']) < 6) {
-                    $data['password_err'] = 'Password must be at least 6 characters';
-                }
-
-                // Validate Confirm Password (required only in add mode)
-                if (empty($data['confirmPassword'])) {
-                    $data['confirmPassword_err'] = 'Confirm Password is required';
-                } elseif ($data['password'] !== $data['confirmPassword']) {
-                    $data['confirmPassword_err'] = 'Passwords do not match';
-                }
-            } else {
-                // In edit mode, password is optional
-                if (!empty($data['password'])) {
-                    if (strlen($data['password']) < 6) {
-                        $data['password_err'] = 'Password must be at least 6 characters';
-                    }
-                    if ($data['password'] !== $data['confirmPassword']) {
-                        $data['confirmPassword_err'] = 'Passwords do not match';
-                    }
-                }
-            }
-
             // Validate Specialization
             if (empty($data['specialization'])) {
                 $data['specialization_err'] = 'Specialization is required';
@@ -750,7 +784,6 @@ class InstallerAdmin extends Controller
             if (
                 empty($data['fullName_err']) && empty($data['email_err']) && empty($data['contactNumber_err']) &&
                 empty($data['nic_err']) && empty($data['address_err']) && empty($data['district_err']) &&
-                empty($data['password_err']) && empty($data['confirmPassword_err']) &&
                 empty($data['specialization_err']) && empty($data['experienceYears_err']) && empty($data['availability_err'])
             ) {
 
@@ -769,11 +802,6 @@ class InstallerAdmin extends Controller
                     'status' => 'active'
                 ];
 
-                // Add password only if provided (new or updated password)
-                if (!empty($data['password'])) {
-                    $agentData['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
-                }
-
                 // Add creation date only for new agents
                 if ($data['mode'] === 'add') {
                     $agentData['created_date'] = date('Y-m-d H:i:s');
@@ -781,8 +809,7 @@ class InstallerAdmin extends Controller
 
                 // Prepare user data for model
                 $userData = [
-                    'email' => $data['email'],
-                    'password' => password_hash($data['password'], PASSWORD_DEFAULT)
+                    'email' => $data['email']
                 ];
 
                 // Call model to save data
@@ -801,8 +828,19 @@ class InstallerAdmin extends Controller
                         return;
                     }
 
-                    if ($this->teamModel->add_service_agent($userData, $agentData)) {
-                        setToast('Service Agent Added Successfully', 'success');
+                    $createResult = $this->teamModel->add_service_agent($userData, $agentData);
+                    if ($createResult && is_array($createResult) && !empty($createResult['success'])) {
+                        // Send credentials email
+                        $plainPassword = $createResult['password'] ?? '';
+                        $recipientEmail = $createResult['email'] ?? $data['email'];
+                        $mailSent = sendWelcomeEmail($recipientEmail, $recipientEmail, $plainPassword);
+
+                        if ($mailSent) {
+                            setToast('Service Agent Added Successfully', 'success');
+                        } else {
+                            setToast('Service Agent added but failed to send email.', 'warning');
+                        }
+
                         redirect('installeradmin/team');
                     } else {
                         setToast('Failed to add service agent. Please try again.', 'error');
@@ -835,8 +873,6 @@ class InstallerAdmin extends Controller
                 'contactNumber' => '',
                 'address' => '',
                 'nic' => '',
-                'password' => '',
-                'confirmPassword' => '',
                 'district' => '',
                 'specialization' => '',
                 'experienceYears' => '',
@@ -848,8 +884,6 @@ class InstallerAdmin extends Controller
                 'contactNumber_err' => '',
                 'address_err' => '',
                 'nic_err' => '',
-                'password_err' => '',
-                'confirmPassword_err' => '',
                 'district_err' => '',
                 'specialization_err' => '',
                 'experienceYears_err' => '',
@@ -1115,6 +1149,23 @@ class InstallerAdmin extends Controller
 
     public function managers($tab = 'operation_managers', $id = null, $action = null)
     {
+        $total_op_managers = $this->managerModel->get_total_operation_managers();
+        $active_tasks = $this->managerModel->get_active_service();
+        $pending_tasks = $this->managerModel->get_pending_service();
+        $completed_tasks = $this->managerModel->get_completed_service();
+
+        $total_inv_managers = $this->managerModel->get_total_inventory_managers();
+        $active_inv = $this->managerModel->get_inventory();
+        $low_stock_items = $this->managerModel->get_low_stock_items();
+
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
+
+        if (!$companyId) {
+            setToast('Unauthorized access or company not found.', 'error');
+            redirect('pages/login');
+            return;
+        }
 
         // Handle add action
         if ($id === 'add') {
@@ -1147,107 +1198,103 @@ class InstallerAdmin extends Controller
             return $this->inventory_managers();
         }
 
+        $data = [
+            'user' => $this->user,
+            'op_managers' => $this->managerModel->get_operation_manager_by_company_id($companyId),
+            'inv_managers' => $this->managerModel->get_inventory_manager_by_company_id($companyId),
+            'total_op_managers' => $total_op_managers,
+            'active_tasks' => $active_tasks,
+            'pending_tasks' => $pending_tasks,
+            'completed_tasks' => $completed_tasks,
+            'total_inv_managers' => $total_inv_managers,
+            'active_inv' => $active_inv,
+            'low_stock_items' => $low_stock_items
+        ];
+
 
         redirect('installeradmin/managers/operation_managers');
     }
 
     // --- Manager Management ---
+    // --- Manager Management ---
     public function operation_managers()
     {
-        // Sample data for Operation Managers
-        $sample_operation_managers = [
-            [
-                'id' => 1,
-                'name' => 'John Smith',
-                'email' => 'john.smith@solarsense.com',
-                'specialization' => 'Installation',
-                'district' => 'Colombo',
-                'status' => 'active',
-                'pending_tasks' => 3,
-                'performance' => 95
-            ],
-            [
-                'id' => 2,
-                'name' => 'Sarah Johnson',
-                'email' => 'sarah.j@solarsense.com',
-                'specialization' => 'Maintenance',
-                'district' => 'Kandy',
-                'status' => 'active',
-                'pending_tasks' => 2,
-                'performance' => 88
-            ],
-            [
-                'id' => 3,
-                'name' => 'Michael Brown',
-                'email' => 'michael.b@solarsense.com',
-                'specialization' => 'Repair',
-                'district' => 'Galle',
-                'status' => 'on leave',
-                'pending_tasks' => 1,
-                'performance' => 92
-            ],
-            [
-                'id' => 4,
-                'name' => 'Lisa Chen',
-                'email' => 'lisa.chen@solarsense.com',
-                'specialization' => 'Installation',
-                'district' => 'Colombo',
-                'status' => 'active',
-                'pending_tasks' => 5,
-                'performance' => 85
-            ]
-        ];
+        // 1. Get company context
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
 
+        if (!$companyId) {
+            redirect('pages/login');
+            return;
+        }
+
+        // 2. Fetch list of managers from database
+        $dbManagers = $this->managerModel->get_operation_manager_by_company_id($companyId);
+
+        // 3. Prepare summary stats for the view
         $data = [
             'user' => $this->user,
             'managerType' => 'operation_managers',
-            'managers' => $sample_operation_managers
+            'managers' => [],
+            'total_op_managers' => $this->managerModel->get_total_operation_managers(),
+            'active_tasks' => $this->managerModel->get_active_service(),
+            'pending_tasks' => $this->managerModel->get_pending_service(),
+            'completed_tasks' => $this->managerModel->get_completed_service()
         ];
+
+        // 4. Map database objects to the array format expected by managers_list.php
+        foreach ($dbManagers as $manager) {
+            $data['managers'][] = [
+                'id' => $manager->user_id,
+                'name' => $manager->full_name,
+                'email' => $manager->email,
+                'specialization' => ucfirst($manager->specialization),
+                'district' => $manager->district,
+                'status' => ucfirst($manager->status),
+                'pending_tasks' => 0 // Placeholder: Requires per-manager task query
+            ];
+        }
 
         $this->view('pages/installer_admin/managers_list', $data, layout: 'dashboard');
     }
 
     public function inventory_managers()
     {
-        // Sample data for Inventory Managers
-        $sample_inventory_managers = [
-            [
-                'id' => 1,
-                'name' => 'David Wilson',
-                'email' => 'david.w@solarsense.com',
-                'warehouse' => 'Main Warehouse - Colombo',
-                'status' => 'active',
-                'inventory_items' => 245,
-                'low_stock' => 3,
-                'efficiency' => 92
-            ],
-            [
-                'id' => 2,
-                'name' => 'Emma Davis',
-                'email' => 'emma.d@solarsense.com',
-                'warehouse' => 'Branch Warehouse - Kandy',
-                'status' => 'active',
-                'inventory_items' => 156,
-                'low_stock' => 5,
-                'efficiency' => 88
-            ],
-            [
-                'id' => 3,
-                'name' => 'James Miller',
-                'email' => 'james.m@solarsense.com',
-                'warehouse' => 'Branch Warehouse - Galle',
-                'status' => 'away',
-                'inventory_items' => 98,
-                'low_stock' => 8,
-                'efficiency' => 75
-            ]
-        ];
+        // 1. Get company context
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
 
+        if (!$companyId) {
+            redirect('pages/login');
+            return;
+        }
+
+        // 2. Fetch list of managers from database
+        $dbManagers = $this->managerModel->get_inventory_manager_by_company_id($companyId);
+
+        // 3. Prepare summary stats for the view
         $data = [
             'user' => $this->user,
             'managerType' => 'inventory_managers',
-            'managers' => $sample_inventory_managers
+            'managers' => [],
+            'total_inv_managers' => $this->managerModel->get_total_inventory_managers(),
+            'active_inv' => $this->managerModel->get_inventory(),
+            'low_stock_items' => $this->managerModel->get_low_stock_items()
         ];
+
+        // 4. Map database objects to the array format expected by managers_list.php
+        foreach ($dbManagers as $manager) {
+            $data['managers'][] = [
+                'id' => $manager->user_id,
+                'name' => $manager->full_name,
+                'email' => $manager->email,
+                'warehouse' => $manager->warehouse_location,
+                'status' => ucfirst($manager->status),
+                'inventory_items' => 0, // Placeholder
+                'low_stock' => 0,      // Placeholder
+                'efficiency' => 0      // Placeholder
+            ];
+        }
 
         $this->view('pages/installer_admin/managers_list', $data, layout: 'dashboard');
     }
@@ -1352,7 +1399,7 @@ class InstallerAdmin extends Controller
     }
 
     // Add Manager
-    public function add_manager($managerType = 'operation_managers')
+    public function add_manager($managerType)
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Process form submission
@@ -1369,10 +1416,10 @@ class InstallerAdmin extends Controller
                 'address' => trim($_POST['address'] ?? ''),
                 'district' => trim($_POST['district'] ?? ''),
                 'joinDate' => trim($_POST['joinDate'] ?? ''),
-                'password' => trim($_POST['password'] ?? ''),
-                'confirmPassword' => trim($_POST['confirmPassword'] ?? ''),
-                'status' => trim($_POST['status'] ?? 'Active'),
+                'specialization' => trim($_POST['specialization'] ?? ''),
                 'experienceLevel' => trim($_POST['experienceLevel'] ?? ''),
+                'teamSize' => trim($_POST['teamSize'] ?? ''),
+                'status' => trim($_POST['status'] ?? 'Active'),
                 'certifications' => trim($_POST['certifications'] ?? ''),
                 'emergencyContactName' => trim($_POST['emergencyContactName'] ?? ''),
                 'emergencyContactNumber' => trim($_POST['emergencyContactNumber'] ?? ''),
@@ -1385,16 +1432,21 @@ class InstallerAdmin extends Controller
                 'address_err' => '',
                 'district_err' => '',
                 'joinDate_err' => '',
-                'password_err' => '',
-                'confirmPassword_err' => '',
+                'specialization_err' => '',
+                'experienceLevel_err' => '',
+                'teamSize_err' => '',
+                'status_err' => ''
             ];
 
             // Add operation manager specific fields
             if ($managerType === 'operation_managers') {
                 $data['specialization'] = trim($_POST['specialization'] ?? '');
                 $data['teamSize'] = trim($_POST['teamSize'] ?? '');
+                $data['experienceLevel'] = trim($_POST['experienceLevel'] ?? '');
+
                 $data['specialization_err'] = '';
                 $data['teamSize_err'] = '';
+                $data['experienceLevel_err'] = '';
             }
 
             // Add inventory manager specific fields
@@ -1425,16 +1477,8 @@ class InstallerAdmin extends Controller
                 $data['nic_err'] = 'Please enter NIC/ID number';
             }
 
-            if (empty($data['password'])) {
-                $data['password_err'] = 'Please enter password';
-            } elseif (strlen($data['password']) < 6) {
-                $data['password_err'] = 'Password must be at least 6 characters';
-            }
-
-            if (empty($data['confirmPassword'])) {
-                $data['confirmPassword_err'] = 'Please confirm password';
-            } elseif ($data['password'] !== $data['confirmPassword']) {
-                $data['confirmPassword_err'] = 'Passwords do not match';
+            if (empty($data['address'])) {
+                $data['address_err'] = 'Please enter address';
             }
 
             if (empty($data['district'])) {
@@ -1453,6 +1497,19 @@ class InstallerAdmin extends Controller
                 if (empty($data['teamSize'])) {
                     $data['teamSize_err'] = 'Please enter team size';
                 }
+                if (empty($data['experienceLevel'])) {
+                    $data['experienceLevel_err'] = 'Please select experience level';
+                }
+                if (empty($data['status'])) {
+                    $data['status_err'] = 'Please select status';
+                }
+                if (empty($data['emergencyContactName'])) {
+                    $data['emergencyContactName_err'] = 'Please enter emergency contact name';
+                }
+                if (empty($data['emergencyContactNumber'])) {
+                    $data['emergencyContactNumber_err'] = 'Please enter emergency contact number';
+                }
+
             }
 
             // Validate inventory manager specific fields
@@ -1465,6 +1522,16 @@ class InstallerAdmin extends Controller
                 }
             }
 
+            // Add creation date only for new managers
+            if (($data['mode'] ?? 'add') === 'add') {
+                $data['created_date'] = date('Y-m-d H:i:s');
+            }
+
+            // Prepare user data for model (don't overwrite $data used for the view/validation)
+            $userData = [
+                'email' => $data['email']
+            ];
+
             // Check if there are any errors
             $hasErrors = false;
             foreach ($data as $key => $value) {
@@ -1475,10 +1542,73 @@ class InstallerAdmin extends Controller
             }
 
             if (!$hasErrors) {
-                // TODO: Add manager to database
-                // For now, just redirect with success message
-                flash('manager_message', 'Manager added successfully', 'alert alert-success');
-                redirect('installeradmin/managers/' . $managerType);
+                // Call model to save data
+                if ($data['mode'] === 'add') {
+                    // Check if email already exists
+                    if ($this->authModel->findUserByEmail($data['email'])) {
+                        $data['email_err'] = 'Email is already registered';
+                        $this->view('pages/installer_admin/add_manager', $data, layout: 'dashboard');
+                        return;
+                    }
+
+                    // Check if NIC already exists
+                    if ($this->teamModel->nic_exists($data['nic'])) {
+                        $data['nic_err'] = 'NIC/ID Number is already registered';
+                        $this->view('pages/installer_admin/add_' . $managerType, $data, layout: 'dashboard');
+                        return;
+                    }
+
+                    if ($managerType === 'operation_managers') {
+                        $createResult = $this->managerModel->add_operation_manager($data);
+                        if ($createResult && is_array($createResult) && !empty($createResult['success'])) {
+                            // Send credentials email
+                            $plainPassword = $createResult['password'] ?? '';
+                            $recipientEmail = $createResult['email'] ?? $data['email'];
+                            $mailSent = sendWelcomeEmail($recipientEmail, $recipientEmail, $plainPassword);
+
+                            if ($mailSent) {
+                                setToast('Operation Manager Added Successfully', 'success');
+                            } else {
+                                setToast('Operation Manager added but failed to send email.', 'warning');
+                            }
+
+                            redirect('installeradmin/managers/' . $managerType);
+                        } else {
+                            setToast('Failed to add operation manager. Please try again.', 'error');
+                            $this->view('pages/installer_admin/add_manager', $data, layout: 'dashboard');
+                        }
+                    } elseif ($managerType === 'inventory_managers') {
+                        $createResult = $this->managerModel->add_inventory_manager($data);
+                        if ($createResult && is_array($createResult) && !empty($createResult['success'])) {
+                            // Send credentials email
+                            $plainPassword = $createResult['password'] ?? '';
+                            $recipientEmail = $createResult['email'] ?? $data['email'];
+                            $mailSent = sendWelcomeEmail($recipientEmail, $recipientEmail, $plainPassword);
+
+                            if ($mailSent) {
+                                setToast('Inventory Manager Added Successfully', 'success');
+                            } else {
+                                setToast('Inventory Manager added but failed to send email.', 'warning');
+                            }
+
+                            redirect('installeradmin/managers/' . $managerType);
+                        } else {
+                            setToast('Failed to add inventory manager. Please try again.', 'error');
+                            $this->view('pages/installer_admin/add_manager', $data, layout: 'dashboard');
+                        }
+                    }
+
+                }
+                // else {
+                //     // Update mode
+                //     if ($this->teamModel->update_operation_manager($data)) {
+                //         setToast('Operation Manager Updated Successfully', 'success');
+                //         redirect('installeradmin/managers/' . $managerType);
+                //     } else {
+                //         setToast('Failed to update operation manager. Please try again.', 'error');
+                //         $this->view('pages/installer_admin/add_manager', $data, layout: 'dashboard');
+                //     }
+                // }
             } else {
                 // Load view with errors
                 $this->view('pages/installer_admin/add_manager', $data, layout: 'dashboard');
@@ -1523,13 +1653,8 @@ class InstallerAdmin extends Controller
 
     public function profile()
     {
-        $user_id = $_SESSION['user_id'];
-        $company_id = $this->profileModel->getCompanyIdByUser($user_id);
-        $user_data = $this->profileModel->getInstalleradminProfile($user_id, $company_id);
-
         $data = [
             'user' => $this->user,
-            'user_data' => $user_data
         ];
 
         $this->view('pages/installer_admin/profile', $data, layout: 'dashboard');

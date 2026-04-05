@@ -8,15 +8,21 @@ class M_Fleet{
     }
 
     //add customer
-    public function add_customer($userData, $customerData, $panelData) {
+    public function add_customer($userData, $customerData, $panelData) 
+    {
+        $plainPassword = substr(bin2hex(random_bytes(6)), 0, 10);
         try {
             // Start transaction
             $this->db->beginTransaction();
 
             // 1. Insert into `user` table
-            $this->db->query('INSERT INTO user (email, password, type, full_name) VALUES (:email, :password, :type, :full_name)');
+            $this->db->query('
+            INSERT INTO user (email, password, type, full_name) 
+            VALUES (:email, :password, :type, :full_name)
+            ');
+
             $this->db->bind(':email', $userData['email']);
-            $this->db->bind(':password', $userData['password']);
+            $this->db->bind(':password', password_hash($plainPassword, PASSWORD_DEFAULT));
             $this->db->bind(':type', ROLE_HOMEOWNER);
             $this->db->bind(':full_name', $customerData['full_name']);
             $this->db->execute();
@@ -24,35 +30,88 @@ class M_Fleet{
             // Get the inserted user ID
             $userId = $this->db->lastInsertId();
 
+            // Get company id for the current installer admin
+            $installerAdminId = $_SESSION['user_id'] ?? null;
+            $this->db->query('SELECT company_id FROM installer_admin WHERE user_id = :user_id');
+            $this->db->bind(':user_id', $installerAdminId);
+            $companyRow = $this->db->single();
+            $companyId = $companyRow->company_id ?? null;
+
+            if (empty($installerAdminId)) {
+                throw new Exception('Installer admin user_id is missing from session');
+            }
+
+            if (empty($companyId)) {
+                // Log details for easier debugging
+                $debug = 'InstallerAdmin lookup failed - user_id: ' . var_export($installerAdminId, true) . ', companyRow: ' . var_export($companyRow, true);
+                error_log($debug);
+                throw new Exception('Company ID not found for installer admin user_id: ' . var_export($installerAdminId, true));
+            }
+
+            // Verify the company actually exists in the installer_company table
+            $this->db->query('SELECT company_id FROM installer_company WHERE company_id = :company_id');
+            $this->db->bind(':company_id', $companyId);
+            $companyExists = $this->db->single();
+            if (empty($companyExists) || empty($companyExists->company_id)) {
+                $debug = 'Installer company not found - company_id: ' . var_export($companyId, true) . ', installer_admin_row: ' . var_export($companyRow, true);
+                error_log($debug);
+                throw new Exception('Installer company not found for company_id: ' . var_export($companyId, true));
+            }
+
             // 2. Insert into `homeowner` table
-            // Columns: user_id, company_id, full_name, address, contact, register_date, email
-            $this->db->query('INSERT INTO homeowner (user_id, company_id, address, contact, register_date, nic, district, ceb_account) VALUES (:user_id, :company_id, :address, :contact, :register_date, :nic, :district, :ceb_account)');
-            $this->db->bind(':user_id', $userId);
-            $this->db->bind(':company_id', 1); 
-            $this->db->bind(':address', $customerData['address']);
-            $this->db->bind(':contact', $customerData['contact']);
-            $this->db->bind(':register_date', date('Y-m-d'));
-            $this->db->bind(':nic', $customerData['nic']);
-            $this->db->bind(':district', $customerData['district']);
-            $this->db->bind(':ceb_account', $customerData['ceb_account']);
+            $sqlHomeowner = 'INSERT INTO homeowner (user_id, company_id, address, contact, register_date, nic, district, ceb_account) VALUES (:user_id, :company_id, :address, :contact, :register_date, :nic, :district, :ceb_account)';
+            // Log the SQL and the values we'll bind to help diagnose missing field issues
+            error_log('M_Fleet::add_customer homeowner SQL: ' . $sqlHomeowner);
+            $binds = [
+                ':user_id' => $userId,
+                ':company_id' => $companyId,
+                ':address' => $customerData['address'],
+                ':contact' => $customerData['contact'],
+                ':register_date' => date('Y-m-d'),
+                ':nic' => $customerData['nic'],
+                ':district' => $customerData['district'],
+                ':ceb_account' => $customerData['ceb_account']
+            ];
+            error_log('M_Fleet::add_customer homeowner binds: ' . var_export($binds, true));
+
+            $this->db->query($sqlHomeowner);
+            foreach ($binds as $param => $val) {
+                $this->db->bind($param, $val);
+            }
             $this->db->execute();
 
             // 3. Insert into `solar_system` table
-            // Columns: user_id, capacity, tilt, azimuth, panel_brand, inverter_brand, installation_date
-            $this->db->query('INSERT INTO solar_system (user_id, capacity, tilt, azimuth, panel_brand, inverter_brand, installation_date) VALUES (:user_id, :capacity, :tilt, :azimuth, :panel_brand, :inverter_brand, :installation_date)');
+            // Columns: user_id, capacity, tilt, azimuth, panel_brand, inverter_brand, installation_date, module_type, array_type, losses_pct, dc_ac_ratio, inv_eff_pct
+            $this->db->query('
+            INSERT INTO solar_system (user_id, district, capacity, tilt, azimuth, panel_brand, inverter_brand, installation_date, module_type, array_type, losses_pct, dc_ac_ratio, inv_eff_pct) 
+            VALUES (:user_id, :district, :capacity, :tilt, :azimuth, :panel_brand, :inverter_brand, :installation_date, :module_type, :array_type, :losses_pct, :dc_ac_ratio, :inv_eff_pct)
+            ');
+
             $this->db->bind(':user_id', $userId);
+            $this->db->bind(':district', $customerData['district']);
             $this->db->bind(':capacity', $panelData['system_capacity']);
             $this->db->bind(':tilt', $panelData['panel_tilt']);
             $this->db->bind(':azimuth', $panelData['panel_azimuth']);
             $this->db->bind(':panel_brand', $panelData['panel_brand']);
             $this->db->bind(':inverter_brand', $panelData['inverter_brand']);
             $this->db->bind(':installation_date', $panelData['installation_date']);
+            $this->db->bind(':module_type', $panelData['module_type']);
+            $this->db->bind(':array_type', $panelData['array_type']);
+            $this->db->bind(':losses_pct', $panelData['losses_pct']);
+            $this->db->bind(':dc_ac_ratio', $panelData['dc_ac_ratio']);
+            $this->db->bind(':inv_eff_pct', $panelData['inv_eff_pct']);
             $this->db->execute();
 
             // Commit the transaction
             $this->db->commit();
 
-            return true;
+            // Return success with created user details (including plaintext password for emailing)
+            return [
+                'success' => true,
+                'user_id' => $userId,
+                'password' => $plainPassword,
+                'email' => $userData['email'] ?? ''
+            ];
 
         } catch (Exception $e) {
             $this->db->rollBack();
@@ -72,6 +131,44 @@ class M_Fleet{
             return false;
         }
     }
+
+    public function get_total_customers($companyId) {
+        try {
+            $this->db->query('SELECT COUNT(*) as total FROM homeowner WHERE company_id = :company_id');
+            $this->db->bind(':company_id', $companyId);
+            $result = $this->db->single();
+            return $result->total ?? 0;
+        } catch (Exception $e) {
+            error_log('Get total customers failed: ' . $e->getMessage());
+            return 0;
+        }
+    }
+
+    public function get_completed_services($companyId) {
+        //get the services completed for each customer
+        try {
+            $this->db->query('SELECT COUNT(*) as total FROM service_req sr JOIN homeowner h ON sr.company_id = h.company_id WHERE h.company_id = :company_id AND sr.status = "completed"');
+            $this->db->bind(':company_id', $companyId);
+            $result = $this->db->single();
+            return $result->total ?? 0;
+        } catch (Exception $e) {
+            error_log('Get completed services failed: ' . $e->getMessage());
+            return 0;
+        }
+    }
+
+        public function get_pending_services($companyId) {
+            //get the services pending for each customer
+            try {
+                $this->db->query('SELECT COUNT(*) as total FROM service_req sr JOIN homeowner h ON sr.company_id = h.company_id WHERE h.company_id = :company_id AND sr.status = "pending"');
+                $this->db->bind(':company_id', $companyId);
+                $result = $this->db->single();
+                return $result->total ?? 0;
+            } catch (Exception $e) {
+                error_log('Get pending services failed: ' . $e->getMessage());
+                return 0;
+            }
+        }
 
     public function update_customer($userId, $userData, $customerData, $panelData) {
         try {
@@ -211,47 +308,47 @@ class M_Fleet{
     }
 
     public function get_customer_by_company($companyId) {
-        try { 
-            $this->db->query('SELECT 
-                            u.user_id,
-                            u.full_name,
-                            u.email,
-                            h.district,
-                            s.capacity,
-                            sm.date
-                        FROM user u
-                        JOIN homeowner h ON u.user_id = h.user_id
-                        JOIN solar_system s ON u.user_id = s.user_id
-                        LEFT JOIN (
-                            SELECT user_id, MAX(date) as date
-                            FROM sms
-                            GROUP BY user_id
-                        ) sm ON u.user_id = sm.user_id
-                        WHERE h.company_id = :company_id');
-            $this->db->bind(':company_id', $companyId);
-            $results = $this->db->resultSet();
+    try { 
+        $this->db->query('SELECT 
+                        u.user_id,
+                        u.full_name,
+                        u.email,
+                        h.district,
+                        s.capacity,
+                        sm.last_reading
+                    FROM user u
+                    JOIN homeowner h ON u.user_id = h.user_id
+                    JOIN solar_system s ON u.user_id = s.user_id
+                    LEFT JOIN (
+                        SELECT user_id, MAX(reading_date) as last_reading
+                        FROM sms
+                        GROUP BY user_id
+                    ) sm ON u.user_id = sm.user_id
+                    WHERE h.company_id = :company_id');
+        
+        $this->db->bind(':company_id', $companyId);
+        $results = $this->db->resultSet();
 
-            // Format the results to match the expected structure
-            $formattedResults = [];
-            foreach ($results as $row) {
-                $formattedResults[] = [
-                    'id' => $row->user_id,
-                    'name' => $row->full_name,
-                    'location' => $row->district,
-                    'size' => $row->capacity,
-                    'health' => 'Healthy',  // Default dummy value
-                    'performance' => '100',  // Default dummy value
-                    'last_upload' => $row->date ?? '2025-08-20 09:45',  // Use actual date or default if NULL
-                    'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode(str_replace(' ', '+', $row->full_name)) . '&background=00bcd4&color=fff'
-                ];
-            }
-            
-            return $formattedResults;
-        } catch (Exception $e) {
-            error_log('Get customer by company failed: ' . $e->getMessage());
-            return false;
+        $formattedResults = [];
+        foreach ($results as $row) {
+            $formattedResults[] = [
+                'id' => $row->user_id,
+                'name' => $row->full_name,
+                'location' => $row->district,
+                'size' => $row->capacity,
+                'health' => 'Healthy', // Placeholder for health logic
+                'performance' => '100', // Placeholder for performance calculation
+                'last_upload' => $row->last_reading ?? 'No readings yet',
+                'avatar' => getAvatarUrl($row->full_name)
+            ];
         }
+        
+        return $formattedResults;
+    } catch (Exception $e) {
+        error_log('Get customer by company failed: ' . $e->getMessage());
+        return [];
     }
+}
 
     public function delete_customer($userId)
 {

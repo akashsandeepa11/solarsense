@@ -1,7 +1,7 @@
-    <!-- <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/installer_admin/team.css"> -->
+<!-- <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/installer_admin/team.css"> -->
 <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/components.css">
 
-<style> 
+<style>
     .badge {
         display: inline-flex;
         align-items: center;
@@ -16,12 +16,12 @@
 </style>
 
 <div class="team-container container-fluid p-8">
-    
+
     <!-- Page Header -->
     <?php
     // Build buttons array based on role
     $buttons = [];
-    if($data['user']['role'] === ROLE_INSTALLER_ADMIN) {   
+    if ($data['user']['role'] === ROLE_INSTALLER_ADMIN) {
         $buttons[] = [
             'label' => 'Add New Agent',
             'url' => URLROOT . '/installeradmin/team/add_service_agent',
@@ -29,13 +29,15 @@
             'class' => 'btn-primary'
         ];
     }
-    
+
     $config = [
         'title' => 'Service Agents',
         'description' => 'Manage your team of service agents and track their tasks',
         'buttons' => $buttons
     ];
     include __DIR__ . '/../../inc/components/page_header.php';
+
+    $stats = $data['stats'];
     ?>
 
     <!-- Filter & Search Section -->
@@ -83,12 +85,12 @@
     <!-- Teams Stats Section -->
     <?php
     $stats_data = [
-        ['label' => 'Total Agents', 'value' => '12', 'icon' => 'fas fa-users', 'color' => 'primary'],
-        ['label' => 'Active', 'value' => '10', 'icon' => 'fas fa-check-circle', 'color' => 'success'],
-        ['label' => 'Total Tasks', 'value' => '48', 'icon' => 'fas fa-tasks', 'color' => 'warning'],
-        ['label' => 'Pending Tasks', 'value' => '15', 'icon' => 'fas fa-clock', 'color' => 'accent']
+        ['label' => 'Total Agents', 'value' => $stats['total_agents'] ?? '0', 'icon' => 'fas fa-users', 'color' => 'primary'],
+        ['label' => 'Active', 'value' => $stats['active_agents'] ?? '0', 'icon' => 'fas fa-check-circle', 'color' => 'success'],
+        ['label' => 'Total Tasks', 'value' => $stats['total_tasks'] ?? '0', 'icon' => 'fas fa-tasks', 'color' => 'warning'],
+        ['label' => 'Pending Tasks', 'value' => $stats['pending_tasks'] ?? '0', 'icon' => 'fas fa-clock', 'color' => 'accent']
     ];
-    
+
     $config = [
         'stats' => $stats_data,
         'columns' => 4
@@ -98,48 +100,25 @@
 
     <!-- Service Agents List -->
     <?php
-    // Transform retrieved agent data into the format needed for display
-    // Retrieved data columns: user_id, email, type, full_name, contact, status
-    $agents = isset($data['agents']) ? $data['agents'] : [];
+    $agents = $data['agents'];
     $processedAgents = [];
-    
-    // Convert stdClass object to array if needed
-    if (is_object($agents)) {
-        $agents = json_decode(json_encode($agents), true);
-    }
-    
-    // Handle single object result - convert to array of objects
-    if (is_object($agents)) {
-        $agents = [$agents];
-    } elseif (!is_array($agents)) {
-        $agents = [];
-    }
-    
-    if (!empty($agents)) {
-        foreach ($agents as $agent) {
-            // Support both array and object access
-            $id = is_object($agent) ? ($agent->user_id ?? 0) : ($agent['user_id'] ?? 0);
-            $fullName = is_object($agent) ? ($agent->full_name ?? 'Unknown Agent') : ($agent['full_name'] ?? 'Unknown Agent');
-            $email = is_object($agent) ? ($agent->email ?? 'N/A') : ($agent['email'] ?? 'N/A');
-            $contact = is_object($agent) ? ($agent->contact ?? 'N/A') : ($agent['contact'] ?? 'N/A');
-            $status = is_object($agent) ? ($agent->status ?? 'Inactive') : ($agent['status'] ?? 'Inactive');
-            
-            $assigned = rand(3, 8);
-            $pending = rand(1, 3);
-            $completed = $assigned - $pending;
-            
+    if (!empty($agents)) 
+    {
+        foreach ($agents as $agent) 
+        {
+            $agent = (array)$agent; // Convert stdClass to array for easier access
+
             $processedAgents[] = [
-                'id' => $id,
-                'name' => $fullName,
-                'role' => 'Service Agent', // constant value
-                'email' => $email,
-                'phone' => $contact,
-                'assigned' => $assigned,
-                'pending' => $pending,
-                'completed' => $completed,
-                'status' => ucfirst($status), // use status from db
-                'last_active' => 'Today, 2:30 PM', // constant value
-                'avatar' => getAvatarUrl($fullName)
+                'id' => $agent['id'],
+                'name' => $agent['full_name'],
+                'role' => 'ServiceAgent',
+                'email' => $agent['email'],
+                'phone' => $agent['contact'],
+                'assigned' => $agent['assigned_tasks'] ?? 0,
+                'completed' => $agent['completed_tasks'] ?? 0,
+                'pending' => $agent['pending_tasks'] ?? 0,
+                'status' => ucfirst($agent['agent_status'] ?? 'Inactive'),
+                'avatar' => getAvatarUrl($agent['full_name'])
             ];
         }
     }
@@ -151,14 +130,13 @@
             ['key' => 'assigned', 'label' => 'Assigned Tasks'],
             ['key' => 'completed', 'label' => 'Completed'],
             ['key' => 'pending', 'label' => 'Pending'],
-            ['key' => 'status', 'label' => 'Status'],
-            ['key' => 'last_active', 'label' => 'Last Active']
+            ['key' => 'status', 'label' => 'Status']
         ],
         'rows' => $processedAgents,
         'columns' => [
             [
                 'key' => 'name',
-                'render' => function($row) {
+                'render' => function ($row) {
                     return '<div class="d-flex align-center gap-3">
                                 <div class="agent-avatar">
                                     <img src="' . htmlspecialchars($row['avatar']) . '" alt="' . htmlspecialchars($row['name']) . '">
@@ -172,7 +150,7 @@
             ],
             [
                 'key' => 'email',
-                'render' => function($row) {
+                'render' => function ($row) {
                     return '<div class="contact-info">
                                 <div class="email text-sm">' . htmlspecialchars($row['email']) . '</div>
                                 <div class="phone text-secondary text-sm">' . htmlspecialchars($row['phone']) . '</div>
@@ -181,13 +159,13 @@
             ],
             [
                 'key' => 'assigned',
-                'render' => function($row) {
+                'render' => function ($row) {
                     return '<span class="badge bg-primary">' . htmlspecialchars($row['assigned']) . '</span>';
                 }
             ],
             [
                 'key' => 'completed',
-                'render' => function($row) {
+                'render' => function ($row) {
                     $percentage = $row['assigned'] > 0 ? intval(($row['completed'] / $row['assigned']) * 100) : 0;
                     return '<div class="task-progress">
                                 <div class="progress-bar">
@@ -199,13 +177,13 @@
             ],
             [
                 'key' => 'pending',
-                'render' => function($row) {
+                'render' => function ($row) {
                     return '<span class="badge bg-warning">' . htmlspecialchars($row['pending']) . '</span>';
                 }
             ],
             [
                 'key' => 'status',
-                'render' => function($row) {
+                'render' => function ($row) {
                     $statusColor = $row['status'] === 'Active' ? 'text-success' : 'text-warning';
                     return '<span class="status-badge status-' . strtolower(str_replace(' ', '-', $row['status'])) . '">
                                 <i class="fas fa-circle ' . $statusColor . ' mr-1"></i>' . htmlspecialchars($row['status']) . '
@@ -214,9 +192,9 @@
             ]
         ]
     ];
-    
+
     // Build actions array - View Details always available
-    if(!isset($config['actions'])) {
+    if (!isset($config['actions'])) {
         $config['actions'] = [
             [
                 'label' => 'View Details',
@@ -225,9 +203,9 @@
             ]
         ];
     }
-    
+
     // Add Edit and Remove actions only for Installer Admin
-    if($data['user']['role'] === ROLE_INSTALLER_ADMIN) {
+    if ($data['user']['role'] === ROLE_INSTALLER_ADMIN) {
         $config['actions'][] = [
             'label' => 'Edit',
             'icon' => 'fas fa-edit',
@@ -240,9 +218,9 @@
             'onclick' => 'onclick="openDeleteModal(' . '{id}' . ')"'
         ];
     }
-    
+
     $config['empty_message'] = 'No clients available';
-    
+
     include __DIR__ . '/../../inc/components/data_table.php';
     ?>
 
@@ -268,15 +246,15 @@
 
     <!-- Dynamic Delete Modal Handler -->
     <script>
-    function openDeleteModal(agentId) {
-        // Get the form inside the modal and update its action
-        const modal = document.getElementById('deleteTeamModal');
-        const form = modal.querySelector('form');
-        if (form) {
-            form.action = '<?php echo URLROOT; ?>/installeradmin/team/delete_agent/' + agentId;
+        function openDeleteModal(agentId) {
+            // Get the form inside the modal and update its action
+            const modal = document.getElementById('deleteTeamModal');
+            const form = modal.querySelector('form');
+            if (form) {
+                form.action = '<?php echo URLROOT; ?>/installeradmin/team/delete_agent/' + agentId;
+            }
+            // Show the modal
+            showConfirmationModal('deleteTeamModal');
         }
-        // Show the modal
-        showConfirmationModal('deleteTeamModal');
-    }
     </script>
 </div>

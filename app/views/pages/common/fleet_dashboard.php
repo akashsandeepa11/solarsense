@@ -1,12 +1,12 @@
     <?php
     // --- PHP Setup for Dummy Data ---
-
+    $overall_stats = $data['stats'];
     // Summary Card Data
     $summary_cards = [
-        ['label' => 'Total Clients', 'value' => '128', 'icon' => 'fas fa-users', 'color' => 'primary'],
-        ['label' => 'Systems with Active Faults', 'value' => '4', 'icon' => 'fas fa-exclamation-triangle', 'color' => 'error'],
-        ['label' => 'Pending Maintenance', 'value' => '9', 'icon' => 'fas fa-wrench', 'color' => 'warning'],
-        ['label' => 'Services Completed (Month)', 'value' => '23', 'icon' => 'fas fa-check-circle', 'color' => 'success']
+        ['label' => 'Total Clients', 'value' => $overall_stats['total_clients'], 'icon' => 'fas fa-users', 'color' => 'primary'],
+        ['label' => 'Systems with Active Faults', 'value' => '0', 'icon' => 'fas fa-exclamation-triangle', 'color' => 'error'],
+        ['label' => 'Pending Maintenance', 'value' => $overall_stats['pending_maintenace'], 'icon' => 'fas fa-wrench', 'color' => 'warning'],
+        ['label' => 'Services Completed (Month)', 'value' => $overall_stats['completed_services'], 'icon' => 'fas fa-check-circle', 'color' => 'success']
     ];
 
     // Get all customers from controller
