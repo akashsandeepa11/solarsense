@@ -9,11 +9,18 @@ $power_cut = [
     'end_time'   => '4:00 PM'
 ];
 
-$daily_forecast = [
-    'temperature'          => 31,
-    'condition'            => 'Sunny',
-    'estimated_generation' => 22
-];
+function mapWeatherCodeToIcon(int $code): string
+{
+    return match ($code) {
+        0, 1 => 'fa-sun',
+        2, 3 => 'fa-cloud-sun',
+        45, 48 => 'fa-smog',
+        51, 53, 55, 61, 63, 65, 80, 81, 82 => 'fa-cloud-rain',
+        71, 73, 75, 77, 85, 86 => 'fa-snowflake',
+        95, 96, 99 => 'fa-bolt',
+        default => 'fa-cloud'
+    };
+}
 
 // --- Build chart arrays from DB data ---
 $labels              = [];
@@ -133,7 +140,7 @@ $currentYear = $selected_year ?? (int) date('Y');
     <!-- Page Header with Title and Upload Button -->
     <?php
     $pageHeaderConfig = [
-        'title' => 'Good Morning, ' . $user_name . '!',
+        'title' => 'Good Morning, ' . $_SESSION['user_name'] . '!',
         'description' => 'Here\'s your solar performance overview.',
         'buttons' => [
             [
@@ -198,12 +205,22 @@ $currentYear = $selected_year ?? (int) date('Y');
                     <h3 class="card-title text-xl font-semibold text-white">Today's Forecast</h3>
                     <div class="d-flex align-center justify-between">
                         <div>
-                            <div class="text-5xl font-bold text-white"><?php echo $daily_forecast['temperature']; ?>°C</div>
-                            <div class="text-white font-medium"><?php echo $daily_forecast['condition']; ?></div>
+                            <div class="text-5xl font-bold text-white">
+                                <?php echo $daily_forecast['temperature']; ?>°C
+                            </div>
+                            <div class="text-white font-medium">
+                                <?php echo htmlspecialchars($daily_forecast['condition']); ?>
+                            </div>
+                            <div class="text-white opacity-75 mt-2">
+                                Max: <?php echo round($daily_forecast['temp_max']); ?>°C |
+                                Min: <?php echo round($daily_forecast['temp_min']); ?>°C
+                            </div>
+                            <div class="text-white opacity-75">
+                                Solar: <?php echo round($daily_forecast['solar_radiation_mj'], 2); ?> MJ/m²
+                            </div>
                         </div>
                         <i class="fas fa-sun text-6xl text-white opacity-75"></i>
                     </div>
-                    <p class="text-white mt-4">Expect to generate approx. <strong><?php echo $daily_forecast['estimated_generation']; ?> kWh</strong> today.</p>
                 </div>
             </div>
 
