@@ -48,11 +48,13 @@ $operation_manager_nav = [
 // --- Navigation Array for Inventory Manager ---
 $inventory_manager_nav = [
     'MAIN' => [
+        ['title' => 'Dashboard', 'url' => '/inventorymanager/dashboard', 'icon' => 'fa-solid fa-gauge-high'],
         ['title' => 'Inventory', 'url' => '/inventorymanager/inventory', 'icon' => 'fa-solid fa-boxes-stacked'],
-        // ['title' => 'Suppliers', 'url' => '/inventorymanager/suppliers', 'icon' => 'fa-solid fa-truck-fast'],
+        ['title' => 'Purchases', 'url' => '/inventorymanager/purchases', 'icon' => 'fa-solid fa-cart-shopping'],
         ['title' => 'Reports', 'url' => '/inventorymanager/reports', 'icon' => 'fa-solid fa-file-lines'],
     ],
     'PERSONAL' => [
+        ['title' => 'Settings', 'url' => '/inventorymanager/settings', 'icon' => 'fa-solid fa-gear'],
         ['title' => 'Profile', 'url' => '/inventorymanager/profile', 'icon' => 'fa-solid fa-user-cog'],
         ['title' => 'Help', 'url' => '/inventorymanager/help', 'icon' => 'fa-solid fa-circle-question']
     ],

@@ -57,8 +57,100 @@ class HomeOwner extends Controller
                 'user' => $this->user,
             ];
         
-            $this->uploadSMS($system);
+            $this->uploadSMS();
         }
+    }
+        
+    // --- PayHere Checkout ---
+    public function checkout() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . URLROOT . '/homeowner/shop/cart');
+            exit();
+        }
+
+        $cartJson = $_POST['cart'] ?? '[]';
+        $cart     = json_decode($cartJson, true);
+
+        if (empty($cart)) {
+            header('Location: ' . URLROOT . '/homeowner/shop/cart');
+            exit();
+        }
+
+        // Calculate total
+        $amount = 0;
+        foreach ($cart as $item) {
+            $amount += (float)($item['price'] ?? 0) * (int)($item['qty'] ?? 1);
+        }
+        $amount   = round($amount, 2);
+        $currency = 'LKR';
+
+        // Save order to DB first — use its real integer ID as the PayHere order_id
+        $orderId = $this->inventoryModel->create_order([
+            'user_id'      => 1, // replace with session user id when auth is added
+            'total_amount' => $amount,
+            'status'       => 'pending',
+            'date'         => date('Y-m-d'),
+        ], $cart);
+
+        // Generate PayHere hash
+        // hash = MD5(merchant_id + order_id + amount + currency + MD5(secret).toUpperCase())
+        $merchantId     = PAYHERE_MERCHANT_ID;
+        $merchantSecret = PAYHERE_MERCHANT_SECRET;
+        $secretHash     = strtoupper(md5($merchantSecret));
+        $hash           = strtoupper(md5($merchantId . $orderId . number_format($amount, 2, '.', '') . $currency . $secretHash));
+
+        $payhereUrl = PAYHERE_SANDBOX
+            ? 'https://sandbox.payhere.lk/pay/checkout'
+            : 'https://www.payhere.lk/pay/checkout';
+
+        $data = [
+            'user'         => $this->user,
+            'payhere_url'  => $payhereUrl,
+            'merchant_id'  => $merchantId,
+            'order_id'     => $orderId,
+            'amount'       => number_format($amount, 2, '.', ''),
+            'currency'     => $currency,
+            'hash'         => $hash,
+            'return_url'   => URLROOT . '/homeowner/paymentReturn',
+            'cancel_url'   => URLROOT . '/homeowner/paymentCancel',
+            'notify_url'   => URLROOT . '/homeowner/paymentNotify',
+            'cart'         => $cart,
+        ];
+
+        $this->view('pages/homeowner/checkout', $data, layout: 'dashboard');
+    }
+
+    public function paymentReturn() {
+        $data = ['user' => $this->user, 'status' => 'success'];
+        $this->view('pages/homeowner/payment_result', $data, layout: 'dashboard');
+    }
+
+    public function paymentCancel() {
+        $data = ['user' => $this->user, 'status' => 'cancelled'];
+        $this->view('pages/homeowner/payment_result', $data, layout: 'dashboard');
+    }
+
+    public function paymentNotify() {
+        // Verify PayHere notification
+        $merchantId     = PAYHERE_MERCHANT_ID;
+        $merchantSecret = PAYHERE_MERCHANT_SECRET;
+
+        $orderId        = $_POST['order_id']        ?? '';
+        $paymentId      = $_POST['payment_id']      ?? '';
+        $payhereAmount  = $_POST['payhere_amount']  ?? '';
+        $payhereCurrency= $_POST['payhere_currency']?? '';
+        $statusCode     = $_POST['status_code']     ?? '';
+        $md5sig         = $_POST['md5sig']          ?? '';
+
+        $secretHash     = strtoupper(md5($merchantSecret));
+        $localHash      = strtoupper(md5($merchantId . $orderId . $payhereAmount . $payhereCurrency . $statusCode . $secretHash));
+
+        if ($localHash === $md5sig && $statusCode == 2) {
+            // Payment successful — update order status
+            $this->inventoryModel->update_order_status($orderId, 'completed');
+        }
+        http_response_code(200);
+        exit();
     }
 
     public function service(): void
@@ -173,7 +265,7 @@ class HomeOwner extends Controller
     }
 
 
-    public function uploadSMS( $system): void
+    public function uploadSMS(): void
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sms = trim($_POST['smsContent'] ?? '');
