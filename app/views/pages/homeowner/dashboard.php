@@ -14,10 +14,6 @@ $daily_forecast = [
     'estimated_generation' => 22 // kWh
 ];
 
-// Monthly Performance Summary (from last SMS)
-$grid_export_kwh = 310;
-$monthly_income_lkr = $grid_export_kwh * SOLAR_TARIFF_RATE_LKR;
-
 $stats = $data['stats'];
 
 $total_export = $stats->total_export ?? 0;
