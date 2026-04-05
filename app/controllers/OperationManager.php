@@ -4,6 +4,7 @@
 
         private $fleetModel;
         private $teamModel;
+        private $taskModel;
 
         private $user = [
             'role' => ROLE_OPERATION_MANAGER,
@@ -11,8 +12,8 @@
         
         public function __construct(){
             $this->fleetModel = $this->model('M_Fleet');
-            $this->teamModel = $this->model('M_Team');
-            // Here you would add logic to ensure only an admin can access these methods.
+            $this->teamModel  = $this->model('M_Team');
+            $this->taskModel  = $this->model('M_maintenance_task');
         }
 
         // --- Admin-Specific Pages ---
@@ -112,13 +113,62 @@
             $this->view('pages/operation_manager/quotation', $data, layout: 'dashboard');
         }
 
-        public function maintenance(){
+        public function maintenance($action = null, $id = null){
+            $companyId = 1; // TODO: resolve from session once OM company is wired up
+
+            // --- Handle POST actions ---
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+                if ($action === 'create') {
+                    $taskData = [
+                        'homeowner_id'       => $_POST['homeowner_id']       ?? null,
+                        'service_type_id'    => $_POST['service_type_id']    ?? null,
+                        'service_description'=> trim($_POST['service_description'] ?? ''),
+                    ];
+                    if ($taskData['homeowner_id'] && $taskData['service_type_id'] &&
+                        $this->taskModel->create_task($taskData)) {
+                        setToast('Task created successfully.', 'success');
+                    } else {
+                        setToast('Failed to create task. Check all fields.', 'error');
+                    }
+                    redirect('operationmanager/maintenance');
+                    return;
+                }
+
+                if ($action === 'assign' && $id) {
+                    $agentId = $_POST['agent_id'] ?? null;
+                    if ($agentId && $this->taskModel->assign_agent($id, $agentId)) {
+                        setToast('Agent assigned successfully.', 'success');
+                    } else {
+                        setToast('Failed to assign agent.', 'error');
+                    }
+                    redirect('operationmanager/maintenance');
+                    return;
+                }
+
+                if ($action === 'delete' && $id) {
+                    if ($this->taskModel->delete_task($id)) {
+                        setToast('Task deleted successfully.', 'success');
+                    } else {
+                        setToast('Failed to delete task.', 'error');
+                    }
+                    redirect('operationmanager/maintenance');
+                    return;
+                }
+            }
+
+            // --- Load page data ---
             $data = [
-                'user' => $this->user,
+                'user'          => $this->user,
+                'tasks'         => $this->taskModel->get_tasks_by_company($companyId),
+                'agents'        => $this->teamModel->get_service_agents_by_company($companyId),
+                'customers'     => $this->fleetModel->get_customer_by_company($companyId),
+                'service_types' => $this->taskModel->get_service_types(),
             ];
-            
+
             $this->view('pages/operation_manager/maintenance', $data, layout: 'dashboard');
         }
+
 
         public function reports(){
             $data = [
