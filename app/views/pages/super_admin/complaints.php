@@ -110,54 +110,15 @@ $tasks = [
     include __DIR__ . '/../../inc/components/filter_bar.php';
     ?>
 
-    <!-- Summary Cards -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm rounded-xl">
-                <div class="card-body">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="stat-icon bg-warning">
-                            <i class="fas fa-exclamation-circle"></i>
-                        </div>
-                        <div>
-                            <div class="text-secondary text-sm">Pending Complaints</div>
-                            <div class="h3 mb-0 font-bold" id="pendingCount">0</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm rounded-xl">
-                <div class="card-body">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="stat-icon bg-success">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div>
-                            <div class="text-secondary text-sm">Resolved Complaints</div>
-                            <div class="h3 mb-0 font-bold" id="doneCount">0</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm rounded-xl">
-                <div class="card-body">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="stat-icon bg-primary">
-                            <i class="fas fa-headset"></i>
-                        </div>
-                        <div>
-                            <div class="text-secondary text-sm">Total Complaints</div>
-                            <div class="h3 mb-0 font-bold" id="totalCount">0</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <?php
+    $summary_cards = [
+        ['label' => 'Pending Complaints', 'value' => 0, 'icon' => 'fas fa-exclamation-circle', 'color' => 'warning', 'id' => 'pendingCount'],
+        ['label' => 'Resolved Complaints', 'value' => 0, 'icon' => 'fas fa-check-circle', 'color' => 'success', 'id' => 'doneCount'],
+        ['label' => 'Total Complaints', 'value' => 0, 'icon' => 'fas fa-headset', 'color' => 'primary', 'id' => 'totalCount'],
+    ];
+    $config = ['stats' => $summary_cards, 'columns' => 6];
+    include __DIR__ . '/../../inc/components/stat_card.php';
+    ?>
 
     <!-- Complaints List -->
     <div id="taskList"></div>
@@ -261,29 +222,7 @@ include __DIR__ . '/../../inc/models/confirmation_modal.php';
     transform: translateY(-2px);
 }
 
-.stat-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    color: #ffffff;
-    font-size: 1.5rem;
-    flex-shrink: 0;
-}
-
-.stat-icon.bg-primary {
-    background-color: #fe9630 !important;
-}
-
-.stat-icon.bg-success {
-    background-color: #22c55e !important;
-}
-
-.stat-icon.bg-warning {
-    background-color: #f59e0b !important;
-}
+    /* stat-icon styles are provided by the shared stat_card component */
 
 .custom-modal {
     position: fixed;

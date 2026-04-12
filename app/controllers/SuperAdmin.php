@@ -50,33 +50,6 @@ class SuperAdmin extends Controller
         $this->view('pages/super_admin/companies', $data, layout: 'dashboard');
     }
 
-    public function fleet($page = 'dashboard', $customerId = null)
-    {
-        $data = [
-            'user' => $this->user,
-        ];
-
-        if ($page === 'add_customer') {
-            return $this->add_customer();
-        }
-
-        if ($page === 'customer_details') {
-            return $this->customerdetails($customerId);
-        }
-
-        if ($page === 'view') {
-            return $this->view_customer();
-        }
-
-        if ($page === 'edit_customer') {
-            return $this->edit_customer();
-        }
-
-        if ($page === 'delete_customer') {
-            return $this->delete_customer();
-        }
-    }
-
     public function reports()
     {
         $data = [

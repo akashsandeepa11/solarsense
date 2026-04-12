@@ -95,12 +95,14 @@ $columns = isset($config['columns']) ? (int)$config['columns'] : 4;
         flex: 1;
     }
 
-    .stat-label {
+    .stat-card .stat-label {
         display: block;
         font-size: 0.875rem;
         font-weight: 500;
         color: #6b7280;
         margin-bottom: 0.25rem;
+        text-transform: none;
+        letter-spacing: normal;
     }
 
     .stat-value {
@@ -179,12 +181,13 @@ $columns = isset($config['columns']) ? (int)$config['columns'] : 4;
 <div class="stats-grid">
     <?php foreach ($stats as $stat): ?>
         <?php 
-        $label = $stat['label'] ?? 'Stat';
-        $value = $stat['value'] ?? '0';
-        $icon = $stat['icon'] ?? 'fas fa-chart-bar';
-        $color = $stat['color'] ?? 'primary';
-        $trend = $stat['trend'] ?? null;
-        ?>
+            $label = $stat['label'] ?? 'Stat';
+            $value = $stat['value'] ?? '0';
+            $icon = $stat['icon'] ?? 'fas fa-chart-bar';
+            $color = $stat['color'] ?? 'primary';
+            $trend = $stat['trend'] ?? null;
+            $value_id = $stat['id'] ?? '';
+            ?>
         <div class="stat-card">
             <div class="d-flex align-center gap-4" style="align-items: center;">
                 <div class="stat-icon bg-<?php echo htmlspecialchars($color); ?>">
@@ -192,7 +195,7 @@ $columns = isset($config['columns']) ? (int)$config['columns'] : 4;
                 </div>
                 <div class="stat-content">
                     <span class="stat-label"><?php echo htmlspecialchars($label); ?></span>
-                    <span class="stat-value"><?php echo htmlspecialchars($value); ?></span>
+                    <span class="stat-value"<?php echo $value_id ? ' id="'.htmlspecialchars($value_id).'"' : ''; ?>><?php echo htmlspecialchars($value); ?></span>
                     <?php if ($trend): ?>
                         <div class="stat-trend text-sm">
                             <i class="fas fa-arrow-<?php echo $trend['direction'] === 'up' ? 'up' : 'down'; ?> mr-1"></i>

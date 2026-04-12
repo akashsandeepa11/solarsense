@@ -61,37 +61,7 @@ $activity_stats = [
 //     ['client' => 'EcoPower Installations', 'issue' => 'Account suspension appeal submitted', 'priority' => 'medium'],
 // ];
 
-// Recent System Activities
-$recent_activities = [
-    [
-        'type' => 'company_approved',
-        'message' => 'New company "BrightSolar Ltd" approved and activated',
-        'timestamp' => '2 hours ago',
-        'icon' => 'fas fa-check-circle',
-        'color' => 'success'
-    ],
-    [
-        'type' => 'verification_submitted',
-        'message' => 'New verification request from "SolarTech Solutions"',
-        'timestamp' => '4 hours ago',
-        'icon' => 'fas fa-file-alt',
-        'color' => 'info'
-    ],
-    [
-        'type' => 'complaint_resolved',
-        'message' => 'Support ticket #1847 marked as resolved',
-        'timestamp' => '6 hours ago',
-        'icon' => 'fas fa-clipboard-check',
-        'color' => 'primary'
-    ],
-    [
-        'type' => 'company_suspended',
-        'message' => 'Company "XYZ Installations" temporarily suspended',
-        'timestamp' => '1 day ago',
-        'icon' => 'fas fa-pause-circle',
-        'color' => 'warning'
-    ]
-];
+
 
 // District-wise Company Distribution
 
@@ -247,33 +217,6 @@ if (!empty($data['user_type'])) {
                                 style="background-color: #fe9630; color: white; padding: 0.35rem 0.75rem; font-size: 0.75rem;">
                                 <i class="fas fa-arrow-right"></i>
                             </a>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-
-            <!-- Recent Activities -->
-            <div class="card shadow-lg rounded-xl">
-                <div class="card-body">
-                    <h3 class="card-title text-xl font-semibold mb-4">
-                        <i class="fas fa-history text-primary mr-2"></i>Recent Activities
-                    </h3>
-                    <?php foreach ($recent_activities as $activity): ?>
-                        <div class="d-flex align-center gap-3 py-3" style="border-bottom: 1px solid #e5e7eb;">
-                            <div class="stat-icon" style="width: 40px; height: 40px; font-size: 1rem; background-color: <?php
-                            echo $activity['color'] === 'success' ? '#22c55e' :
-                                ($activity['color'] === 'info' ? '#00bcd4' :
-                                    ($activity['color'] === 'warning' ? '#f59e0b' : '#fe9630'));
-                            ?>;">
-                                <i class="<?php echo $activity['icon']; ?>"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <p class="mb-1 text-sm" style="margin: 0; line-height: 1.4;">
-                                    <?php echo htmlspecialchars($activity['message']); ?></p>
-                                <small class="text-secondary" style="font-size: 0.75rem;">
-                                    <i class="fas fa-clock mr-1"></i><?php echo htmlspecialchars($activity['timestamp']); ?>
-                                </small>
-                            </div>
                         </div>
                     <?php endforeach; ?>
                 </div>

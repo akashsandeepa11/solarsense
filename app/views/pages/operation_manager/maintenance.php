@@ -43,37 +43,22 @@ $agentsJson = json_encode(array_map(fn($a) => [
     require APPROOT . '/views/inc/components/page_header.php';
     ?>
 
-    <!-- Stats Grid -->
-    <div class="stats-grid mb-6">
-        <div class="stat-card">
-            <div class="stat-icon"><i class="fas fa-tasks"></i></div>
-            <div class="stat-content">
-                <p class="stat-label">Total Tasks</p>
-                <p class="stat-value" id="statTotal"><?php echo $totalTasks; ?></p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon success"><i class="fas fa-user-check"></i></div>
-            <div class="stat-content">
-                <p class="stat-label">Assigned</p>
-                <p class="stat-value" id="statAssigned"><?php echo $assignedTasks; ?></p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon warning"><i class="fas fa-clock"></i></div>
-            <div class="stat-content">
-                <p class="stat-label">Unassigned</p>
-                <p class="stat-value" id="statUnassigned"><?php echo $unassigned; ?></p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon error"><i class="fas fa-hourglass-half"></i></div>
-            <div class="stat-content">
-                <p class="stat-label">Pending</p>
-                <p class="stat-value" id="statPending"><?php echo $pending; ?></p>
-            </div>
-        </div>
-    </div>
+    <?php
+    // Use shared stat_card component for consistent styling with fleet/dashboard
+    ?>
+    <link rel="stylesheet" href="<?php echo URLROOT; ?>/public/css/components.css">
+    <link rel="stylesheet" href="<?php echo URLROOT; ?>/public/css/pages/installer/dashboard.css">
+
+    <?php
+    $summary_cards = [
+        ['label' => 'Total Tasks', 'value' => $totalTasks, 'icon' => 'fas fa-tasks', 'color' => 'primary', 'id' => 'statTotal'],
+        ['label' => 'Assigned', 'value' => $assignedTasks, 'icon' => 'fas fa-user-check', 'color' => 'success', 'id' => 'statAssigned'],
+        ['label' => 'Unassigned', 'value' => $unassigned, 'icon' => 'fas fa-clock', 'color' => 'warning', 'id' => 'statUnassigned'],
+        ['label' => 'Pending', 'value' => $pending, 'icon' => 'fas fa-hourglass-half', 'color' => 'error', 'id' => 'statPending'],
+    ];
+    $config = ['stats' => $summary_cards, 'columns' => 6];
+    include __DIR__ . '/../../inc/components/stat_card.php';
+    ?>
 
     <!-- Filter Bar -->
     <div class="card shadow-lg rounded-xl mb-4">
