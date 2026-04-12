@@ -82,8 +82,8 @@ class M_InstallerAdmin_Dashboard
             'underperforming' => $underperforming,
             'pending_tasks' => $pendingTasks,
             'active_agents' => $activeAgents,
-            'total_energy' => round($totalKwh / 1000, 2),
-            'pending_complaints' => 0
+            'total_energy' => round($totalKwh / 1000, 2), 
+            'pending_installations' => 0
         ];
     }
 

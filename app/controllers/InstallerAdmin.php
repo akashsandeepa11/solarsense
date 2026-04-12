@@ -8,6 +8,7 @@ class InstallerAdmin extends Controller
     private $authModel;
     private $teamModel;
     private $managerModel;
+    private $profileModel;
 
     private $user = [
         'role' => ROLE_INSTALLER_ADMIN,
@@ -20,6 +21,7 @@ class InstallerAdmin extends Controller
         $this->authModel = $this->model('M_Auth');
         $this->teamModel = $this->model('M_Team');
         $this->managerModel = $this->model('M_Manager');
+        $this->profileModel = $this->model('M_Profile');
     }
 
     public function dashboard($page = 'dashboard')
@@ -1670,8 +1672,20 @@ class InstallerAdmin extends Controller
 
     public function profile()
     {
+        $userId = $_SESSION['user_id'] ?? null;
+
+        // Try to load installer company profile if user belongs to a company
+        $companyId = $this->profileModel->getCompanyIdByUser($userId);
+        if ($companyId) {
+            $user_data = $this->profileModel->getInstalleradminProfile($userId, $companyId);
+        } else {
+            // Fallback to superadmin profile
+            $user_data = $this->profileModel->getSuperadminProfile($userId);
+        }
+
         $data = [
             'user' => $this->user,
+            'user_data' => $user_data
         ];
 
         $this->view('pages/installer_admin/profile', $data, layout: 'dashboard');

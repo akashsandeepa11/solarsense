@@ -13,10 +13,9 @@ $summary_cards = [
     ['label' => 'Critical Faults', 'value' => $stats['critical_faults'], 'icon' => 'fas fa-exclamation-triangle', 'color' => 'error'],
     ['label' => 'Underperforming Systems', 'value' => $stats['underperforming'], 'icon' => 'fas fa-chart-line', 'color' => 'warning'],
     ['label' => 'Pending Tasks', 'value' => $stats['pending_tasks'], 'icon' => 'fas fa-wrench', 'color' => 'warning'],
-    ['label' => 'Pending Installations', 'value' => '2', 'icon' => 'fas fa-tools', 'color' => 'warning'],
+    ['label' => 'Pending Installations', 'value' => $stats['pending_installations'], 'icon' => 'fas fa-tools', 'color' => 'warning'],
     ['label' => 'Active Agents', 'value' => $stats['active_agents'], 'icon' => 'fas fa-users-cog', 'color' => 'accent'],
-    ['label' => 'Total Energy', 'value' => number_format($stats['total_energy']) . ' MWh', 'icon' => 'fas fa-bolt', 'color' => 'success'],
-    ['label' => 'Pending Complaints', 'value' => $stats['pending_complaints'], 'icon' => 'fas fa-comment-dots', 'color' => 'error']
+    ['label' => 'Total Energy', 'value' => number_format($stats['total_energy']) . ' MWh', 'icon' => 'fas fa-bolt', 'color' => 'success']
 ];
 
 // High-Priority Alerts
