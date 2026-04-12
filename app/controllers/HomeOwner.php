@@ -224,20 +224,22 @@ class HomeOwner extends Controller
         }
     }
 
-    public function shop($page = 'sudu')
+    public function shop($page = 'index')
     {
 
-        if ($page == 'sudu') {
+        if ($page == 'index') {
+
+            $categories = $this->inventoryModel->get_categories();
 
             $data = [
-                'user' => $this->user,
-                'products' => $this->getProducts()
+                'user'       => $this->user,
+                'products'   => $this->getProducts(),
+                'categories' => $categories ?? [],
             ];
-
 
             $this->view('pages/homeowner/shop', $data, 'dashboard');
 
-        } else if ($page = 'cart') {
+        } else if ($page == 'cart') {
             $data = [
                 'user' => $this->user,
             ];
@@ -366,81 +368,38 @@ class HomeOwner extends Controller
 
     private function getProducts()
     {
-        return [
-            [
-                'id' => 1,
-                'title' => 'Premium Solar Battery',
-                'company' => 'SolarTech Solutions',
-                'price' => 899.99,
-                'description' => 'High-capacity lithium battery perfect for residential solar systems. 10-year warranty included.',
-                'image' => 'solar_battery.png',
-                'category' => 'batteries'
-            ],
-            [
-                'id' => 2,
-                'title' => 'Solar Panel Kit',
-                'company' => 'EcoEnergy Systems',
-                'price' => 1299.99,
-                'description' => 'Complete solar panel kit with mounting hardware. Perfect for residential installation.',
-                'image' => 'solar_panel_kit.png',
-                'category' => 'panels'
-            ],
-            [
-                'id' => 3,
-                'title' => 'Solar Garden Lamp Set',
-                'company' => 'GreenLight Solutions',
-                'price' => 129.99,
-                'description' => 'Set of 4 solar-powered garden lamps with motion sensors and dusk-to-dawn operation.',
-                'image' => 'solar_graden_lamp_set.png',
-                'category' => 'lighting'
-            ],
-            [
-                'id' => 4,
-                'title' => 'Smart Solar Inverter',
-                'company' => 'PowerTech Pro',
-                'price' => 799.99,
-                'description' => 'Smart inverter with WiFi monitoring capabilities and automatic power management.',
-                'image' => 'smart_solar_inverter.png',
-                'category' => 'inverters'
-            ],
-            [
-                'id' => 5,
-                'title' => 'Portable Solar Power Bank',
-                'company' => 'MobilePower Plus',
-                'price' => 59.99,
-                'description' => '20000mAh solar-powered power bank with dual USB ports and fast charging capability.',
-                'image' => 'portable_solar_powerbank.png',
-                'category' => 'gadgets'
-            ],
-            [
-                'id' => 6,
-                'title' => 'Solar Powered Fan',
-                'company' => 'CoolBreeze Solar',
-                'price' => 149.99,
-                'description' => 'Energy-efficient solar fan with remote control and built-in battery backup.',
-                'image' => 'fan.png',
-                'category' => 'gadgets'
-            ],
-            [
-                'id' => 7,
-                'title' => 'Solar Water Heater',
-                'company' => 'HotWater Solutions',
-                'price' => 699.99,
-                'description' => '200L solar water heater with intelligent temperature control and backup heating.',
-                'image' => 'solar_water_heater.jpg',
-                'category' => 'heaters'
-            ],
-            [
-                'id' => 8,
-                'title' => 'Solar Security Camera',
-                'company' => 'SecureVision',
-                'price' => 199.99,
-                'description' => 'Wireless security camera with solar charging, night vision, and mobile app control.',
-                'image' => 'solar_camera.jpg',
-                'category' => 'security'
-            ],
+        $rows = $this->inventoryModel->get_all_items();
 
-        ];
+        if (empty($rows)) {
+            return [];
+        }
+
+        $products = [];
+        foreach ($rows as $row) {
+            // get_all_items() returns objects from PDO; handle both object and array
+            if (is_object($row)) {
+                $products[] = [
+                    'id'          => $row->inventory_id,
+                    'title'       => $row->item_name,
+                    'company'     => '',                          // inventory table has no company field on items
+                    'price'       => (float) $row->unit_price,
+                    'description' => $row->description ?? '',
+                    'image'       => $row->item_image ?? '',
+                    'category'    => $row->category_name ?? '',
+                ];
+            } else {
+                $products[] = [
+                    'id'          => $row['inventory_id'],
+                    'title'       => $row['item_name'],
+                    'company'     => '',
+                    'price'       => (float) $row['unit_price'],
+                    'description' => $row['description'] ?? '',
+                    'image'       => $row['item_image'] ?? '',
+                    'category'    => $row['category_name'] ?? '',
+                ];
+            }
+        }
+        return $products;
     }
 
     // --- Notifications ---
@@ -458,7 +417,7 @@ class HomeOwner extends Controller
         require_once APPROOT . '/api/generation_api.php';
 
         $userId = $_SESSION['user_id'];
-        $system = $this->solarSystemModel->get_by_user($userId);
+        $system = $this->solarSystemModel->findById($userId);
 
         if (!$system) {
             return null; // no solar system on record for this user
