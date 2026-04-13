@@ -58,7 +58,7 @@ class SuperAdmin extends Controller
             'user' => $this->user,
         ];
 
-        $this->view('pages/super_admin/reports', $data, 'dashboard');
+        $this->view('pages/super_admin/reports', $data, 'main');
     }
 
 

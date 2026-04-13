@@ -247,7 +247,9 @@ $colors = [
     $config = [
         'title' => 'Reports',
         'description' => 'View and download system-wide reports and analytics',
-        'show_back' => false
+        'show_back' => true,
+        'back_url' => URLROOT . '/superadmin/dashboard',
+        'back_label' => 'Back to Dashboard'
     ];
     include __DIR__ . '/../../inc/components/page_header.php';
     ?>
@@ -265,19 +267,9 @@ $colors = [
                 <option value="all_time">All Time</option>
             </select>
         </div>
-        <div class="filter-group">
-            <label class="filter-label">Format</label>
-            <select class="filter-select" id="format-filter">
-                <option value="pdf">PDF</option>
-                <option value="excel">Excel</option>
-                <option value="csv">CSV</option>
-            </select>
-        </div>
+        
         <div class="download-buttons">
-            <button class="btn-download" onclick="downloadAllReports()">
-                <i class="fas fa-download"></i> Download All
-            </button>
-            <button class="btn-download" onclick="window.print()" style="background: #6b7280;">
+            <button class="btn-download" onclick="window.print()">
                 <i class="fas fa-print"></i> Print
             </button>
         </div>
@@ -298,10 +290,6 @@ $colors = [
             <div class="stat-box">
                 <div class="stat-value"><?php echo number_format($report_data['platform_overview']['active_systems'] ?? 0); ?></div>
                 <div class="stat-label">Active Systems</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value"><?php echo $report_data['platform_overview']['platform_uptime'] ?? 'N/A'; ?></div>
-                <div class="stat-label">Platform Uptime</div>
             </div>
         </div>
     </div>
