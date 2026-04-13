@@ -113,5 +113,72 @@ class M_Auth{
         }
     }
 
+    // ── Password Reset ──────────────────────────────────────────────────
+
+    /**
+     * Fetch a user row by email (returns full row, not just bool).
+     */
+    public function getUserByEmail(string $email): mixed
+    {
+        $this->db->query('SELECT * FROM user WHERE email = :email');
+        $this->db->bind(':email', $email);
+        return $this->db->single(); // stdClass or false
+    }
+
+    /**
+     * Persist a password-reset token for a user.
+     * Overwrites any existing token for that user.
+     */
+    public function savePasswordResetToken(int $userId, string $token, string $expiresAt): bool
+    {
+        // Remove old tokens for this user first
+        $this->db->query('DELETE FROM password_resets WHERE user_id = :uid');
+        $this->db->bind(':uid', $userId);
+        $this->db->execute();
+
+        $this->db->query(
+            'INSERT INTO password_resets (user_id, token, expires_at) VALUES (:uid, :token, :exp)'
+        );
+        $this->db->bind(':uid',   $userId);
+        $this->db->bind(':token', $token);
+        $this->db->bind(':exp',   $expiresAt);
+        return $this->db->execute();
+    }
+
+    /**
+     * Find a valid (non-expired) reset record by token.
+     * Returns stdClass with user_id, or false.
+     */
+    public function findValidResetToken(string $token): mixed
+    {
+        $this->db->query(
+            'SELECT pr.*, u.email, u.full_name
+             FROM password_resets pr
+             JOIN user u ON u.user_id = pr.user_id
+             WHERE pr.token = :token
+               AND pr.expires_at > NOW()
+             LIMIT 1'
+        );
+        $this->db->bind(':token', $token);
+        return $this->db->single();
+    }
+
+    /**
+     * Update user's password and delete the used reset token.
+     */
+    public function resetPassword(int $userId, string $hashedPassword): bool
+    {
+        // Update password
+        $this->db->query('UPDATE user SET password = :pw WHERE user_id = :uid');
+        $this->db->bind(':pw',  $hashedPassword);
+        $this->db->bind(':uid', $userId);
+        $this->db->execute();
+
+        // Delete token
+        $this->db->query('DELETE FROM password_resets WHERE user_id = :uid');
+        $this->db->bind(':uid', $userId);
+        return $this->db->execute();
+    }
+
 }
 ?>

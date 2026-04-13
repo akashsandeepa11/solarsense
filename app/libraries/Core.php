@@ -37,8 +37,11 @@
 
             // If method provided, ensure it exists on the controller
             if(isset($url[1])){
-                if(method_exists($this->currentController, $url[1])){
-                    $this->currentMethod = $url[1];
+                // Convert hyphenated URL segments to underscored PHP method names
+                // e.g. forgot-password -> forgot_password
+                $methodName = str_replace('-', '_', $url[1]);
+                if(method_exists($this->currentController, $methodName)){
+                    $this->currentMethod = $methodName;
                     unset($url[1]);
                 } else {
                     // Method not found -> 404
