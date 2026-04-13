@@ -265,31 +265,6 @@ class M_Team
     }
 
     /**
-     * Get service agent by user ID (basic info - used for edit form population)
-     * 
-     * @param int $userId - User ID
-     * @return object|false - Agent data or false if not found
-     */
-    public function get_service_agent($userId)
-    {
-        try {
-            $this->db->query('
-                SELECT u.user_id, u.email, sa.* 
-                FROM service_agent sa
-                JOIN user u ON sa.user_id = u.user_id
-                WHERE sa.user_id = :user_id
-            ');
-            $this->db->bind(':user_id', $userId);
-
-            return $this->db->single();
-
-        } catch (Exception $e) {
-            error_log('Get service agent failed: ' . $e->getMessage());
-            return false;
-        }
-    }
-
-    /**
      * Get complete service agent data by user ID
      * Returns all data that was added during service agent creation
      * 
@@ -336,69 +311,9 @@ class M_Team
         }
     }
 
-    /**
-     * Get all service agent data as array by user ID (includes all fields with aliases)
-     * Useful for displaying complete agent information in various formats
-     * 
-     * @param int $userId - User ID
-     * @return array - Comprehensive agent data with field name variations
-     */
-    public function get_service_agent_all_fields($userId)
-    {
-        try {
-            $this->db->query('
-                SELECT u.user_id, u.email, u.full_name as user_full_name, u.type, sa.* 
-                FROM service_agent sa
-                JOIN user u ON sa.user_id = u.user_id
-                WHERE sa.user_id = :user_id
-            ');
-            $this->db->bind(':user_id', $userId);
-
-            $result = $this->db->single();
-
-            if (!$result) {
-                return [];
-            }
-
-            // Build comprehensive array with all variations
-            return [
-                // User table fields
-                'user_id' => $result->user_id,
-                'email' => $result->email,
-                'user_full_name' => $result->user_full_name,
-                'user_type' => $result->type,
-
-                // Service Agent table fields
-                'full_name' => $result->full_name,
-                'nic' => $result->nic,
-                'address' => $result->address,
-                'contact' => $result->contact,
-                'contact_number' => $result->contact,
-                'phone' => $result->contact,
-                'district' => $result->district,
-                'specialization' => $result->specialization,
-                'experience_years' => $result->experience_years,
-                'experienceYears' => $result->experience_years,
-                'years_of_experience' => $result->experience_years,
-                'availability' => $result->availability,
-                'certifications' => $result->certifications,
-                'status' => $result->status,
-                'register_date' => $result->register_date,
-                'created_date' => $result->created_date,
-                'company_id' => $result->company_id,
-
-                // Original object for backward compatibility
-                'raw' => $result
-            ];
-
-        } catch (Exception $e) {
-            error_log('Get service agent all fields failed: ' . $e->getMessage());
-            return [];
-        }
-    }
 
     // create function for get_service_agents_by_company
-    public function get_service_agents_by_company($companyId)
+    public function get_service_agent_stats($companyId)
     {
         try {
             $this->db->query("
@@ -426,62 +341,42 @@ class M_Team
         }
     }
 
-
     /**
-     * Get all service agents
-     * 
-     * @param array $filters - Optional filters (district, specialization, status, availability)
-     * @return array - Array of agents or empty array
+     * Fetch specific agent details for a specific company
      */
-    public function get_all_service_agents($filters = [])
+    public function get_agent_details_by_id($agentId, $companyId)
     {
         try {
-            $query = '
-                SELECT u.user_id, u.email, sa.* 
-                FROM service_agent sa
-                JOIN user u ON sa.user_id = u.user_id
-                WHERE 1=1
-            ';
+            $this->db->query("
+            SELECT 
+                u.user_id,
+                u.email,
+                u.full_name,
+                sa.address,
+                sa.contact,
+                sa.nic,
+                sa.district,
+                sa.specialization,
+                sa.experience_years,
+                sa.availability,
+                sa.certifications,
+                sa.status,
+                sa.register_date
+            FROM service_agent sa
+            JOIN user u ON sa.user_id = u.user_id
+            WHERE sa.user_id = :agent_id AND sa.company_id = :company_id
+        ");
 
-            // Apply filters if provided
-            if (!empty($filters['district'])) {
-                $query .= ' AND sa.district = :district';
-            }
-            if (!empty($filters['specialization'])) {
-                $query .= ' AND sa.specialization = :specialization';
-            }
-            if (!empty($filters['status'])) {
-                $query .= ' AND sa.status = :status';
-            }
-            if (!empty($filters['availability'])) {
-                $query .= ' AND sa.availability = :availability';
-            }
+            $this->db->bind(':agent_id', $agentId);
+            $this->db->bind(':company_id', $companyId);
 
-            $query .= ' ORDER BY sa.created_date DESC';
-
-            $this->db->query($query);
-
-            // Bind filter parameters
-            if (!empty($filters['district'])) {
-                $this->db->bind(':district', $filters['district']);
-            }
-            if (!empty($filters['specialization'])) {
-                $this->db->bind(':specialization', $filters['specialization']);
-            }
-            if (!empty($filters['status'])) {
-                $this->db->bind(':status', $filters['status']);
-            }
-            if (!empty($filters['availability'])) {
-                $this->db->bind(':availability', $filters['availability']);
-            }
-
-            return $this->db->resultSet();
-
+            return $this->db->single();
         } catch (Exception $e) {
-            error_log('Get all service agents failed: ' . $e->getMessage());
-            return [];
+            error_log('get_agent_details_by_id failed: ' . $e->getMessage());
+            return false;
         }
     }
+
 
     public function get_total_agents($companyId)
     {

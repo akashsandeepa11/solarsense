@@ -220,6 +220,46 @@ class M_Manager{
         }
     }
 
+    /**
+     * Fetch detailed operation manager info by user ID and company ID
+     */
+    public function get_operation_manager_details($managerId, $companyId) {
+        try {
+            $this->db->query('
+                SELECT om.*, u.email, u.full_name 
+                FROM operation_manager om
+                JOIN user u ON om.user_id = u.user_id
+                WHERE om.user_id = :manager_id AND om.company_id = :company_id
+            ');
+            $this->db->bind(':manager_id', $managerId);
+            $this->db->bind(':company_id', $companyId);
+            return $this->db->single();
+        } catch (Exception $e) {
+            error_log('get_operation_manager_details failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Fetch detailed inventory manager info by user ID and company ID
+     */
+    public function get_inventory_manager_details($managerId, $companyId) {
+        try {
+            $this->db->query('
+                SELECT im.*, u.email, u.full_name 
+                FROM inventory_manager im
+                JOIN user u ON im.user_id = u.user_id
+                WHERE im.user_id = :manager_id AND im.company_id = :company_id
+            ');
+            $this->db->bind(':manager_id', $managerId);
+            $this->db->bind(':company_id', $companyId);
+            return $this->db->single();
+        } catch (Exception $e) {
+            error_log('get_inventory_manager_details failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
     public function get_total_operation_managers() {
         $installerAdminId = $_SESSION['user_id'] ?? null;
         if (empty($installerAdminId)) {

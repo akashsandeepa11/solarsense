@@ -1,7 +1,6 @@
 <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/installer_admin/agent_details.css">
 
 <div class="agent-details-container">
-    <!-- Page Header -->
     <?php
     $config = [
         'title' => 'Agent Details',
@@ -14,237 +13,91 @@
     ?>
 
     <div class="row gap-6">
-        <!-- Left Column: Agent Profile & Info -->
-        <div class="col-md-5">
-            <!-- Agent Profile Card -->
+        <div class="col-md-12">
             <div class="card mb-6">
                 <div class="card-body">
-                    <!-- Agent Avatar -->
                     <div class="agent-profile-header text-center mb-6">
                         <div class="agent-avatar-large">
-                            <img src="https://ui-avatars.com/api/?name=John+Doe&background=fe9630&color=fff&size=150" alt="John Doe">
+                            <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($data['agent']->full_name); ?>&background=fe9630&color=fff&size=150"
+                                alt="<?php echo $data['agent']->full_name; ?>">
                         </div>
-                        <h2 class="text-2xl font-bold mt-4">John Doe</h2>
+                        <h2 class="text-2xl font-bold mt-4"><?php echo $data['agent']->full_name; ?></h2>
                         <div class="agent-role-badge">
                             <span class="badge bg-primary">Service Agent</span>
                         </div>
                         <div class="agent-status-badge mt-3">
-                            <span class="status-badge status-active">
-                                <i class="fas fa-circle text-success mr-1"></i>Active
+                            <span class="status-badge status-<?php echo strtolower($data['agent']->status); ?>">
+                                <i
+                                    class="fas fa-circle <?php echo ($data['agent']->status == 'Active') ? 'text-success' : 'text-danger'; ?> mr-1"></i>
+                                <?php echo $data['agent']->status; ?>
                             </span>
                         </div>
                     </div>
 
-                    <!-- Agent Info Grid -->
                     <div class="agent-info-grid mb-6">
                         <div class="info-item">
                             <label class="info-label">Email</label>
-                            <p class="info-value">john@example.com</p>
+                            <p class="info-value"><?php echo $data['agent']->email; ?></p>
                         </div>
                         <div class="info-item">
                             <label class="info-label">Contact Number</label>
-                            <p class="info-value">+94 77 123 4567</p>
+                            <p class="info-value"><?php echo $data['agent']->contact; ?></p>
                         </div>
                         <div class="info-item">
                             <label class="info-label">NIC/ID</label>
-                            <p class="info-value">123456789V</p>
+                            <p class="info-value"><?php echo $data['agent']->nic; ?></p>
                         </div>
                         <div class="info-item">
                             <label class="info-label">Address</label>
-                            <p class="info-value">123 Main Street, Colombo</p>
+                            <p class="info-value"><?php echo $data['agent']->address; ?></p>
                         </div>
                         <div class="info-item">
                             <label class="info-label">District</label>
-                            <p class="info-value">Colombo</p>
+                            <p class="info-value"><?php echo $data['agent']->district; ?></p>
                         </div>
                     </div>
 
-                    <!-- Professional Info -->
                     <div class="professional-info border-top pt-6">
                         <h3 class="text-lg font-semibold mb-4">Professional Information</h3>
-                        
+
                         <div class="info-item mb-4">
                             <label class="info-label">Specialization</label>
                             <p class="info-value">
-                                <span class="badge bg-warning">Solar Installation</span>
+                                <span class="badge bg-warning"><?php echo $data['agent']->specialization; ?></span>
                             </p>
                         </div>
 
                         <div class="info-item mb-4">
                             <label class="info-label">Experience</label>
-                            <p class="info-value">5 years</p>
+                            <p class="info-value"><?php echo $data['agent']->experience_years; ?> years</p>
                         </div>
 
                         <div class="info-item mb-4">
                             <label class="info-label">Availability</label>
                             <p class="info-value">
-                                <span class="badge bg-success">Full-time</span>
+                                <span class="badge bg-success"><?php echo $data['agent']->availability; ?></span>
                             </p>
                         </div>
 
                         <div class="info-item">
                             <label class="info-label">Certifications</label>
-                            <p class="info-value">IEC 61730, PV Certified</p>
+                            <p class="info-value">
+                                <?php echo !empty($data['agent']->certifications) ? $data['agent']->certifications : 'No certifications listed'; ?>
+                            </p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Card Footer with Actions -->
                 <div class="card-footer">
                     <div class="d-flex gap-2">
-                        <a href="<?php echo URLROOT; ?>/installeradmin/team/edit_agent/1" class="btn btn-sm btn-primary flex-1">
+                        <a href="<?php echo URLROOT; ?>/installeradmin/team/edit_agent/<?php echo $data['agent']->user_id; ?>"
+                            class="btn btn-sm btn-primary flex-1">
                             <i class="fas fa-edit mr-2"></i> Edit
                         </a>
-                        <button type="button" class="btn btn-sm btn-danger flex-1" onclick="showConfirmationModal('deleteAgentModal')">
+                        <button type="button" class="btn btn-sm btn-danger flex-1"
+                            onclick="showConfirmationModal('deleteAgentModal')">
                             <i class="fas fa-trash mr-2"></i> Delete
                         </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Right Column: Tasks & Statistics -->
-        <div class="col-md-7">
-            <!-- Performance Stats -->
-            <div class="stats-grid mb-6 row gap-4">
-                <div class="col-md-4">
-                    <div class="stat-mini-card">
-                        <div class="stat-number text-primary">48</div>
-                        <div class="stat-label">Total Tasks</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="stat-mini-card">
-                        <div class="stat-number text-success">36</div>
-                        <div class="stat-label">Completed</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="stat-mini-card">
-                        <div class="stat-number text-warning">12</div>
-                        <div class="stat-label">Pending</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Completion Rate Card -->
-            <div class="card mb-6">
-                <div class="card-body">
-                    <h3 class="text-lg font-semibold mb-4">Performance Metrics</h3>
-                    
-                    <div class="metric-item mb-5">
-                        <div class="d-flex justify-between mb-2">
-                            <label class="metric-label">Completion Rate</label>
-                            <span class="metric-value text-success font-bold">75%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 75%; background: linear-gradient(90deg, #22c55e, #16a34a);"></div>
-                        </div>
-                    </div>
-
-                    <div class="metric-item mb-5">
-                        <div class="d-flex justify-between mb-2">
-                            <label class="metric-label">On-Time Delivery</label>
-                            <span class="metric-value text-primary font-bold">92%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 92%; background: linear-gradient(90deg, #fe9630, #f59e0b);"></div>
-                        </div>
-                    </div>
-
-                    <div class="metric-item">
-                        <div class="d-flex justify-between mb-2">
-                            <label class="metric-label">Customer Satisfaction</label>
-                            <span class="metric-value text-accent font-bold">4.8/5</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 96%; background: linear-gradient(90deg, #00bcd4, #0097a7);"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Recent Tasks -->
-            <div class="card">
-                <div class="card-header border-bottom">
-                    <h3 class="card-title">Recent Tasks (Last 5)</h3>
-                </div>
-                <div class="card-body p-0">
-                    <div class="tasks-list">
-                        <!-- Task Item 1 -->
-                        <div class="task-item border-bottom p-4">
-                            <div class="d-flex justify-between align-center mb-2">
-                                <h4 class="task-title font-semibold">Solar Panel Installation</h4>
-                                <span class="task-status status-completed">
-                                    <i class="fas fa-check-circle text-success mr-1"></i>Completed
-                                </span>
-                            </div>
-                            <p class="task-customer text-secondary text-sm mb-2">Customer: Sarah Johnson</p>
-                            <div class="d-flex justify-between align-center">
-                                <span class="task-date text-gray-500 text-sm">Oct 18, 2025</span>
-                                <span class="task-duration text-gray-500 text-sm">Duration: 4 hours</span>
-                            </div>
-                        </div>
-
-                        <!-- Task Item 2 -->
-                        <div class="task-item border-bottom p-4">
-                            <div class="d-flex justify-between align-center mb-2">
-                                <h4 class="task-title font-semibold">System Maintenance</h4>
-                                <span class="task-status status-completed">
-                                    <i class="fas fa-check-circle text-success mr-1"></i>Completed
-                                </span>
-                            </div>
-                            <p class="task-customer text-secondary text-sm mb-2">Customer: Mike Wilson</p>
-                            <div class="d-flex justify-between align-center">
-                                <span class="task-date text-gray-500 text-sm">Oct 17, 2025</span>
-                                <span class="task-duration text-gray-500 text-sm">Duration: 2 hours</span>
-                            </div>
-                        </div>
-
-                        <!-- Task Item 3 -->
-                        <div class="task-item border-bottom p-4">
-                            <div class="d-flex justify-between align-center mb-2">
-                                <h4 class="task-title font-semibold">Inverter Troubleshooting</h4>
-                                <span class="task-status status-completed">
-                                    <i class="fas fa-check-circle text-success mr-1"></i>Completed
-                                </span>
-                            </div>
-                            <p class="task-customer text-secondary text-sm mb-2">Customer: Emma Davis</p>
-                            <div class="d-flex justify-between align-center">
-                                <span class="task-date text-gray-500 text-sm">Oct 16, 2025</span>
-                                <span class="task-duration text-gray-500 text-sm">Duration: 1.5 hours</span>
-                            </div>
-                        </div>
-
-                        <!-- Task Item 4 -->
-                        <div class="task-item border-bottom p-4">
-                            <div class="d-flex justify-between align-center mb-2">
-                                <h4 class="task-title font-semibold">Panel Cleaning & Inspection</h4>
-                                <span class="task-status status-in-progress">
-                                    <i class="fas fa-spinner text-warning mr-1"></i>In Progress
-                                </span>
-                            </div>
-                            <p class="task-customer text-secondary text-sm mb-2">Customer: Lisa Brown</p>
-                            <div class="d-flex justify-between align-center">
-                                <span class="task-date text-gray-500 text-sm">Oct 19, 2025</span>
-                                <span class="task-duration text-gray-500 text-sm">Duration: In progress</span>
-                            </div>
-                        </div>
-
-                        <!-- Task Item 5 -->
-                        <div class="task-item p-4">
-                            <div class="d-flex justify-between align-center mb-2">
-                                <h4 class="task-title font-semibold">System Performance Review</h4>
-                                <span class="task-status status-pending">
-                                    <i class="fas fa-clock text-gray-400 mr-1"></i>Pending
-                                </span>
-                            </div>
-                            <p class="task-customer text-secondary text-sm mb-2">Customer: Robert Taylor</p>
-                            <div class="d-flex justify-between align-center">
-                                <span class="task-date text-gray-500 text-sm">Oct 20, 2025</span>
-                                <span class="task-duration text-gray-500 text-sm">Duration: Scheduled</span>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -252,7 +105,6 @@
     </div>
 </div>
 
-<!-- Delete Confirmation Modal -->
 <?php
 $config = [
     'modal_id' => 'deleteAgentModal',
@@ -261,16 +113,15 @@ $config = [
     'icon_color' => 'text-warning',
     'heading' => 'Delete Service Agent?',
     'message' => 'Are you sure you want to delete ',
-    'subject' => 'John Doe',
+    'subject' => $data['agent']->full_name,
     'message_suffix' => '? This action cannot be undone. All associated task data will be archived.',
     'confirm_text' => 'Delete Agent',
     'confirm_icon' => 'fas fa-check',
     'cancel_text' => 'Cancel',
     'cancel_icon' => 'fas fa-times',
-    'confirm_action' => URLROOT . '/installeradmin/team/delete_agent/1',
+    'confirm_action' => URLROOT . '/installeradmin/team/delete_agent/' . $data['agent']->user_id,
     'confirm_method' => 'POST',
     'confirm_class' => 'btn-danger'
 ];
 include __DIR__ . '/../../inc/models/confirmation_modal.php';
 ?>
-

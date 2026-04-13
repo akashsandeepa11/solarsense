@@ -39,10 +39,10 @@ class InstallerAdmin extends Controller
         $data = [
             'user' => $this->user,
             'stats' => $dashboardModel->getStats($companyId),
-            'alerts' => $dashboardModel->getAlerts($companyId), 
-            'performance_snapshot' => $dashboardModel->getPerformanceSnapshot($companyId), 
-            'service_agents' => $dashboardModel->getServiceTeamStatus($companyId), 
-            'new_customers_data' => $dashboardModel->getNewCustomersChartData($companyId), 
+            'alerts' => $dashboardModel->getAlerts($companyId),
+            'performance_snapshot' => $dashboardModel->getPerformanceSnapshot($companyId),
+            'service_agents' => $dashboardModel->getServiceTeamStatus($companyId),
+            'new_customers_data' => $dashboardModel->getNewCustomersChartData($companyId),
             'service_tasks_data' => $dashboardModel->getServiceTasksChartData($companyId) // Fetch task status data
         ];
 
@@ -96,7 +96,7 @@ class InstallerAdmin extends Controller
 
         $data = [
             'user' => $this->user,
-            'customers' => $this->fleetModel->get_customer_by_company($companyId),
+            'customers' => $this->fleetModel->get_customer_stats($companyId),
             'stats' => [
                 'total_clients' => $total_clients ?? 0,
                 'pending_maintenace' => $pending_maintenance ?? 0,
@@ -115,19 +115,26 @@ class InstallerAdmin extends Controller
             return;
         }
 
-        $customer      = $this->fleetModel->get_customer_details($customerId);
+        // Get company context for the logged-in admin
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
+
+        // Fetch the detailed customer object
+        $customer = $this->fleetModel->get_customer_details_by_company($customerId, $companyId);
+
+        // Fetch assigned service agents for this specific homeowner
         $serviceAgents = $this->teamModel->get_service_agents_by_customer($customerId);
 
         if (!$customer) {
-            setToast('Customer not found', 'error');
+            setToast('Customer not found or access denied', 'error');
             redirect('installeradmin/fleet');
             return;
         }
 
         $data = [
-            'user'           => $this->user,
-            'customerId'     => $customerId,
-            'customer'       => $customer,
+            'user' => $this->user,
+            'customerId' => $customerId,
+            'customer' => $customer,
             'service_agents' => $serviceAgents,
         ];
 
@@ -626,7 +633,7 @@ class InstallerAdmin extends Controller
             }
             return;
         }
-        
+
         $this->view('pages/installer_admin/add_customer', $data, layout: 'dashboard');
     }
 
@@ -700,7 +707,7 @@ class InstallerAdmin extends Controller
         // 4. Prepare data for the view
         $data = [
             'user' => $this->user,
-            'agents' => $this->teamModel->get_service_agents_by_company($companyId),
+            'agents' => $this->teamModel->get_service_agent_stats($companyId),
             'stats' => [
                 'total_agents' => $total_agents_row->total_agents ?? 0,
                 'active_agents' => $active_agents_row->active_agents ?? 0,
@@ -916,12 +923,36 @@ class InstallerAdmin extends Controller
 
     public function agent_details($agentId = null)
     {
+        if (empty($agentId)) {
+            setToast('Invalid agent ID', 'error');
+            redirect('installeradmin/team');
+            return;
+        }
+
+        // 1. Get the current logged-in user's company ID
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
+
+        if (!$companyId) {
+            setToast('Unauthorized access.', 'error');
+            redirect('pages/login');
+            return;
+        }
+
+        // 2. Fetch agent details using the new model function
+        $agent = $this->teamModel->get_agent_details_by_id($agentId, $companyId);
+
+        if (!$agent) {
+            setToast('Agent not found or access denied.', 'error');
+            redirect('installeradmin/team');
+            return;
+        }
+
+        // 3. Prepare data for the view
         $data = [
             'user' => $this->user,
+            'agent' => $agent
         ];
-
-        // TODO: Fetch agent details from database using $agentId
-        // For now, using sample data
 
         $this->view('pages/common/agent_details', $data, layout: 'dashboard');
     }
@@ -1318,100 +1349,81 @@ class InstallerAdmin extends Controller
         $this->view('pages/installer_admin/managers_list', $data, layout: 'dashboard');
     }
 
-    // Manager Detail View Methods
+    // Operation Manager Detail View
     public function operation_managers_detail($managerId = null)
     {
-        // Sample operation manager detail data
-        $sample_manager = [
-            'id' => $managerId ?? 1,
-            'name' => 'John Smith',
-            'email' => 'john.smith@solarsense.com',
-            'contact' => '+94 77 123 4567',
-            'nic' => '123456789V',
-            'address' => '45 Technical Lane, Colombo 3',
-            'district' => 'Colombo',
-            'specialization' => 'Installation',
-            'experience_years' => 8,
-            'availability' => 'Full-time',
-            'certifications' => 'Solar Panel Installation Cert, Electrical Safety Cert',
-            'status' => 'active',
-            'performance' => 95,
-            'pending_tasks' => 3,
-            'completed_tasks' => 125,
-            'monthly_tasks_completed' => 42,
-            'ontime_rate' => 89,
-            'quality_score' => 94,
-            'activities' => [
-                [
-                    'title' => 'System Installation',
-                    'description' => 'Completed installation of 5.5 kWp system',
-                    'date' => 'Oct 20, 2025',
-                    'status' => 'completed',
-                    'details' => '5.5 kWp'
-                ],
-                [
-                    'title' => 'Panel Cleaning',
-                    'description' => 'Performed quarterly maintenance',
-                    'date' => 'Oct 18, 2025',
-                    'status' => 'completed',
-                    'details' => 'Maintenance'
-                ]
-            ]
-        ];
+        if (!$managerId) {
+            redirect('installeradmin/managers/operation_managers');
+        }
+
+        $userId = $_SESSION['user_id'];
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
+
+        $manager = $this->managerModel->get_operation_manager_details($managerId, $companyId);
+
+        if (!$manager) {
+            setToast('Operation Manager not found', 'error');
+            redirect('installeradmin/managers/operation_managers');
+            return;
+        }
 
         $data = [
             'user' => $this->user,
             'managerType' => 'operation_managers',
-            'manager' => $sample_manager
+            'manager' => [
+                'id' => $manager->user_id,
+                'name' => $manager->full_name,
+                'email' => $manager->email,
+                'contact' => $manager->contact,
+                'nic' => $manager->nic,
+                'address' => $manager->address,
+                'district' => $manager->district,
+                'specialization' => $manager->specialization,
+                'experience_years' => $manager->exp_level, // Mapped to exp_level in DB
+                'availability' => 'Full-time', // Or derived from status
+                'certifications' => $manager->certifications,
+                'status' => $manager->status
+            ]
         ];
 
         $this->view('pages/installer_admin/manager_details', $data, layout: 'dashboard');
     }
 
+    // Inventory Manager Detail View
     public function inventory_managers_detail($managerId = null)
     {
-        // Sample inventory manager detail data
-        $sample_manager = [
-            'id' => $managerId ?? 1,
-            'name' => 'David Wilson',
-            'email' => 'david.w@solarsense.com',
-            'contact' => '+94 77 234 5678',
-            'nic' => '987654321V',
-            'address' => '78 Warehouse Ave, Colombo 1',
-            'district' => 'Colombo',
-            'warehouse' => 'Main Warehouse - Colombo',
-            'status' => 'active',
-            'efficiency' => 92,
-            'low_stock' => 3,
-            'total_orders' => 156,
-            'inventory_items' => 245,
-            'low_stock_threshold' => 10,
-            'last_inventory_check' => 'Oct 21, 2025',
-            'stock_accuracy' => 96,
-            'fulfillment_rate' => 98,
-            'warehouse_efficiency' => 92,
-            'activities' => [
-                [
-                    'title' => 'Stock Replenishment',
-                    'description' => 'Received 50 solar panels from supplier',
-                    'date' => 'Oct 20, 2025',
-                    'status' => 'completed',
-                    'details' => '50 units'
-                ],
-                [
-                    'title' => 'Inventory Check',
-                    'description' => 'Quarterly inventory verification',
-                    'date' => 'Oct 19, 2025',
-                    'status' => 'completed',
-                    'details' => '245 items'
-                ]
-            ]
-        ];
+        if (!$managerId) {
+            redirect('installeradmin/managers/inventory_managers');
+        }
+
+        $userId = $_SESSION['user_id'];
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
+
+        $manager = $this->managerModel->get_inventory_manager_details($managerId, $companyId);
+
+        if (!$manager) {
+            setToast('Inventory Manager not found', 'error');
+            redirect('installeradmin/managers/inventory_managers');
+            return;
+        }
 
         $data = [
             'user' => $this->user,
             'managerType' => 'inventory_managers',
-            'manager' => $sample_manager
+            'manager' => [
+                'id' => $manager->user_id,
+                'name' => $manager->full_name,
+                'email' => $manager->email,
+                'contact' => $manager->contact,
+                'nic' => $manager->nic,
+                'address' => $manager->address,
+                'district' => $manager->district,
+                'warehouse' => $manager->warehouse_location,
+                'status' => $manager->status,
+                'inventory_items' => 0, // Placeholder
+                'low_stock_threshold' => 10, // Placeholder
+                'last_inventory_check' => 'N/A' // Placeholder
+            ]
         ];
 
         $this->view('pages/installer_admin/manager_details', $data, layout: 'dashboard');
