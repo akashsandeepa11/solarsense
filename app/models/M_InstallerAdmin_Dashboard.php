@@ -15,8 +15,13 @@ class M_InstallerAdmin_Dashboard
      */
     public function getStats($companyId)
     {
+
         // 1. Total Active Clients
-        $this->db->query("SELECT COUNT(*) as total FROM homeowner WHERE company_id = :company_id");
+        $this->db->query("
+        SELECT COUNT(*) as total 
+        FROM homeowner 
+        WHERE company_id = :company_id
+        ");
         $this->db->bind(':company_id', $companyId);
         $activeClients = $this->db->single()->total ?? 0;
 
@@ -62,7 +67,11 @@ class M_InstallerAdmin_Dashboard
         $pendingTasks = $this->db->single()->total ?? 0;
 
         // 5. Active Service Agents: Fixed query with single quotes for 'Available'
-        $this->db->query("SELECT COUNT(*) as total FROM service_agent WHERE company_id = :company_id AND status = 'Available'");
+        $this->db->query("
+        SELECT COUNT(*) as total 
+        FROM service_agent 
+        WHERE company_id = :company_id AND status = 'Available'
+        ");
         $this->db->bind(':company_id', $companyId);
         $activeAgents = $this->db->single()->total ?? 0;
 
@@ -209,6 +218,29 @@ class M_InstallerAdmin_Dashboard
     ");
 
         $this->db->bind(':company_id', $companyId);
+        return $this->db->resultSet();
+    }
+
+    /**
+     * Get all verified installer companies with their stats (clients and employees)
+     * @return array
+     */
+    public function getAllCompaniesWithStats()
+    {
+        $this->db->query("
+        SELECT 
+            ic.company_id,
+            ic.company_name as name,
+            ic.email,
+            ic.address,
+            -- Total active clients
+            (SELECT COUNT(*) FROM homeowner h WHERE h.company_id = ic.company_id) as active_clients,
+            -- Total active service agents
+            (SELECT COUNT(*) FROM service_agent sa WHERE sa.company_id = ic.company_id AND sa.status = 'Available') as active_agents
+        FROM installer_company ic
+        WHERE ic.status = 'Verified'
+        ORDER BY ic.company_name ASC
+    ");
         return $this->db->resultSet();
     }
 }

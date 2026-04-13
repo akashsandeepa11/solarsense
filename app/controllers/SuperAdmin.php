@@ -20,6 +20,7 @@ class SuperAdmin extends Controller
         $this->fleetModel = $this->model('M_Installer_Fleet');
         $this->dashboardModel = $this->model('M_Superadmin_Dashboard');
         $this->profileModel = $this->model('M_Profile');
+        $this->installerAdminDashboard = $this->model('M_InstallerAdmin_Dashboard');
     }
 
     public function dashboard()
@@ -56,6 +57,13 @@ class SuperAdmin extends Controller
     {
         $data = [
             'user' => $this->user,
+            'report_data' => [
+                'platform_overview' => $this->dashboardModel->getStats(),
+                'user_role_data' => $this->dashboardModel->getUserByType(),
+                'company_growth' => $this->dashboardModel->getCompanyGrowthByYear(),
+                'company_district' => $this->dashboardModel->getCompanyByDistrict(),
+                'companies_report' => $this->installerAdminDashboard->getAllCompaniesWithStats()
+            ]
         ];
 
         $this->view('pages/super_admin/reports', $data, 'main');

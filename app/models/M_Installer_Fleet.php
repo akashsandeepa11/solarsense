@@ -82,19 +82,4 @@ class M_Installer_Fleet
             return false;
         }
     }
-
-    //add installer admin account
-    // public function add_installer_admin($userData, $installerAdminData) {
-    //     try {
-    //         var_dump($userData);
-    //         var_dump($installerAdminData);
-
-    //         $this->db->beginTransaction();
-
-
-    // }
-
-
-    
-
 }
