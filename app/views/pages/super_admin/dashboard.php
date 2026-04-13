@@ -17,35 +17,24 @@ $summary_cards = [
 ];
 
 // Recent Verification Requests
-$verification_requests = [
-    [
-        'id' => 1,
-        'company_name' => 'SolarTech Solutions (Pvt) Ltd',
-        'contact_person' => 'Kamal Perera',
-        'email' => 'kamal@solartech.lk',
-        'submitted_date' => '2025-10-23',
-        'district' => 'Colombo',
-        'status' => 'pending'
-    ],
-    [
-        'id' => 2,
-        'company_name' => 'GreenEnergy Systems',
-        'contact_person' => 'Nimal Fernando',
-        'email' => 'nimal@greenenergy.lk',
-        'submitted_date' => '2025-10-22',
-        'district' => 'Kandy',
-        'status' => 'pending'
-    ],
-    [
-        'id' => 3,
-        'company_name' => 'EcoPower Installations',
-        'contact_person' => 'Saman Silva',
-        'email' => 'saman@ecopower.lk',
-        'submitted_date' => '2025-10-21',
-        'district' => 'Gampaha',
-        'status' => 'under_review'
-    ]
-];
+
+$verification_requests_data = $data['verification_requests'] ?? [];
+
+$verification_requests = [];
+
+if (!empty($verification_requests_data)) {
+    foreach ($verification_requests_data as $req) {
+        $verification_requests[] = [
+            'id' => $req->company_id ?? ($req->id ?? 0),
+            'company_name' => $req->company_name ?? 'Unknown Company',
+            'email' => $req->email ?? '',
+            'district' => $req->district ?? 'Unknown'
+        ];
+    }
+} else {
+    // No pending verifications
+    $verification_requests = [];
+}
 
 // Platform Activity Statistics
 $activity_stats = [
@@ -123,7 +112,7 @@ if (!empty($data['user_type'])) {
     <!-- Main Content Grid -->
     <div class="row">
         <!-- Left Column -->
-        <div class="col-lg-8">
+        <div class="col-lg-7">
             <!-- Platform Growth Chart -->
             <div class="card shadow-lg rounded-xl mb-6">
                 <div class="card-body">
@@ -161,22 +150,12 @@ if (!empty($data['user_type'])) {
 
             <!-- Charts Row -->
             <div class="row">
-                <div class="col-md-6 mb-4">
+                <div class="col-12 mb-4">
                     <div class="card shadow-lg rounded-xl mb-6">
                         <div class="card-body">
-                            <h3 class="card-title text-lg font-semibold mb-4">Registered Users Types</h3>
+                            <h3 class="card-title text-lg font-semibold mb-4">Registered Users - Role Based</h3>
                             <div class="chart-container" style="height: 250px;">
                                 <canvas id="userTypeChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-4">
-                    <div class="card shadow-lg rounded-xl">
-                        <div class="card-body">
-                            <h3 class="card-title text-lg font-semibold mb-4">Company District Distribution</h3>
-                            <div class="chart-container" style="height: 250px;">
-                                <canvas id="districtChart"></canvas>
                             </div>
                         </div>
                     </div>
@@ -185,7 +164,7 @@ if (!empty($data['user_type'])) {
         </div>
 
         <!-- Right Column -->
-        <div class="col-lg-4">
+        <div class="col-lg-5">
             <!-- Pending Verifications -->
             <div class="card shadow-lg rounded-xl mb-6">
                 <div class="card-body">
@@ -198,27 +177,40 @@ if (!empty($data['user_type'])) {
                         </a>
                     </div>
 
-                    <?php foreach ($verification_requests as $request): ?>
-                        <div class="performer-item d-flex justify-between align-center py-3 px-3"
-                            style="background: rgba(254, 150, 48, 0.05); border-radius: 0.5rem; margin-bottom: 0.75rem;">
-                            <div style="flex: 1;">
-                                <div class="font-semibold text-sm"><?php echo htmlspecialchars($request['company_name']); ?>
+                    <?php if (!empty($verification_requests)): ?>
+                        <?php foreach ($verification_requests as $request): ?>
+                            <div class="performer-item d-flex justify-between align-center py-3 px-3"
+                                style="background: rgba(254, 150, 48, 0.05); border-radius: 0.5rem; margin-bottom: 0.75rem;">
+                                <div style="flex: 1;">
+                                    <div class="font-semibold text-sm"><?php echo htmlspecialchars($request['company_name']); ?>
+                                    </div>
+                                    <div class="text-secondary" style="font-size: 0.75rem;">
+                                        <i class="fas fa-user mr-1"></i><?php echo htmlspecialchars($request['email']); ?>
+                                    </div>
+                                    <div class="text-secondary" style="font-size: 0.75rem;">
+                                        <i
+                                            class="fas fa-map-marker-alt mr-1"></i><?php echo htmlspecialchars($request['district']); ?>
+                                    </div>
                                 </div>
-                                <div class="text-secondary" style="font-size: 0.75rem;">
-                                    <i
-                                        class="fas fa-user mr-1"></i><?php echo htmlspecialchars($request['contact_person']); ?>
-                                </div>
-                                <div class="text-secondary" style="font-size: 0.75rem;">
-                                    <i
-                                        class="fas fa-map-marker-alt mr-1"></i><?php echo htmlspecialchars($request['district']); ?>
-                                </div>
+                                <a href="<?php echo URLROOT; ?>/superadmin/verification" class="btn btn-sm"
+                                    style="background-color: #fe9630; color: white; padding: 0.35rem 0.75rem; font-size: 0.75rem;">
+                                    <i class="fas fa-arrow-right"></i>
+                                </a>
                             </div>
-                            <a href="<?php echo URLROOT; ?>/superadmin/verification" class="btn btn-sm"
-                                style="background-color: #fe9630; color: white; padding: 0.35rem 0.75rem; font-size: 0.75rem;">
-                                <i class="fas fa-arrow-right"></i>
-                            </a>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <p class="text-secondary text-center py-4">No pending verifications</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <div class="mb-4">
+                <div class="card shadow-lg rounded-xl">
+                    <div class="card-body">
+                        <h3 class="card-title text-lg font-semibold mb-4">Company District Distribution</h3>
+                        <div class="chart-container" style="height: 300px;">
+                            <canvas id="districtChart"></canvas>
                         </div>
-                    <?php endforeach; ?>
+                    </div>
                 </div>
             </div>
         </div>

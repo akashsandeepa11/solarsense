@@ -60,5 +60,20 @@ class M_Superadmin_dashboard
         ");
         return $this->db->resultSet();
     }
+
+    public function getVerificationRequests(){
+        $this->db->query(" 
+        SELECT 
+            company_id,
+            company_name,
+            email, 
+            district
+        FROM installer_company
+        WHERE status = 'Pending'
+        ORDER BY register_date DESC
+        LIMIT 3
+        ");
+        return $this->db->resultSet();
+    }
 }
 ?>

@@ -28,13 +28,15 @@ class SuperAdmin extends Controller
         $growth = $this->dashboardModel->getCompanyGrowthByYear();
         $user_type = $this->dashboardModel->getUserByType();
         $company_district = $this->dashboardModel->getCompanyByDistrict();
+        $verification_requests = $this->dashboardModel->getVerificationRequests();
 
         $data = [
             'user' => $this->user,
             'stats' => $stats,
             'growth' => $growth,
             'user_type' => $user_type,
-            'company_district' => $company_district
+            'company_district' => $company_district,
+            'verification_requests' => $verification_requests
         ];
 
         $this->view('pages/super_admin/dashboard', $data, layout: 'dashboard');
