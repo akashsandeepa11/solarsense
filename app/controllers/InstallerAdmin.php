@@ -1866,11 +1866,30 @@ class InstallerAdmin extends Controller
 
     public function help()
     {
-        $data = [
-            'user' => $this->user,
-        ];
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
-        $this->view('pages/installer_admin/help', $data, 'dashboard');
+            $helpModel = $this->model('M_Help');
+            $userId = $_SESSION['user_id'];
+
+            $data = [
+                'user_id' => $userId,
+                'type' => $this->user['role'],
+                'full_name' => $_SESSION['user_name'] ?? 'Installer Admin',
+                'title' => trim($_POST['title']), // Capture title from view
+                'description' => trim($_POST['notes']), // Map 'notes' from view to 'description'
+            ];
+
+            if ($helpModel->add_complaint($data)) {
+                setToast('Support request submitted!', 'success');
+                redirect('installeradmin/help');
+            } else {
+                setToast('Database error. Please try again.', 'error');
+            }
+        }
+
+        $data = ['user' => $this->user];
+        $this->view('pages/installer_admin/help', $data, layout: 'dashboard');
     }
 
 

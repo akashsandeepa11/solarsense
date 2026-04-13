@@ -9,6 +9,8 @@ class SuperAdmin extends Controller
     private $fleetModel;
     private $dashboardModel;
     private $profileModel;
+    private $installerAdminDashboard;
+    private $helpModel;
 
     private $user = [
         'role' => ROLE_SUPER_ADMIN,
@@ -21,6 +23,7 @@ class SuperAdmin extends Controller
         $this->dashboardModel = $this->model('M_Superadmin_Dashboard');
         $this->profileModel = $this->model('M_Profile');
         $this->installerAdminDashboard = $this->model('M_InstallerAdmin_Dashboard');
+        $this->helpModel = $this->model('M_Help');
     }
 
     public function dashboard()
@@ -123,8 +126,10 @@ class SuperAdmin extends Controller
 
     public function complaints()
     {
+        $complaints = $this->helpModel->get_all_complaints();
         $data = [
             'user' => $this->user,
+            'complaints' => $complaints
         ];
 
         $this->view('pages/super_admin/complaints', $data, 'dashboard');
