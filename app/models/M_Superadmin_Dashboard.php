@@ -12,8 +12,8 @@ class M_Superadmin_dashboard
     {
         $this->db->query("
         SELECT
-            (SELECT COUNT(company_id) FROM installer_company WHERE status = 'verified') AS total_solar_companies,
-            (SELECT COUNT(company_id) FROM installer_company WHERE status = 'pending') AS pending_verifications,
+            (SELECT COUNT(company_id) FROM installer_company WHERE status = 'Verified') AS total_solar_companies,
+            (SELECT COUNT(company_id) FROM installer_company WHERE status = 'Pending') AS pending_verifications,
             (SELECT COUNT(user_id) FROM user) AS total_platform_users
         ");
         return $this->db->single();
@@ -59,6 +59,30 @@ class M_Superadmin_dashboard
         ORDER BY total DESC
         ");
         return $this->db->resultSet();
+    }
+
+    public function getVerificationRequests(){
+        $this->db->query(" 
+        SELECT 
+            company_id,
+            company_name,
+            email, 
+            district
+        FROM installer_company
+        WHERE status = 'Pending'
+        ORDER BY register_date DESC
+        LIMIT 3
+        ");
+        return $this->db->resultSet();
+    }
+    
+    public function getActiveSystems(){
+        $this->db->query("
+        SELECT 
+            COUNT(*) AS total_user
+        FROM homeowner
+        ");
+        return $this->db->single();
     }
 }
 ?>

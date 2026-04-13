@@ -9,6 +9,8 @@ class SuperAdmin extends Controller
     private $fleetModel;
     private $dashboardModel;
     private $profileModel;
+    private $installerAdminDashboard;
+    private $helpModel;
 
     private $user = [
         'role' => ROLE_SUPER_ADMIN,
@@ -20,6 +22,8 @@ class SuperAdmin extends Controller
         $this->fleetModel = $this->model('M_Installer_Fleet');
         $this->dashboardModel = $this->model('M_Superadmin_Dashboard');
         $this->profileModel = $this->model('M_Profile');
+        $this->installerAdminDashboard = $this->model('M_InstallerAdmin_Dashboard');
+        $this->helpModel = $this->model('M_Help');
     }
 
     public function dashboard()
@@ -28,13 +32,15 @@ class SuperAdmin extends Controller
         $growth = $this->dashboardModel->getCompanyGrowthByYear();
         $user_type = $this->dashboardModel->getUserByType();
         $company_district = $this->dashboardModel->getCompanyByDistrict();
+        $verification_requests = $this->dashboardModel->getVerificationRequests();
 
         $data = [
             'user' => $this->user,
             'stats' => $stats,
             'growth' => $growth,
             'user_type' => $user_type,
-            'company_district' => $company_district
+            'company_district' => $company_district,
+            'verification_requests' => $verification_requests
         ];
 
         $this->view('pages/super_admin/dashboard', $data, layout: 'dashboard');
@@ -50,40 +56,20 @@ class SuperAdmin extends Controller
         $this->view('pages/super_admin/companies', $data, layout: 'dashboard');
     }
 
-    public function fleet($page = 'dashboard', $customerId = null)
-    {
-        $data = [
-            'user' => $this->user,
-        ];
-
-        if ($page === 'add_customer') {
-            return $this->add_customer();
-        }
-
-        if ($page === 'customer_details') {
-            return $this->customerdetails($customerId);
-        }
-
-        if ($page === 'view') {
-            return $this->view_customer();
-        }
-
-        if ($page === 'edit_customer') {
-            return $this->edit_customer();
-        }
-
-        if ($page === 'delete_customer') {
-            return $this->delete_customer();
-        }
-    }
-
     public function reports()
     {
         $data = [
             'user' => $this->user,
+            'report_data' => [
+                'platform_overview' => $this->dashboardModel->getStats(),
+                'user_role_data' => $this->dashboardModel->getUserByType(),
+                'company_growth' => $this->dashboardModel->getCompanyGrowthByYear(),
+                'company_district' => $this->dashboardModel->getCompanyByDistrict(),
+                'companies_report' => $this->installerAdminDashboard->getAllCompaniesWithStats()
+            ]
         ];
 
-        $this->view('pages/super_admin/reports', $data, 'dashboard');
+        $this->view('pages/super_admin/reports', $data, 'main');
     }
 
 
@@ -143,8 +129,10 @@ class SuperAdmin extends Controller
 
     public function complaints()
     {
+        $complaints = $this->helpModel->get_all_complaints();
         $data = [
             'user' => $this->user,
+            'complaints' => $complaints
         ];
 
         $this->view('pages/super_admin/complaints', $data, 'dashboard');

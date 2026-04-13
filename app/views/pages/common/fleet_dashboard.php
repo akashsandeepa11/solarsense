@@ -28,7 +28,8 @@
     }
     ?>
 
-    <link rel="stylesheet" href="<?php echo URLROOT?>/css/components.css">
+    <link rel="stylesheet" href="<?php echo URLROOT?>/public/css/components.css">
+    <link rel="stylesheet" href="<?php echo URLROOT?>/public/css/pages/installer/dashboard.css">
 
     <style>
         /* Status Dot */
@@ -173,7 +174,7 @@
         <?php
         $config = [
             'stats' => $summary_cards,
-            'columns' => 4
+            'columns' => 6
         ];
         include __DIR__ . '/../../inc/components/stat_card.php';
         ?>

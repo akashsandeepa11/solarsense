@@ -5,7 +5,10 @@ require_once APPROOT . '/config/constants.php';
 require_once APPROOT . '/helpers/ReportData_Helper.php';
 
 $role = ROLE_SUPER_ADMIN;
-$report_data = getReportDataByRole($role) ?? [];
+$report_data = $data['report_data'] ?? [];
+$stat_cards = $report_data['platform_overview'] ?? [];
+$active_systems = $report_data['active_systems'] ?? 0;
+$company_data = $report_data['company_data'] ?? [];
 
 // Define color scheme
 $colors = [
@@ -247,7 +250,9 @@ $colors = [
     $config = [
         'title' => 'Reports',
         'description' => 'View and download system-wide reports and analytics',
-        'show_back' => false
+        'show_back' => true,
+        'back_url' => URLROOT . '/superadmin/dashboard',
+        'back_label' => 'Back to Dashboard'
     ];
     include __DIR__ . '/../../inc/components/page_header.php';
     ?>
@@ -265,19 +270,9 @@ $colors = [
                 <option value="all_time">All Time</option>
             </select>
         </div>
-        <div class="filter-group">
-            <label class="filter-label">Format</label>
-            <select class="filter-select" id="format-filter">
-                <option value="pdf">PDF</option>
-                <option value="excel">Excel</option>
-                <option value="csv">CSV</option>
-            </select>
-        </div>
+        
         <div class="download-buttons">
-            <button class="btn-download" onclick="downloadAllReports()">
-                <i class="fas fa-download"></i> Download All
-            </button>
-            <button class="btn-download" onclick="window.print()" style="background: #6b7280;">
+            <button class="btn-download" onclick="window.print()">
                 <i class="fas fa-print"></i> Print
             </button>
         </div>
@@ -288,20 +283,34 @@ $colors = [
         <h2 class="report-section-title">System Overview</h2>
         <div class="stats-grid">
             <div class="stat-box">
-                <div class="stat-value"><?php echo $report_data['platform_overview']['total_companies'] ?? '0'; ?></div>
+                <div class="stat-value"><?php
+                    if (is_object($stat_cards)) {
+                        echo htmlspecialchars($stat_cards->total_solar_companies ?? '0');
+                    } else {
+                        echo '0';
+                    }
+                ?></div>
                 <div class="stat-label">Total Companies</div>
             </div>
             <div class="stat-box">
-                <div class="stat-value"><?php echo $report_data['platform_overview']['total_users'] ?? '0'; ?></div>
+                <div class="stat-value"><?php
+                    if (is_object($stat_cards)) {
+                        echo htmlspecialchars($stat_cards->total_platform_users ?? $stat_cards->total_users ?? '0');
+                    } else {
+                        echo '0';
+                    }
+                ?></div>
                 <div class="stat-label">Total Users</div>
             </div>
             <div class="stat-box">
-                <div class="stat-value"><?php echo number_format($report_data['platform_overview']['active_systems'] ?? 0); ?></div>
+                <div class="stat-value"><?php
+                    if (is_object($active_systems)) {
+                        echo htmlspecialchars(number_format($active_systems->total_user ?? 0));
+                    } else {
+                        echo '0';
+                    }
+                ?></div>
                 <div class="stat-label">Active Systems</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value"><?php echo $report_data['platform_overview']['platform_uptime'] ?? 'N/A'; ?></div>
-                <div class="stat-label">Platform Uptime</div>
             </div>
         </div>
     </div>
@@ -314,22 +323,29 @@ $colors = [
                 <thead>
                     <tr>
                         <th>Company Name</th>
-                        <th>Status</th>
-                        <th>Systems</th>
-                        <th>Users</th>
-                        <th>Revenue</th>
+                        <th>Address</th>
+                        <th>Email</th>
+                        <th>Total Clients</th>
+                        <th>Total Employees</th> 
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($report_data['companies_report'] ?? [] as $company): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($company['name'] ?? ''); ?></td>
-                        <td><span class="status-badge status-<?php echo strtolower($company['status'] ?? ''); ?>"><?php echo $company['status'] ?? 'N/A'; ?></span></td>
-                        <td><?php echo $company['systems'] ?? '0'; ?></td>
-                        <td><?php echo $company['users'] ?? '0'; ?></td>
-                        <td><?php echo $company['revenue'] ?? 'N/A'; ?></td>
-                    </tr>
-                    <?php endforeach; ?>
+                    <?php $companies = $report_data['companies_report'] ?? []; ?>
+                    <?php if (!empty($companies)): ?>
+                        <?php foreach ($companies as $company): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars(is_object($company) ? ($company->name ?? '') : ($company['name'] ?? '')); ?></td>
+                                <td><?php echo htmlspecialchars(is_object($company) ? ($company->address ?? 'N/A') : ($company['address'] ?? 'N/A')); ?></td>
+                                <td><?php echo htmlspecialchars(is_object($company) ? ($company->email ?? '') : ($company['email'] ?? '')); ?></td>
+                                <td><?php echo htmlspecialchars(is_object($company) ? ($company->active_clients ?? '0') : ($company['active_clients'] ?? '0')); ?></td>
+                                <td><?php echo htmlspecialchars(is_object($company) ? ($company->active_agents ?? '0') : ($company['active_agents'] ?? '0')); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="5" class="text-center text-secondary">No company information</td>
+                        </tr>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
@@ -347,10 +363,16 @@ $colors = [
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($report_data['users_report'] ?? [] as $user): ?>
+                    <?php foreach ($report_data['user_role_data'] ?? [] as $user): ?>
                     <tr>
-                        <td><?php echo htmlspecialchars($user['role'] ?? ''); ?></td>
-                        <td><?php echo $user['count'] ?? '0'; ?></td>
+                        <td><?php
+                            $roleName = is_object($user) ? ($user->user_type ?? $user->type ?? '') : ($user['user_type'] ?? $user['type'] ?? '');
+                            echo htmlspecialchars($roleName);
+                        ?></td>
+                        <td><?php
+                            $count = is_object($user) ? ($user->total ?? $user->count ?? 0) : ($user['total'] ?? $user['count'] ?? 0);
+                            echo htmlspecialchars($count);
+                        ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -359,7 +381,7 @@ $colors = [
     </div>
 
     <!-- Verification & Compliance Reports -->
-    <div class="report-section">
+    <!-- <div class="report-section">
         <h2 class="report-section-title">Verification & Compliance</h2>
         <div class="stats-grid">
             <div class="stat-box">
@@ -379,10 +401,10 @@ $colors = [
                 <div class="stat-label">Resolution Rate</div>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <!-- Energy Generation Report -->
-    <div class="report-section">
+    <!-- <div class="report-section">
         <h2 class="report-section-title">Energy Generation Report</h2>
         <div class="stats-grid">
             <div class="stat-box">
@@ -402,7 +424,7 @@ $colors = [
                 <div class="stat-label">CO₂ Avoided</div>
             </div>
         </div>
-    </div>
+    </div> -->
 </div>
 
 <script>

@@ -21,45 +21,22 @@ $quotations = [
     require APPROOT . '/views/inc/components/page_header.php';
     ?>
 
-    <!-- Stats Grid -->
-    <div class="stats-grid mb-6">
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-clock"></i>
-            </div>
-            <div class="stat-content">
-                <p class="stat-label">Pending Quotations</p>
-                <p class="stat-value" id="pendingCount">0</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon success">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="stat-content">
-                <p class="stat-label">Approved Quotations</p>
-                <p class="stat-value" id="approvedCount">0</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon error">
-                <i class="fas fa-times-circle"></i>
-            </div>
-            <div class="stat-content">
-                <p class="stat-label">Rejected Quotations</p>
-                <p class="stat-value" id="rejectedCount">0</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-dollar-sign"></i>
-            </div>
-            <div class="stat-content">
-                <p class="stat-label">Total Value</p>
-                <p class="stat-value" id="totalValue">Rs. 0</p>
-            </div>
-        </div>
-    </div>
+    <?php
+    // Use shared stat_card component for consistent styling with fleet/dashboard
+    ?>
+    <link rel="stylesheet" href="<?php echo URLROOT; ?>/public/css/components.css">
+    <link rel="stylesheet" href="<?php echo URLROOT; ?>/public/css/pages/installer/dashboard.css">
+
+    <?php
+    $summary_cards = [
+        ['label' => 'Pending Quotations', 'value' => 0, 'icon' => 'fas fa-clock', 'color' => 'warning', 'id' => 'pendingCount'],
+        ['label' => 'Approved Quotations', 'value' => 0, 'icon' => 'fas fa-check-circle', 'color' => 'success', 'id' => 'approvedCount'],
+        ['label' => 'Rejected Quotations', 'value' => 0, 'icon' => 'fas fa-times-circle', 'color' => 'error', 'id' => 'rejectedCount'],
+        ['label' => 'Total Value', 'value' => 'Rs. 0', 'icon' => 'fas fa-dollar-sign', 'color' => 'primary', 'id' => 'totalValue'],
+    ];
+    $config = ['stats' => $summary_cards, 'columns' => 6];
+    include __DIR__ . '/../../inc/components/stat_card.php';
+    ?>
 
     <!-- Filter Bar -->
     <div class="card shadow-lg rounded-xl mb-4">

@@ -8,6 +8,7 @@ class InstallerAdmin extends Controller
     private $authModel;
     private $teamModel;
     private $managerModel;
+    private $profileModel;
 
     private $user = [
         'role' => ROLE_INSTALLER_ADMIN,
@@ -20,6 +21,7 @@ class InstallerAdmin extends Controller
         $this->authModel = $this->model('M_Auth');
         $this->teamModel = $this->model('M_Team');
         $this->managerModel = $this->model('M_Manager');
+        $this->profileModel = $this->model('M_Profile');
     }
 
     public function dashboard($page = 'dashboard')
@@ -37,10 +39,10 @@ class InstallerAdmin extends Controller
         $data = [
             'user' => $this->user,
             'stats' => $dashboardModel->getStats($companyId),
-            'alerts' => $dashboardModel->getAlerts($companyId), 
-            'performance_snapshot' => $dashboardModel->getPerformanceSnapshot($companyId), 
-            'service_agents' => $dashboardModel->getServiceTeamStatus($companyId), 
-            'new_customers_data' => $dashboardModel->getNewCustomersChartData($companyId), 
+            'alerts' => $dashboardModel->getAlerts($companyId),
+            'performance_snapshot' => $dashboardModel->getPerformanceSnapshot($companyId),
+            'service_agents' => $dashboardModel->getServiceTeamStatus($companyId),
+            'new_customers_data' => $dashboardModel->getNewCustomersChartData($companyId),
             'service_tasks_data' => $dashboardModel->getServiceTasksChartData($companyId) // Fetch task status data
         ];
 
@@ -94,7 +96,7 @@ class InstallerAdmin extends Controller
 
         $data = [
             'user' => $this->user,
-            'customers' => $this->fleetModel->get_customer_by_company($companyId),
+            'customers' => $this->fleetModel->get_customer_stats($companyId),
             'stats' => [
                 'total_clients' => $total_clients ?? 0,
                 'pending_maintenace' => $pending_maintenance ?? 0,
@@ -113,19 +115,26 @@ class InstallerAdmin extends Controller
             return;
         }
 
-        $customer      = $this->fleetModel->get_customer_details($customerId);
+        // Get company context for the logged-in admin
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
+
+        // Fetch the detailed customer object
+        $customer = $this->fleetModel->get_customer_details_by_company($customerId, $companyId);
+
+        // Fetch assigned service agents for this specific homeowner
         $serviceAgents = $this->teamModel->get_service_agents_by_customer($customerId);
 
         if (!$customer) {
-            setToast('Customer not found', 'error');
+            setToast('Customer not found or access denied', 'error');
             redirect('installeradmin/fleet');
             return;
         }
 
         $data = [
-            'user'           => $this->user,
-            'customerId'     => $customerId,
-            'customer'       => $customer,
+            'user' => $this->user,
+            'customerId' => $customerId,
+            'customer' => $customer,
             'service_agents' => $serviceAgents,
         ];
 
@@ -626,7 +635,7 @@ class InstallerAdmin extends Controller
             }
             return;
         }
-        
+
         $this->view('pages/installer_admin/add_customer', $data, layout: 'dashboard');
     }
 
@@ -700,7 +709,7 @@ class InstallerAdmin extends Controller
         // 4. Prepare data for the view
         $data = [
             'user' => $this->user,
-            'agents' => $this->teamModel->get_service_agents_by_company($companyId),
+            'agents' => $this->teamModel->get_service_agent_stats($companyId),
             'stats' => [
                 'total_agents' => $total_agents_row->total_agents ?? 0,
                 'active_agents' => $active_agents_row->active_agents ?? 0,
@@ -918,12 +927,36 @@ class InstallerAdmin extends Controller
 
     public function agent_details($agentId = null)
     {
+        if (empty($agentId)) {
+            setToast('Invalid agent ID', 'error');
+            redirect('installeradmin/team');
+            return;
+        }
+
+        // 1. Get the current logged-in user's company ID
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
+
+        if (!$companyId) {
+            setToast('Unauthorized access.', 'error');
+            redirect('pages/login');
+            return;
+        }
+
+        // 2. Fetch agent details using the new model function
+        $agent = $this->teamModel->get_agent_details_by_id($agentId, $companyId);
+
+        if (!$agent) {
+            setToast('Agent not found or access denied.', 'error');
+            redirect('installeradmin/team');
+            return;
+        }
+
+        // 3. Prepare data for the view
         $data = [
             'user' => $this->user,
+            'agent' => $agent
         ];
-
-        // TODO: Fetch agent details from database using $agentId
-        // For now, using sample data
 
         $this->view('pages/common/agent_details', $data, layout: 'dashboard');
     }
@@ -1188,23 +1221,25 @@ class InstallerAdmin extends Controller
             return;
         }
 
-        // Handle add action
+        // 1. Handle add action (URL: managers/tab/add)
         if ($id === 'add') {
             return $this->add_manager($tab);
         }
 
-        // Handle edit action
-        if ($action === 'edit' && $id) {
-            return $this->edit_manager($tab, $id);
+        // 2. Corrected Edit Action: Look for 'edit' in the 2nd parameter ($id)
+        // URL format: managers/inventory_managers/edit/222
+        if ($id === 'edit' && $action) {
+            return $this->edit_manager($tab, $action); // Pass $action as the actual ID
         }
 
-        // Handle delete action
-        if ($action === 'delete' && $id) {
-            return $this->delete_manager($tab, $id);
+        // 3. Corrected Delete Action: Look for 'delete' in the 2nd parameter ($id)
+        // URL format: managers/inventory_managers/delete/222
+        if ($id === 'delete' && $action) {
+            return $this->delete_manager($tab, $action); // Pass $action as the actual ID
         }
 
-        // Handle detail view
-        if ($id) {
+        // 4. Handle detail view (If $id is a numeric ID, not a string like 'edit')
+        if ($id && is_numeric($id)) {
             if ($tab === 'operation_managers') {
                 return $this->operation_managers_detail($id);
             } elseif ($tab === 'inventory_managers') {
@@ -1320,100 +1355,81 @@ class InstallerAdmin extends Controller
         $this->view('pages/installer_admin/managers_list', $data, layout: 'dashboard');
     }
 
-    // Manager Detail View Methods
+    // Operation Manager Detail View
     public function operation_managers_detail($managerId = null)
     {
-        // Sample operation manager detail data
-        $sample_manager = [
-            'id' => $managerId ?? 1,
-            'name' => 'John Smith',
-            'email' => 'john.smith@solarsense.com',
-            'contact' => '+94 77 123 4567',
-            'nic' => '123456789V',
-            'address' => '45 Technical Lane, Colombo 3',
-            'district' => 'Colombo',
-            'specialization' => 'Installation',
-            'experience_years' => 8,
-            'availability' => 'Full-time',
-            'certifications' => 'Solar Panel Installation Cert, Electrical Safety Cert',
-            'status' => 'active',
-            'performance' => 95,
-            'pending_tasks' => 3,
-            'completed_tasks' => 125,
-            'monthly_tasks_completed' => 42,
-            'ontime_rate' => 89,
-            'quality_score' => 94,
-            'activities' => [
-                [
-                    'title' => 'System Installation',
-                    'description' => 'Completed installation of 5.5 kWp system',
-                    'date' => 'Oct 20, 2025',
-                    'status' => 'completed',
-                    'details' => '5.5 kWp'
-                ],
-                [
-                    'title' => 'Panel Cleaning',
-                    'description' => 'Performed quarterly maintenance',
-                    'date' => 'Oct 18, 2025',
-                    'status' => 'completed',
-                    'details' => 'Maintenance'
-                ]
-            ]
-        ];
+        if (!$managerId) {
+            redirect('installeradmin/managers/operation_managers');
+        }
+
+        $userId = $_SESSION['user_id'];
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
+
+        $manager = $this->managerModel->get_operation_manager_details($managerId, $companyId);
+
+        if (!$manager) {
+            setToast('Operation Manager not found', 'error');
+            redirect('installeradmin/managers/operation_managers');
+            return;
+        }
 
         $data = [
             'user' => $this->user,
             'managerType' => 'operation_managers',
-            'manager' => $sample_manager
+            'manager' => [
+                'id' => $manager->user_id,
+                'name' => $manager->full_name,
+                'email' => $manager->email,
+                'contact' => $manager->contact,
+                'nic' => $manager->nic,
+                'address' => $manager->address,
+                'district' => $manager->district,
+                'specialization' => $manager->specialization,
+                'experience_years' => $manager->exp_level, // Mapped to exp_level in DB
+                'availability' => 'Full-time', // Or derived from status
+                'certifications' => $manager->certifications,
+                'status' => $manager->status
+            ]
         ];
 
         $this->view('pages/installer_admin/manager_details', $data, layout: 'dashboard');
     }
 
+    // Inventory Manager Detail View
     public function inventory_managers_detail($managerId = null)
     {
-        // Sample inventory manager detail data
-        $sample_manager = [
-            'id' => $managerId ?? 1,
-            'name' => 'David Wilson',
-            'email' => 'david.w@solarsense.com',
-            'contact' => '+94 77 234 5678',
-            'nic' => '987654321V',
-            'address' => '78 Warehouse Ave, Colombo 1',
-            'district' => 'Colombo',
-            'warehouse' => 'Main Warehouse - Colombo',
-            'status' => 'active',
-            'efficiency' => 92,
-            'low_stock' => 3,
-            'total_orders' => 156,
-            'inventory_items' => 245,
-            'low_stock_threshold' => 10,
-            'last_inventory_check' => 'Oct 21, 2025',
-            'stock_accuracy' => 96,
-            'fulfillment_rate' => 98,
-            'warehouse_efficiency' => 92,
-            'activities' => [
-                [
-                    'title' => 'Stock Replenishment',
-                    'description' => 'Received 50 solar panels from supplier',
-                    'date' => 'Oct 20, 2025',
-                    'status' => 'completed',
-                    'details' => '50 units'
-                ],
-                [
-                    'title' => 'Inventory Check',
-                    'description' => 'Quarterly inventory verification',
-                    'date' => 'Oct 19, 2025',
-                    'status' => 'completed',
-                    'details' => '245 items'
-                ]
-            ]
-        ];
+        if (!$managerId) {
+            redirect('installeradmin/managers/inventory_managers');
+        }
+
+        $userId = $_SESSION['user_id'];
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
+
+        $manager = $this->managerModel->get_inventory_manager_details($managerId, $companyId);
+
+        if (!$manager) {
+            setToast('Inventory Manager not found', 'error');
+            redirect('installeradmin/managers/inventory_managers');
+            return;
+        }
 
         $data = [
             'user' => $this->user,
             'managerType' => 'inventory_managers',
-            'manager' => $sample_manager
+            'manager' => [
+                'id' => $manager->user_id,
+                'name' => $manager->full_name,
+                'email' => $manager->email,
+                'contact' => $manager->contact,
+                'nic' => $manager->nic,
+                'address' => $manager->address,
+                'district' => $manager->district,
+                'warehouse' => $manager->warehouse_location,
+                'status' => $manager->status,
+                'inventory_items' => 0, // Placeholder
+                'low_stock_threshold' => 10, // Placeholder
+                'last_inventory_check' => 'N/A' // Placeholder
+            ]
         ];
 
         $this->view('pages/installer_admin/manager_details', $data, layout: 'dashboard');
@@ -1650,36 +1666,207 @@ class InstallerAdmin extends Controller
         }
     }
 
-    // Edit Manager
     public function edit_manager($managerType, $managerId)
     {
-        // TODO: Implement edit manager functionality
-        $data = [
-            'user' => $this->user,
-            'managerType' => $managerType,
-            'managerId' => $managerId,
-            'mode' => 'edit'
-        ];
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
 
-        $this->view('pages/installer_admin/add_manager', $data, layout: 'dashboard');
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+
+            $data = [
+                'user' => $this->user,
+                'managerType' => $managerType,
+                'managerId' => $managerId,
+                'mode' => 'edit',
+                'fullName' => trim($_POST['fullName'] ?? ''),
+                'email' => trim($_POST['email'] ?? ''),
+                'contactNumber' => trim($_POST['contactNumber'] ?? ''),
+                'nic' => trim($_POST['nic'] ?? ''),
+                'address' => trim($_POST['address'] ?? ''),
+                'district' => trim($_POST['district'] ?? ''),
+                'status' => trim($_POST['status'] ?? 'Active'),
+                'certifications' => trim($_POST['certifications'] ?? ''),
+                'emergencyContactName' => trim($_POST['emergencyContactName'] ?? ''),
+                'emergencyContactNumber' => trim($_POST['emergencyContactNumber'] ?? ''),
+                'password' => trim($_POST['password'] ?? ''),
+                'confirmPassword' => trim($_POST['confirmPassword'] ?? ''),
+
+                // Error fields
+                'fullName_err' => '',
+                'email_err' => '',
+                'contactNumber_err' => '',
+                'nic_err' => '',
+                'address_err' => '',
+                'district_err' => '',
+                'status_err' => '',
+                'password_err' => '',
+                'confirmPassword_err' => ''
+            ];
+
+            // Handle Type-Specific Fields
+            if ($managerType === 'operation_managers') {
+                $data['specialization'] = trim($_POST['specialization'] ?? '');
+                $data['teamSize'] = trim($_POST['teamSize'] ?? '');
+                $data['experienceLevel'] = trim($_POST['experienceLevel'] ?? '');
+            } elseif ($managerType === 'inventory_managers') {
+                $data['warehouseLocation'] = trim($_POST['warehouseLocation'] ?? '');
+                $data['warehouseCapacity'] = trim($_POST['warehouseCapacity'] ?? '');
+                $data['experienceLevel'] = trim($_POST['experienceLevel'] ?? '');
+                $data['managedCategories'] = trim($_POST['managedCategories'] ?? '');
+            }
+
+            // Validate Password if provided
+            if (!empty($data['password'])) {
+                if (strlen($data['password']) < 6) {
+                    $data['password_err'] = 'Password must be at least 6 characters';
+                } elseif ($data['password'] !== $data['confirmPassword']) {
+                    $data['confirmPassword_err'] = 'Passwords do not match';
+                }
+            }
+
+            // Check for errors (similar logic to add_manager)
+            $hasErrors = false;
+            foreach ($data as $key => $value) {
+                if (strpos($key, '_err') !== false && !empty($value)) {
+                    $hasErrors = true;
+                    break;
+                }
+            }
+
+            if (!$hasErrors) {
+                $userData = [
+                    'full_name' => $data['fullName'],
+                    'email' => $data['email'],
+                    'password' => !empty($data['password']) ? password_hash($data['password'], PASSWORD_DEFAULT) : ''
+                ];
+
+                if ($managerType === 'operation_managers') {
+                    $managerData = [
+                        'contact' => $data['contactNumber'],
+                        'nic' => $data['nic'],
+                        'address' => $data['address'],
+                        'district' => $data['district'],
+                        'specialization' => $data['specialization'],
+                        'exp_level' => $data['experienceLevel'],
+                        'team_size' => $data['teamSize'],
+                        'status' => $data['status'],
+                        'certifications' => $data['certifications'],
+                        'emergency_name' => $data['emergencyContactName'],
+                        'emergency_contact' => $data['emergencyContactNumber']
+                    ];
+                    $success = $this->managerModel->update_operation_manager($managerId, $userData, $managerData);
+                } else {
+                    $managerData = [
+                        'contact' => $data['contactNumber'],
+                        'nic' => $data['nic'],
+                        'address' => $data['address'],
+                        'district' => $data['district'],
+                        'warehouse_location' => $data['warehouseLocation'],
+                        'warehouse_capacity' => $data['warehouseCapacity'],
+                        'exp_level' => $data['experienceLevel'],
+                        'status' => $data['status'],
+                        'managed_categories' => $data['managedCategories'],
+                        'certifications' => $data['certifications'],
+                        'emergency_name' => $data['emergencyContactName'],
+                        'emergency_contact' => $data['emergencyContactNumber']
+                    ];
+                    $success = $this->managerModel->update_inventory_manager($managerId, $userData, $managerData);
+                }
+
+                if ($success) {
+                    setToast('Manager Updated Successfully', 'success');
+                    redirect('installeradmin/managers/' . $managerType);
+                    return;
+                }
+                setToast('Something went wrong during update', 'error');
+            }
+            $this->view('pages/installer_admin/add_manager', $data, layout: 'dashboard');
+
+        } else {
+            // GET: Fetch existing details to populate the form
+            $manager = ($managerType === 'operation_managers')
+                ? $this->managerModel->get_operation_manager_details($managerId, $companyId)
+                : $this->managerModel->get_inventory_manager_details($managerId, $companyId);
+
+            if (!$manager) {
+                setToast('Manager not found', 'error');
+                redirect('installeradmin/managers/' . $managerType);
+                return;
+            }
+
+            $data = [
+                'user' => $this->user,
+                'managerType' => $managerType,
+                'managerId' => $managerId,
+                'mode' => 'edit',
+                'fullName' => $manager->full_name,
+                'email' => $manager->email,
+                'contactNumber' => $manager->contact,
+                'nic' => $manager->nic,
+                'address' => $manager->address,
+                'district' => $manager->district,
+                'status' => $manager->status,
+                'certifications' => $manager->certifications,
+                'emergencyContactName' => $manager->emergency_name,
+                'emergencyContactNumber' => $manager->emergency_contact,
+                'password' => '',
+                'confirmPassword' => ''
+            ];
+
+            if ($managerType === 'operation_managers') {
+                $data['specialization'] = $manager->specialization;
+                $data['teamSize'] = $manager->team_size;
+                $data['experienceLevel'] = $manager->exp_level;
+            } else {
+                $data['warehouseLocation'] = $manager->warehouse_location;
+                $data['warehouseCapacity'] = $manager->warehouse_capacity;
+                $data['experienceLevel'] = $manager->exp_level;
+                $data['managedCategories'] = $manager->managed_categories;
+            }
+
+            $this->view('pages/installer_admin/add_manager', $data, layout: 'dashboard');
+        }
     }
 
     // Delete Manager
     public function delete_manager($managerType, $managerId)
     {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            // TODO: Delete manager from database
-            flash('manager_message', 'Manager deleted successfully', 'alert alert-success');
+        // Security check: only allow POST requests for deletion
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             redirect('installeradmin/managers/' . $managerType);
-        } else {
-            redirect('installeradmin/managers/' . $managerType);
+            return;
         }
+
+        $success = ($managerType === 'operation_managers')
+            ? $this->managerModel->delete_operation_manager($managerId)
+            : $this->managerModel->delete_inventory_manager($managerId);
+
+        if ($success) {
+            setToast('Manager Deleted Successfully', 'success');
+        } else {
+            setToast('Failed to delete manager. Please try again.', 'error');
+        }
+
+        redirect('installeradmin/managers/' . $managerType);
     }
 
     public function profile()
     {
+        $userId = $_SESSION['user_id'] ?? null;
+
+        // Try to load installer company profile if user belongs to a company
+        $companyId = $this->profileModel->getCompanyIdByUser($userId);
+        if ($companyId) {
+            $user_data = $this->profileModel->getInstalleradminProfile($userId, $companyId);
+        } else {
+            // Fallback to superadmin profile
+            $user_data = $this->profileModel->getSuperadminProfile($userId);
+        }
+
         $data = [
             'user' => $this->user,
+            'user_data' => $user_data
         ];
 
         $this->view('pages/installer_admin/profile', $data, layout: 'dashboard');
@@ -1687,11 +1874,30 @@ class InstallerAdmin extends Controller
 
     public function help()
     {
-        $data = [
-            'user' => $this->user,
-        ];
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
-        $this->view('pages/installer_admin/help', $data, 'dashboard');
+            $helpModel = $this->model('M_Help');
+            $userId = $_SESSION['user_id'];
+
+            $data = [
+                'user_id' => $userId,
+                'type' => $this->user['role'],
+                'full_name' => $_SESSION['user_name'] ?? 'Installer Admin',
+                'title' => trim($_POST['title']), // Capture title from view
+                'description' => trim($_POST['notes']), // Map 'notes' from view to 'description'
+            ];
+
+            if ($helpModel->add_complaint($data)) {
+                setToast('Support request submitted!', 'success');
+                redirect('installeradmin/help');
+            } else {
+                setToast('Database error. Please try again.', 'error');
+            }
+        }
+
+        $data = ['user' => $this->user];
+        $this->view('pages/installer_admin/help', $data, layout: 'dashboard');
     }
 
 

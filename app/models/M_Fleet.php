@@ -1,14 +1,16 @@
 <?php
-class M_Fleet{
+class M_Fleet
+{
     private $db;
     private $stmt;
 
-    public function __construct(){
+    public function __construct()
+    {
         $this->db = new Database();
     }
 
     //add customer
-    public function add_customer($userData, $customerData, $panelData) 
+    public function add_customer($userData, $customerData, $panelData)
     {
         $plainPassword = substr(bin2hex(random_bytes(6)), 0, 10);
         try {
@@ -117,22 +119,23 @@ class M_Fleet{
             $this->db->rollBack();
             $errorMsg = 'Add customer failed: ' . $e->getMessage();
             error_log($errorMsg);
-            
+
             // Write to a file we can read easily
             if (!is_dir(dirname(__DIR__) . '/logs')) {
                 mkdir(dirname(__DIR__) . '/logs', 0755, true);
             }
             file_put_contents(
-                dirname(__DIR__) . '/logs/add_customer_error.log', 
+                dirname(__DIR__) . '/logs/add_customer_error.log',
                 date('Y-m-d H:i:s') . ' - ' . $errorMsg . "\n",
                 FILE_APPEND
             );
-            
+
             return false;
         }
     }
 
-    public function get_total_customers($companyId) {
+    public function get_total_customers($companyId)
+    {
         try {
             $this->db->query('SELECT COUNT(*) as total FROM homeowner WHERE company_id = :company_id');
             $this->db->bind(':company_id', $companyId);
@@ -144,7 +147,8 @@ class M_Fleet{
         }
     }
 
-    public function get_completed_services($companyId) {
+    public function get_completed_services($companyId)
+    {
         //get the services completed for each customer
         try {
             $this->db->query('SELECT COUNT(*) as total FROM service_req sr JOIN homeowner h ON sr.company_id = h.company_id WHERE h.company_id = :company_id AND sr.status = "completed"');
@@ -157,20 +161,22 @@ class M_Fleet{
         }
     }
 
-        public function get_pending_services($companyId) {
-            //get the services pending for each customer
-            try {
-                $this->db->query('SELECT COUNT(*) as total FROM service_req sr JOIN homeowner h ON sr.company_id = h.company_id WHERE h.company_id = :company_id AND sr.status = "pending"');
-                $this->db->bind(':company_id', $companyId);
-                $result = $this->db->single();
-                return $result->total ?? 0;
-            } catch (Exception $e) {
-                error_log('Get pending services failed: ' . $e->getMessage());
-                return 0;
-            }
+    public function get_pending_services($companyId)
+    {
+        //get the services pending for each customer
+        try {
+            $this->db->query('SELECT COUNT(*) as total FROM service_req sr JOIN homeowner h ON sr.company_id = h.company_id WHERE h.company_id = :company_id AND sr.status = "pending"');
+            $this->db->bind(':company_id', $companyId);
+            $result = $this->db->single();
+            return $result->total ?? 0;
+        } catch (Exception $e) {
+            error_log('Get pending services failed: ' . $e->getMessage());
+            return 0;
         }
+    }
 
-    public function update_customer($userId, $userData, $customerData, $panelData) {
+    public function update_customer($userId, $userData, $customerData, $panelData)
+    {
         try {
             // Start transaction
             $this->db->beginTransaction();
@@ -203,7 +209,7 @@ class M_Fleet{
                     ceb_account = :ceb_account
                 WHERE user_id = :user_id
             ');
-            
+
             $this->db->bind(':address', $customerData['address']);
             $this->db->bind(':contact', $customerData['contact']);
             $this->db->bind(':nic', $customerData['nic']);
@@ -224,7 +230,7 @@ class M_Fleet{
                     installation_date = :installation_date
                 WHERE user_id = :user_id
             ');
-            
+
             $this->db->bind(':capacity', $panelData['system_capacity']);
             $this->db->bind(':tilt', $panelData['panel_tilt']);
             $this->db->bind(':azimuth', $panelData['panel_azimuth']);
@@ -232,7 +238,7 @@ class M_Fleet{
             $this->db->bind(':inverter_brand', $panelData['inverter_brand']);
             $this->db->bind(':installation_date', $panelData['installation_date']);
             $this->db->bind(':user_id', $userId);
-            
+
             $this->db->execute();
 
             // Handle CEB account if it's stored separately (adjust based on your schema)
@@ -259,33 +265,34 @@ class M_Fleet{
             $this->db->rollBack();
             $errorMsg = 'Update customer failed: ' . $e->getMessage();
             error_log($errorMsg);
-            
+
             // Write to a file we can read easily
             if (!is_dir(dirname(__DIR__) . '/logs')) {
                 mkdir(dirname(__DIR__) . '/logs', 0755, true);
             }
             file_put_contents(
-                dirname(__DIR__) . '/logs/update_customer_error.log', 
+                dirname(__DIR__) . '/logs/update_customer_error.log',
                 date('Y-m-d H:i:s') . ' - ' . $errorMsg . "\n",
                 FILE_APPEND
             );
-            
+
             return false;
         }
     }
 
-    public function get_customer_details($userId) {
+    public function get_customer_details($userId)
+    {
         try {
             $query = 'SELECT u.user_id, u.email, u.full_name, h.address, h.contact, h.nic, h.district, s.capacity as system_capacity, s.tilt as panel_tilt, s.azimuth as panel_azimuth, s.panel_brand, s.inverter_brand, s.installation_date, h.ceb_account FROM user u JOIN homeowner h ON u.user_id = h.user_id JOIN solar_system s ON u.user_id = s.user_id WHERE u.user_id = :user_id';
-            
+
             $this->db->query($query);
             $this->db->bind(':user_id', $userId);
             $this->db->execute();
             $result = $this->db->single();
-            
+
             // Log the result for debugging
             error_log('get_customer_details result for ID ' . $userId . ': ' . ($result ? 'Found' : 'Not Found'));
-            
+
             return $result;
         } catch (Exception $e) {
             $errorMsg = 'Get customer details failed: ' . $e->getMessage();
@@ -307,9 +314,10 @@ class M_Fleet{
         }
     }
 
-    public function get_customer_by_company($companyId) {
-    try { 
-        $this->db->query('SELECT 
+    public function get_customer_stats($companyId)
+    {
+        try {
+            $this->db->query('SELECT 
                         u.user_id,
                         u.full_name,
                         u.email,
@@ -325,82 +333,111 @@ class M_Fleet{
                         GROUP BY user_id
                     ) sm ON u.user_id = sm.user_id
                     WHERE h.company_id = :company_id');
-        
-        $this->db->bind(':company_id', $companyId);
-        $results = $this->db->resultSet();
 
-        $formattedResults = [];
-        foreach ($results as $row) {
-            $formattedResults[] = [
-                'id' => $row->user_id,
-                'name' => $row->full_name,
-                'location' => $row->district,
-                'size' => $row->capacity,
-                'health' => 'Healthy', // Placeholder for health logic
-                'performance' => '100', // Placeholder for performance calculation
-                'last_upload' => $row->last_reading ?? 'No readings yet',
-                'avatar' => getAvatarUrl($row->full_name)
-            ];
+            $this->db->bind(':company_id', $companyId);
+            $results = $this->db->resultSet();
+
+            $formattedResults = [];
+            foreach ($results as $row) {
+                $formattedResults[] = [
+                    'id' => $row->user_id,
+                    'name' => $row->full_name,
+                    'location' => $row->district,
+                    'size' => $row->capacity,
+                    'health' => 'Healthy', // Placeholder for health logic
+                    'performance' => '100', // Placeholder for performance calculation
+                    'last_upload' => $row->last_reading ?? 'No readings yet',
+                    'avatar' => getAvatarUrl($row->full_name)
+                ];
+            }
+
+            return $formattedResults;
+        } catch (Exception $e) {
+            error_log('Get customer by company failed: ' . $e->getMessage());
+            return [];
         }
-        
-        return $formattedResults;
-    } catch (Exception $e) {
-        error_log('Get customer by company failed: ' . $e->getMessage());
-        return [];
     }
-}
+
+    /**
+     * Fetch detailed customer and solar system information by user ID and company ID
+     */
+    public function get_customer_details_by_company($customerId, $companyId)
+    {
+        try {
+            $this->db->query('
+            SELECT 
+                u.user_id, u.email, u.full_name, 
+                h.address, h.contact, h.nic, h.district, h.ceb_account, h.register_date,
+                s.capacity as system_capacity, s.tilt, s.azimuth, s.panel_brand, 
+                s.inverter_brand, s.installation_date, s.module_type, s.array_type
+            FROM user u
+            JOIN homeowner h ON u.user_id = h.user_id
+            JOIN solar_system s ON u.user_id = s.user_id
+            WHERE u.user_id = :customer_id AND h.company_id = :company_id
+        ');
+
+            $this->db->bind(':customer_id', $customerId);
+            $this->db->bind(':company_id', $companyId);
+
+            return $this->db->single();
+        } catch (Exception $e) {
+            error_log('get_customer_details_by_company failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
 
     public function delete_customer($userId)
-{
-    try {
-        // Start transaction
-        $this->db->beginTransaction();
+    {
+        try {
+            // Start transaction
+            $this->db->beginTransaction();
 
-        // 1. Delete from dependent tables first (if exist)
-        $this->db->query('DELETE FROM homeowner WHERE user_id = :user_id');
-        $this->db->bind(':user_id', $userId);
-        $this->db->execute();
+            // 1. Delete from dependent tables first (if exist)
+            $this->db->query('DELETE FROM homeowner WHERE user_id = :user_id');
+            $this->db->bind(':user_id', $userId);
+            $this->db->execute();
 
-        $this->db->query('DELETE FROM solar_system WHERE user_id = :user_id');
-        $this->db->bind(':user_id', $userId);
-        $this->db->execute();
+            $this->db->query('DELETE FROM solar_system WHERE user_id = :user_id');
+            $this->db->bind(':user_id', $userId);
+            $this->db->execute();
 
-        $this->db->query('DELETE FROM sms WHERE user_id = :user_id');
-        $this->db->bind(':user_id', $userId);
-        $this->db->execute();
+            $this->db->query('DELETE FROM sms WHERE user_id = :user_id');
+            $this->db->bind(':user_id', $userId);
+            $this->db->execute();
 
-        // 2. Finally, delete from user table
-        $this->db->query('DELETE FROM user WHERE user_id = :user_id');
-        $this->db->bind(':user_id', $userId);
-        $this->db->execute();
+            // 2. Finally, delete from user table
+            $this->db->query('DELETE FROM user WHERE user_id = :user_id');
+            $this->db->bind(':user_id', $userId);
+            $this->db->execute();
 
-        // Commit the transaction
-        $this->db->commit();
+            // Commit the transaction
+            $this->db->commit();
 
-        return true;
+            return true;
 
-    } catch (Exception $e) {
-        // Roll back if something goes wrong
-        $this->db->rollBack();
+        } catch (Exception $e) {
+            // Roll back if something goes wrong
+            $this->db->rollBack();
 
-        $errorMsg = 'Delete customer failed: ' . $e->getMessage();
-        error_log($errorMsg);
+            $errorMsg = 'Delete customer failed: ' . $e->getMessage();
+            error_log($errorMsg);
 
-        // Log into a readable file
-        $logDir = dirname(__DIR__) . '/logs';
-        if (!is_dir($logDir)) {
-            mkdir($logDir, 0755, true);
+            // Log into a readable file
+            $logDir = dirname(__DIR__) . '/logs';
+            if (!is_dir($logDir)) {
+                mkdir($logDir, 0755, true);
+            }
+
+            file_put_contents(
+                $logDir . '/delete_customer_error.log',
+                date('Y-m-d H:i:s') . ' - ' . $errorMsg . "\n",
+                FILE_APPEND
+            );
+
+            return false;
         }
-
-        file_put_contents(
-            $logDir . '/delete_customer_error.log',
-            date('Y-m-d H:i:s') . ' - ' . $errorMsg . "\n",
-            FILE_APPEND
-        );
-
-        return false;
     }
-}
 
 
 

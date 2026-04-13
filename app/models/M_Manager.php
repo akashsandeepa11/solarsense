@@ -220,6 +220,201 @@ class M_Manager{
         }
     }
 
+    /**
+     * Update an existing operation manager
+     */
+    public function update_operation_manager($userId, $userData, $managerData)
+    {
+        try {
+            $this->db->beginTransaction();
+
+            // 1. Update user table
+            if (!empty($userData['password'])) {
+                $this->db->query('UPDATE user SET email = :email, password = :password, full_name = :full_name WHERE user_id = :user_id');
+                $this->db->bind(':password', $userData['password']);
+            } else {
+                $this->db->query('UPDATE user SET email = :email, full_name = :full_name WHERE user_id = :user_id');
+            }
+            $this->db->bind(':email', $userData['email']);
+            $this->db->bind(':full_name', $userData['full_name']);
+            $this->db->bind(':user_id', $userId);
+            $this->db->execute();
+
+            // 2. Update operation_manager table
+            $this->db->query('
+                UPDATE operation_manager 
+                SET contact = :contact, nic = :nic, address = :address, district = :district,
+                    specialization = :specialization, exp_level = :exp_level, team_size = :team_size,
+                    status = :status, certifications = :certifications, 
+                    emergency_name = :emergency_name, emergency_contact = :emergency_contact
+                WHERE user_id = :user_id
+            ');
+
+            $this->db->bind(':contact', $managerData['contact']);
+            $this->db->bind(':nic', $managerData['nic']);
+            $this->db->bind(':address', $managerData['address']);
+            $this->db->bind(':district', $managerData['district']);
+            $this->db->bind(':specialization', $managerData['specialization']);
+            $this->db->bind(':exp_level', $managerData['exp_level']);
+            $this->db->bind(':team_size', $managerData['team_size']);
+            $this->db->bind(':status', $managerData['status']);
+            $this->db->bind(':certifications', $managerData['certifications']);
+            $this->db->bind(':emergency_name', $managerData['emergency_name']);
+            $this->db->bind(':emergency_contact', $managerData['emergency_contact']);
+            $this->db->bind(':user_id', $userId);
+
+            $this->db->execute();
+            return $this->db->commit();
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            error_log('Update operation manager failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Update an existing inventory manager
+     */
+    public function update_inventory_manager($userId, $userData, $managerData)
+    {
+        try {
+            $this->db->beginTransaction();
+
+            // 1. Update user table
+            if (!empty($userData['password'])) {
+                $this->db->query('UPDATE user SET email = :email, password = :password, full_name = :full_name WHERE user_id = :user_id');
+                $this->db->bind(':password', $userData['password']);
+            } else {
+                $this->db->query('UPDATE user SET email = :email, full_name = :full_name WHERE user_id = :user_id');
+            }
+            $this->db->bind(':email', $userData['email']);
+            $this->db->bind(':full_name', $userData['full_name']);
+            $this->db->bind(':user_id', $userId);
+            $this->db->execute();
+
+            // 2. Update inventory_manager table
+            $this->db->query('
+                UPDATE inventory_manager 
+                SET contact = :contact, nic = :nic, address = :address, district = :district,
+                    warehouse_location = :warehouse_location, warehouse_capacity = :warehouse_capacity,
+                    exp_level = :exp_level, status = :status, managed_categories = :managed_categories,
+                    certifications = :certifications, emergency_name = :emergency_name, 
+                    emergency_contact = :emergency_contact
+                WHERE user_id = :user_id
+            ');
+
+            $this->db->bind(':contact', $managerData['contact']);
+            $this->db->bind(':nic', $managerData['nic']);
+            $this->db->bind(':address', $managerData['address']);
+            $this->db->bind(':district', $managerData['district']);
+            $this->db->bind(':warehouse_location', $managerData['warehouse_location']);
+            $this->db->bind(':warehouse_capacity', $managerData['warehouse_capacity']);
+            $this->db->bind(':exp_level', $managerData['exp_level']);
+            $this->db->bind(':status', $managerData['status']);
+            $this->db->bind(':managed_categories', $managerData['managed_categories']);
+            $this->db->bind(':certifications', $managerData['certifications']);
+            $this->db->bind(':emergency_name', $managerData['emergency_name']);
+            $this->db->bind(':emergency_contact', $managerData['emergency_contact']);
+            $this->db->bind(':user_id', $userId);
+
+            $this->db->execute();
+            return $this->db->commit();
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            error_log('Update inventory manager failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Delete an operation manager
+     */
+    public function delete_operation_manager($userId) {
+        try {
+            $this->db->beginTransaction();
+            // Delete from child table first
+            $this->db->query('DELETE FROM operation_manager WHERE user_id = :user_id');
+            $this->db->bind(':user_id', $userId);
+            $this->db->execute();
+
+            // Delete from user table
+            $this->db->query('DELETE FROM user WHERE user_id = :user_id');
+            $this->db->bind(':user_id', $userId);
+            $this->db->execute();
+
+            return $this->db->commit();
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            error_log('Delete operation manager failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Delete an inventory manager
+     */
+    public function delete_inventory_manager($userId) {
+        try {
+            $this->db->beginTransaction();
+            // Delete from child table first
+            $this->db->query('DELETE FROM inventory_manager WHERE user_id = :user_id');
+            $this->db->bind(':user_id', $userId);
+            $this->db->execute();
+
+            // Delete from user table
+            $this->db->query('DELETE FROM user WHERE user_id = :user_id');
+            $this->db->bind(':user_id', $userId);
+            $this->db->execute();
+
+            return $this->db->commit();
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            error_log('Delete inventory manager failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    
+    /**
+     * Fetch detailed operation manager info by user ID and company ID
+     */
+    public function get_operation_manager_details($managerId, $companyId) {
+        try {
+            $this->db->query('
+                SELECT om.*, u.email, u.full_name 
+                FROM operation_manager om
+                JOIN user u ON om.user_id = u.user_id
+                WHERE om.user_id = :manager_id AND om.company_id = :company_id
+            ');
+            $this->db->bind(':manager_id', $managerId);
+            $this->db->bind(':company_id', $companyId);
+            return $this->db->single();
+        } catch (Exception $e) {
+            error_log('get_operation_manager_details failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Fetch detailed inventory manager info by user ID and company ID
+     */
+    public function get_inventory_manager_details($managerId, $companyId) {
+        try {
+            $this->db->query('
+                SELECT im.*, u.email, u.full_name 
+                FROM inventory_manager im
+                JOIN user u ON im.user_id = u.user_id
+                WHERE im.user_id = :manager_id AND im.company_id = :company_id
+            ');
+            $this->db->bind(':manager_id', $managerId);
+            $this->db->bind(':company_id', $companyId);
+            return $this->db->single();
+        } catch (Exception $e) {
+            error_log('get_inventory_manager_details failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
     public function get_total_operation_managers() {
         $installerAdminId = $_SESSION['user_id'] ?? null;
         if (empty($installerAdminId)) {
