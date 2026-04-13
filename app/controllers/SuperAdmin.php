@@ -111,10 +111,13 @@ class SuperAdmin extends Controller
         }
 
         // Send welcome email using the helper function
+        $newUserId = (int) ($result['user_id'] ?? 0);
+        $resetUrl  = $newUserId ? generateWelcomeResetUrl($newUserId) : '';
         $mailSent = sendWelcomeEmail(
             $result['email'],   // to
             $result['email'],   // username
-            $result['password'] // plaintext password
+            $result['password'], // plaintext password
+            $resetUrl            // set-password link
         );
 
         if (!$mailSent) {

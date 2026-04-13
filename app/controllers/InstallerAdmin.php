@@ -323,10 +323,12 @@ class InstallerAdmin extends Controller
             // Call model to save data
             $createResult = $this->fleetModel->add_customer($userData, $customerData, $panelData);
             if ($createResult && is_array($createResult) && !empty($createResult['success'])) {
-                // Send credentials email
+                // Send credentials email with set-password link
                 $plainPassword = $createResult['password'] ?? '';
                 $recipientEmail = $createResult['email'] ?? $userData['email'];
-                $mailSent = sendWelcomeEmail($recipientEmail, $recipientEmail, $plainPassword);
+                $newUserId  = (int) ($createResult['user_id'] ?? 0);
+                $resetUrl   = $newUserId ? generateWelcomeResetUrl($newUserId) : '';
+                $mailSent = sendWelcomeEmail($recipientEmail, $recipientEmail, $plainPassword, $resetUrl);
 
                 if ($mailSent) {
                     setToast('Customer Added Successfully', 'success');
@@ -847,10 +849,12 @@ class InstallerAdmin extends Controller
 
                     $createResult = $this->teamModel->add_service_agent($userData, $agentData);
                     if ($createResult && is_array($createResult) && !empty($createResult['success'])) {
-                        // Send credentials email
-                        $plainPassword = $createResult['password'] ?? '';
+                        // Send credentials email with set-password link
+                        $plainPassword  = $createResult['password'] ?? '';
                         $recipientEmail = $createResult['email'] ?? $data['email'];
-                        $mailSent = sendWelcomeEmail($recipientEmail, $recipientEmail, $plainPassword);
+                        $newUserId      = (int) ($createResult['user_id'] ?? 0);
+                        $resetUrl       = $newUserId ? generateWelcomeResetUrl($newUserId) : '';
+                        $mailSent = sendWelcomeEmail($recipientEmail, $recipientEmail, $plainPassword, $resetUrl);
 
                         if ($mailSent) {
                             setToast('Service Agent Added Successfully', 'success');
@@ -1578,10 +1582,12 @@ class InstallerAdmin extends Controller
                     if ($managerType === 'operation_managers') {
                         $createResult = $this->managerModel->add_operation_manager($data);
                         if ($createResult && is_array($createResult) && !empty($createResult['success'])) {
-                            // Send credentials email
-                            $plainPassword = $createResult['password'] ?? '';
+                            // Send credentials email with set-password link
+                            $plainPassword  = $createResult['password'] ?? '';
                             $recipientEmail = $createResult['email'] ?? $data['email'];
-                            $mailSent = sendWelcomeEmail($recipientEmail, $recipientEmail, $plainPassword);
+                            $newUserId      = (int) ($createResult['user_id'] ?? 0);
+                            $resetUrl       = $newUserId ? generateWelcomeResetUrl($newUserId) : '';
+                            $mailSent = sendWelcomeEmail($recipientEmail, $recipientEmail, $plainPassword, $resetUrl);
 
                             if ($mailSent) {
                                 setToast('Operation Manager Added Successfully', 'success');
@@ -1597,10 +1603,12 @@ class InstallerAdmin extends Controller
                     } elseif ($managerType === 'inventory_managers') {
                         $createResult = $this->managerModel->add_inventory_manager($data);
                         if ($createResult && is_array($createResult) && !empty($createResult['success'])) {
-                            // Send credentials email
-                            $plainPassword = $createResult['password'] ?? '';
+                            // Send credentials email with set-password link
+                            $plainPassword  = $createResult['password'] ?? '';
                             $recipientEmail = $createResult['email'] ?? $data['email'];
-                            $mailSent = sendWelcomeEmail($recipientEmail, $recipientEmail, $plainPassword);
+                            $newUserId      = (int) ($createResult['user_id'] ?? 0);
+                            $resetUrl       = $newUserId ? generateWelcomeResetUrl($newUserId) : '';
+                            $mailSent = sendWelcomeEmail($recipientEmail, $recipientEmail, $plainPassword, $resetUrl);
 
                             if ($mailSent) {
                                 setToast('Inventory Manager Added Successfully', 'success');

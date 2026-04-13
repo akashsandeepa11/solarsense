@@ -3,7 +3,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\SMTP;
 
-function sendWelcomeEmail($email, $username, $password)
+function sendWelcomeEmail($email, $username, $password, string $resetUrl = '')
 {
     $mail = new PHPMailer(true);
 
@@ -40,7 +40,7 @@ function sendWelcomeEmail($email, $username, $password)
             $debugLog .= '[' . date('Y-m-d H:i:s') . '] ' . $str . PHP_EOL;
         };
 
-        $data = ['username' => $username, 'password' => $password];
+        $data = ['username' => $username, 'password' => $password, 'reset_url' => $resetUrl];
         ob_start();
         require APPROOT . '/views/pages/auth/email_verification.php';
         $mail->Body = ob_get_clean();
@@ -65,6 +65,33 @@ function sendWelcomeEmail($email, $username, $password)
         file_put_contents($logFile, $debugLog . $e->getMessage(), FILE_APPEND);
         return false;
     }
+}
+
+/**
+ * Generate a 24-hour password-reset token for a newly created user
+ * and return the full reset URL to embed in the welcome email.
+ *
+ * @param  int    $userId  The user_id of the newly created account
+ * @return string          Fully-qualified URL, e.g. https://…/auth/reset-password?token=…
+ */
+function generateWelcomeResetUrl(int $userId): string
+{
+    $token     = bin2hex(random_bytes(32));            // 64-char hex
+    $expiresAt = date('Y-m-d H:i:s', time() + 86400); // 24 hours
+
+    // Persist the token (replace any existing one for this user)
+    $db = new Database();
+    $db->query('DELETE FROM password_resets WHERE user_id = :uid');
+    $db->bind(':uid', $userId);
+    $db->execute();
+
+    $db->query('INSERT INTO password_resets (user_id, token, expires_at) VALUES (:uid, :token, :exp)');
+    $db->bind(':uid',   $userId);
+    $db->bind(':token', $token);
+    $db->bind(':exp',   $expiresAt);
+    $db->execute();
+
+    return URLROOT . '/auth/reset-password?token=' . $token;
 }
 
 /**
