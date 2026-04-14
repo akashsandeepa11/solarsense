@@ -1,14 +1,69 @@
-<div class="content-area" style="padding: 1.5rem;">
-    <!-- Page Header -->
+<?php
+// --- PHP Setup for Data ---
+$verifications = $data['verifications'] ?? [];
+
+// Calculate Statistics
+$pending = count(array_filter($verifications, fn($r) => (is_object($r) ? $r->status : $r['status']) === 'Pending'));
+$verified = count(array_filter($verifications, fn($r) => in_array((is_object($r) ? $r->status : $r['status']), ['Verified', 'verified'])));
+
+$summary_cards = [
+    ['label' => 'Pending Verification', 'value' => $pending, 'icon' => 'fas fa-clock', 'color' => 'warning'],
+    ['label' => 'Verified Companies', 'value' => $verified, 'icon' => 'fas fa-check-circle', 'color' => 'success'],
+    ['label' => 'Total Requests', 'value' => count($verifications), 'icon' => 'fas fa-building', 'color' => 'primary'],
+];
+
+// Helper for status dot class
+function getVerificationStatusClass($status)
+{
+    return (strtolower($status) === 'pending') ? 'bg-warning' : 'bg-success';
+}
+?>
+
+<link rel="stylesheet" href="<?php echo URLROOT ?>/public/css/components.css">
+<link rel="stylesheet" href="<?php echo URLROOT ?>/public/css/pages/installer/dashboard.css">
+
+<style>
+    /* Synchronized Status Dots */
+    .status-dot {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .status-dot.bg-success {
+        background-color: #22c55e !important;
+    }
+
+    .status-dot.bg-warning {
+        background-color: #f59e0b !important;
+    }
+
+    /* Company Details Layout */
+    .company-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        min-width: 0;
+    }
+
+    .company-name {
+        font-size: 0.95rem;
+        color: #212121;
+        font-weight: 600;
+    }
+</style>
+
+<div class="container-fluid p-8">
     <?php
     $config = [
         'title' => 'Company Verifications',
-        'description' => 'Review and verify installer company registration requests',
+        'description' => 'Review and verify installer company registration requests.',
     ];
     include __DIR__ . '/../../inc/components/page_header.php';
     ?>
 
-    <!-- Filter & Search Section -->
     <?php
     $config = [
         'search' => [
@@ -23,112 +78,100 @@
                 'name' => 'status',
                 'label' => 'Status Filter',
                 'options' => [
-                    ['value' => 'all', 'label' => 'All Status'],
+                    ['value' => '', 'label' => 'All Status'],
                     ['value' => 'Pending', 'label' => 'Pending'],
                     ['value' => 'Verified', 'label' => 'Verified']
                 ]
             ]
         ],
-        'buttons' => [],
-        'form_action' => '',
         'form_method' => 'GET',
-        'auto_submit' => false,
-        'reset_on_clear' => false,
-        'result_count' => true,
-        'result_count_id' => 'resultCount'
+        'auto_submit' => true,
+        'reset_on_clear' => true
     ];
     include __DIR__ . '/../../inc/components/filter_bar.php';
     ?>
 
     <?php
-    $summary_cards = [
-        ['label' => 'Pending Verification', 'value' => 0, 'icon' => 'fas fa-clock', 'color' => 'warning', 'id' => 'pendingCount'],
-        ['label' => 'Verified Companies', 'value' => 0, 'icon' => 'fas fa-check-circle', 'color' => 'success', 'id' => 'verifiedCount'],
-        ['label' => 'Total Requests', 'value' => 0, 'icon' => 'fas fa-building', 'color' => 'primary', 'id' => 'totalCount'],
-    ];
     $config = ['stats' => $summary_cards, 'columns' => 6];
     include __DIR__ . '/../../inc/components/stat_card.php';
     ?>
 
-    <!-- Verification List -->
-    <div id="registrationList"></div>
-
-    <!-- Empty State -->
-    <div id="emptyState" class="card shadow-sm rounded-xl" style="display: none;">
-        <div class="card-body text-center" style="padding: 3rem;">
-            <i class="fas fa-inbox text-secondary" style="font-size: 4rem; opacity: 0.3;"></i>
-            <h4 class="mt-4 mb-2">No Verification Requests Found</h4>
-            <p class="text-secondary mb-0">There are no companies matching your search criteria.</p>
-        </div>
-    </div>
+    <?php
+    $config = [
+        'headers' => [
+            ['key' => 'company_name', 'label' => 'Company Name'],
+            ['key' => 'contact', 'label' => 'Contact'],
+            ['key' => 'address', 'label' => 'Address'],
+            ['key' => 'request_date', 'label' => 'Submitted Date'],
+            ['key' => 'status', 'label' => 'Status']
+        ],
+        'rows' => $verifications,
+        'columns' => [
+            [
+                'key' => 'company_name',
+                'render' => function ($row) {
+                    $name = is_object($row) ? $row->company_name : $row['company_name'];
+                    return '<div class="d-flex align-center gap-3">
+                                <img src="' . getAvatarUrl($name) . '" alt="' . htmlspecialchars($name) . '">
+                                <div class="company-details">
+                                    <div class="company-name">' . htmlspecialchars($name) . '</div>
+                                </div>
+                            </div>';
+                }
+            ],
+            [
+                'key' => 'contact', // Custom renderer to merge email and contact number
+                'render' => function($row) {
+                    $email = is_object($row) ? $row->email : $row['email'];
+                    $phone = is_object($row) ? $row->contact : $row['contact'];
+                    return '<div class="company-details">
+                                <div class="email">' . htmlspecialchars($email) . '</div>
+                                <div class="text-secondary text-xs">' . htmlspecialchars($phone) . '</div>
+                            </div>';
+                }
+            ],
+            [
+                'key' => 'status',
+                'render' => function ($row) {
+                    $status = is_object($row) ? $row->status : $row['status'];
+                    return '<div class="d-flex align-center">
+                                <span class="status-dot ' . getVerificationStatusClass($status) . ' mr-2"></span>
+                                <span class="badge ' . (strtolower($status) === 'pending' ? 'badge-warning' : 'badge-success') . '">' . ucfirst($status) . '</span>
+                            </div>';
+                }
+            ]
+        ],
+        'actions' => [
+            [
+                'label' => 'View Details',
+                'icon' => 'fas fa-eye',
+                'class' => 'btn-sm btn-info',
+                'onclick' => 'onclick="openViewModal({companyId})"'
+            ],
+            [
+                'label' => 'Verify',
+                'icon' => 'fas fa-check-circle',
+                'class' => 'btn-sm btn-success',
+                'onclick' => 'onclick="openVerifyModal({companyId}, \'{company_name}\')"',
+                'condition' => function ($row) {
+                    $status = is_object($row) ? $row->status : $row['status'];
+                    return strtolower($status) === 'pending';
+                }
+            ]
+        ],
+        'empty_message' => 'No verification requests found.'
+    ];
+    include __DIR__ . '/../../inc/components/data_table.php';
+    ?>
 </div>
 
-<!-- View Details Modal -->
-<div id="viewModal" class="custom-modal" style="display: none;">
-    <div class="modal-overlay" onclick="closeViewModal()"></div>
-    <div class="modal-dialog" style="max-width: 700px;">
-        <div class="modal-content">
-            <!-- Modal Header -->
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-building text-primary mr-2"></i>Company Details
-                </h5>
-                <button type="button" class="btn-close" onclick="closeViewModal()" aria-label="Close">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-
-            <!-- Modal Body -->
-            <div class="modal-body">
-                <div class="row g-3">
-                    <div class="col-12">
-                        <h4 class="mb-0 font-bold" id="modalCompany"></h4>
-                        <span id="modalStatusBadge" class="badge mt-2"></span>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="text-secondary text-sm mb-1">Email Address</label>
-                        <p class="mb-0 font-semibold" id="modalEmail"></p>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="text-secondary text-sm mb-1">Contact Number</label>
-                        <p class="mb-0 font-semibold" id="modalContact"></p>
-                    </div>
-                    <div class="col-12">
-                        <label class="text-secondary text-sm mb-1">Address</label>
-                        <p class="mb-0 font-semibold" id="modalAddress"></p>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="text-secondary text-sm mb-1">Submitted Date</label>
-                        <p class="mb-0 font-semibold" id="modalDate"></p>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="text-secondary text-sm mb-1">District</label>
-                        <p class="mb-0 font-semibold" id="modalDistrict"></p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="modal-footer">
-                <button type="button" class="btn btn-sm btn-secondary" onclick="closeViewModal()">
-                    <i class="fas fa-times mr-2"></i>Close
-                </button>
-                <button type="button" id="modalVerifyBtn" class="btn btn-sm btn-success" style="display: none;">
-                    <i class="fas fa-check-circle mr-2"></i>Verify Company
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Verification Confirmation Modal -->
 <?php
 $config = [
     'modal_id' => 'verifyModal',
     'title' => 'Verify Company',
     'icon' => 'fas fa-check-circle',
     'icon_color' => 'text-success',
-    'heading' => 'Confirm Company Verification',
+    'heading' => 'Confirm Verification',
     'message' => 'Are you sure you want to verify this company? This will grant them access to the platform.',
     'confirm_text' => 'Verify Company',
     'cancel_text' => 'Cancel',
@@ -140,212 +183,29 @@ $config = [
 include __DIR__ . '/../../inc/models/confirmation_modal.php';
 ?>
 
-<style>
-.verification-card {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    margin-bottom: 1rem;
-    border-left: 4px solid #fe9630;
-    transition: all 0.3s ease;
-}
-
-.verification-card:hover {
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
-}
-
-.stat-icon {
-    /* stat-icon styles are provided by the shared stat_card component */
-</style>
-
 <script>
-    const registrations = <?php echo json_encode($data['verifications']); ?>;
-    const registrationList = document.getElementById("registrationList");
-    const statusFilter = document.getElementById("statusFilter");
-    const searchBar = document.getElementById("searchBar");
-    const emptyState = document.getElementById("emptyState");
-    const viewModal = document.getElementById("viewModal");
-    
-    let currentVerificationId = null;
+    const verifications = <?php echo json_encode($verifications); ?>;
 
-    function updateCounts(filtered) {
-        const pending = filtered.filter(r => r.status === 'Pending').length;
-        const verified = filtered.filter(r => r.status === 'Verified' || r.status === 'verified').length;
-        const total = registrations.length;
-
-        document.getElementById('pendingCount').textContent = pending;
-        document.getElementById('verifiedCount').textContent = verified;
-        document.getElementById('totalCount').textContent = total;
-        document.getElementById('resultCount').textContent = filtered.length;
-    }
-
-    function renderRegistrations() {
-        registrationList.innerHTML = "";
-        
-        let filtered = registrations.filter(reg => {
-            const matchesSearch = (reg.company_name ?? '').toLowerCase().includes(searchBar.value.toLowerCase());
-            const matchesStatus = statusFilter.value === "all" || reg.status === statusFilter.value;
-            return matchesSearch && matchesStatus;
-        });
-
-        updateCounts(filtered);
-
-        if (filtered.length === 0) {
-            emptyState.style.display = 'block';
-            return;
-        } else {
-            emptyState.style.display = 'none';
+    function openViewModal(id) {
+        const reg = verifications.find(r => (is_object(r) ? r.companyId : r.companyId) == id);
+        if (reg) {
+            // Re-use your existing showViewModal logic here
+            showViewModal(reg);
         }
-
-        filtered.forEach(reg => {
-            const card = document.createElement("div");
-            card.className = "verification-card";
-
-            const statusClass = reg.status === 'Pending' ? 'bg-warning text-dark' : 'bg-success';
-            const statusIcon = reg.status === 'Pending' ? 'fa-clock' : 'fa-check-circle';
-
-            card.innerHTML = `
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <div class="d-flex align-items-start gap-3">
-                            <div class="stat-icon ${reg.status === 'Pending' ? 'bg-warning' : 'bg-success'}" style="width: 50px; height: 50px; font-size: 1.25rem;">
-                                <i class="fas ${statusIcon}"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <h5 class="mb-1 font-bold">${reg.company_name}</h5>
-                                <div class="text-secondary text-sm mb-2">
-                                    <i class="fas fa-envelope mr-1"></i>${reg.email}
-                                    <span class="mx-2">|</span>
-                                    <i class="fas fa-phone mr-1"></i>${reg.contact}
-                                </div>
-                                <div class="text-secondary text-sm">
-                                    <i class="fas fa-map-marker-alt mr-1"></i>${reg.address}
-                                    <span class="mx-2">|</span>
-                                    <i class="fas fa-calendar mr-1"></i>${reg.request_date}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 text-end">
-                        <div class="d-flex gap-2 justify-content-end flex-wrap">
-                            <button class="btn btn-sm ${statusClass}" style="cursor: default; pointer-events: none;">
-                                <i class="fas ${statusIcon} mr-1"></i>${reg.status}
-                            </button>
-                            <button class="btn btn-sm btn-primary view-details-btn" data-id="${reg.companyId}">
-                                <i class="fas fa-eye mr-1"></i>View Details
-                            </button>
-                            ${reg.status === 'Pending' ? `
-                                <button class="btn btn-sm btn-success verify-company-btn" data-id="${reg.companyId}" data-name="${reg.company_name}">
-                                    <i class="fas fa-check-circle mr-1"></i>Verify
-                                </button>
-                            ` : ''}
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            registrationList.appendChild(card);
-        });
-
-        // Add event listeners for view buttons
-        document.querySelectorAll('.view-details-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const id = this.getAttribute('data-id');
-                const reg = registrations.find(r => r.companyId == id);
-                if (reg) {
-                    showViewModal(reg);
-                }
-            });
-        });
-
-        // Add event listeners for verify buttons
-        document.querySelectorAll('.verify-company-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const id = this.getAttribute('data-id');
-                const name = this.getAttribute('data-name');
-                currentVerificationId = id;
-                
-                // Update confirmation modal
-                document.querySelector('#verifyModal .modal-body p').innerHTML = 
-                    'Are you sure you want to verify this company? This will grant them access to the platform. <strong>' + name + '</strong>';
-                
-                // Update confirmation action
-                const confirmBtn = document.querySelector('#verifyModal .btn-success');
-                if (confirmBtn) {
-                    // Set the anchor href so default navigation works reliably
-                    confirmBtn.setAttribute('href', "<?php echo URLROOT; ?>/superadmin/verify_company/" + currentVerificationId);
-                    // Remove any existing onclick handler to avoid race with default navigation
-                    confirmBtn.onclick = null;
-                }
-                
-                showConfirmationModal('verifyModal');
-            });
-        });
     }
 
-    function showViewModal(reg) {
-        document.getElementById('modalCompany').textContent = reg.company_name;
-        document.getElementById('modalEmail').textContent = reg.email;
-        document.getElementById('modalContact').textContent = reg.contact;
-        document.getElementById('modalAddress').textContent = reg.address;
-        document.getElementById('modalDate').textContent = reg.request_date;
-        document.getElementById('modalDistrict').textContent = reg.district || 'N/A';
-        
-        const statusBadge = document.getElementById('modalStatusBadge');
-        if (reg.status === 'Pending') {
-            statusBadge.className = 'badge bg-warning text-dark mt-2';
-            statusBadge.innerHTML = '<i class="fas fa-clock mr-1"></i>Pending Verification';
-        } else {
-            statusBadge.className = 'badge bg-success mt-2';
-            statusBadge.innerHTML = '<i class="fas fa-check-circle mr-1"></i>Verified';
+    function openVerifyModal(id, name) {
+        const modal = document.getElementById('verifyModal');
+        modal.querySelector('.modal-body p').innerHTML = `Are you sure you want to verify <strong>${name}</strong>? This will grant them access to the platform.`;
+
+        const confirmBtn = modal.querySelector('.btn-success');
+        if (confirmBtn) {
+            confirmBtn.setAttribute('href', "<?php echo URLROOT; ?>/superadmin/verify_company/" + id);
         }
-
-        const verifyBtn = document.getElementById('modalVerifyBtn');
-        if (reg.status === 'Pending') {
-            verifyBtn.style.display = 'inline-block';
-            verifyBtn.onclick = function() {
-                closeViewModal();
-                currentVerificationId = reg.companyId;
-                
-                // Update confirmation modal
-                document.querySelector('#verifyModal .modal-body p').innerHTML = 
-                    'Are you sure you want to verify this company? This will grant them access to the platform. <strong>' + reg.company_name + '</strong>';
-                
-                // Update confirmation action
-                const confirmBtn = document.querySelector('#verifyModal .btn-success');
-                if (confirmBtn) {
-                    // Set the anchor href so default navigation works reliably
-                    confirmBtn.setAttribute('href', "<?php echo URLROOT; ?>/superadmin/verify_company/" + currentVerificationId);
-                    // Remove any existing onclick handler to avoid race with default navigation
-                    confirmBtn.onclick = null;
-                }
-                
-                showConfirmationModal('verifyModal');
-            };
-        } else {
-            verifyBtn.style.display = 'none';
-        }
-
-        viewModal.classList.add('show');
-        viewModal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
+        showConfirmationModal('verifyModal');
     }
 
-    function closeViewModal() {
-        viewModal.classList.remove('show');
-        viewModal.style.display = 'none';
-        document.body.style.overflow = 'auto';
+    function is_object(val) {
+        return val != null && typeof val === 'object' && !Array.isArray(val);
     }
-
-    // Event listeners
-    searchBar.addEventListener("input", renderRegistrations);
-    statusFilter.addEventListener("change", renderRegistrations);
-
-    // Close modal when clicking overlay
-    document.querySelector('#viewModal .modal-overlay')?.addEventListener('click', closeViewModal);
-
-    // Initial render
-    renderRegistrations();
 </script>

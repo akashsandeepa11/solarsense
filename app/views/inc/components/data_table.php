@@ -1,35 +1,19 @@
 <?php
 /**
- * Data Table Component
- * 
- * Flexible table component for displaying tabular data with customizable columns and rows
- * 
- * @param array $config Configuration array:
- *   - headers (array): Column header definitions with 'key' and 'label'
- *   - rows (array): Array of row data arrays
- *   - columns (array, optional): Custom column renderers:
- *       - key (string): Column key
- *       - render (callable): Function to render cell content
- *   - actions (array, optional): Action buttons for each row:
- *       - label (string): Button text
- *       - icon (string): Font Awesome icon
- *       - url (string, optional): Link URL (use {id} placeholder)
- *       - onclick (string, optional): JavaScript onclick handler
- *       - class (string, optional): CSS classes
- *   - rowClass (string, optional): CSS class for table rows
- *   - empty_message (string, optional): Message when no data
+ * Flexible Data Table Component
+ * Supports both associative arrays and stdClass objects for row data.
  */
 
 if (!isset($config)) {
     $config = [];
 }
 
-$headers = isset($config['headers']) ? $config['headers'] : [];
-$rows = isset($config['rows']) ? $config['rows'] : [];
+$headers       = isset($config['headers']) ? $config['headers'] : [];
+$rows          = isset($config['rows']) ? $config['rows'] : [];
 $customColumns = isset($config['columns']) ? $config['columns'] : [];
-$actions = isset($config['actions']) ? $config['actions'] : [];
-$rowClass = isset($config['rowClass']) ? $config['rowClass'] : 'data-table-row';
-$emptyMessage = isset($config['empty_message']) ? $config['empty_message'] : 'No data available';
+$actions       = isset($config['actions']) ? $config['actions'] : [];
+$rowClass      = isset($config['rowClass']) ? $config['rowClass'] : 'data-table-row';
+$emptyMessage  = isset($config['empty_message']) ? $config['empty_message'] : 'No data available';
 
 // Build custom column renderer map
 $columnRenders = [];
@@ -48,7 +32,7 @@ foreach ($customColumns as $col) {
                             <th><?php echo htmlspecialchars($header['label']); ?></th>
                         <?php endforeach; ?>
                         <?php if (!empty($actions)): ?>
-                            <th>Actions</th>
+                            <th class="text-center">Actions</th>
                         <?php endif; ?>
                     </tr>
                 </thead>
@@ -67,30 +51,44 @@ foreach ($customColumns as $col) {
                                         <?php
                                         $key = $header['key'];
                                         if (isset($columnRenders[$key])) {
+                                            // Pass the original row (object or array) to the custom renderer
                                             echo $columnRenders[$key]($row);
                                         } else {
-                                            echo htmlspecialchars($row[$key] ?? '');
+                                            // Handle both object property and array key access
+                                            $val = is_object($row) ? ($row->$key ?? '') : ($row[$key] ?? '');
+                                            echo htmlspecialchars($val);
                                         }
                                         ?>
                                     </td>
                                 <?php endforeach; ?>
+
                                 <?php if (!empty($actions)): ?>
                                     <td>
                                         <div class="actions-menu d-flex gap-2 justify-center">
                                             <?php foreach ($actions as $action): ?>
                                                 <?php
-                                                $actionUrl = '';
-                                                if (isset($action['url']) && isset($row['id'])) {
-                                                    $actionUrl = str_replace('{id}', $row['id'], $action['url']);
+                                                // Determine if an action should be shown based on conditions
+                                                if (isset($action['condition']) && is_callable($action['condition'])) {
+                                                    if (!$action['condition']($row)) continue;
                                                 }
-                                                $actionClass = isset($action['class']) ? $action['class'] : '';
+
+                                                $actionUrl = isset($action['url']) ? $action['url'] : '';
                                                 $actionOnclick = isset($action['onclick']) ? $action['onclick'] : '';
                                                 
-                                                // Replace {id} placeholder in onclick handlers
-                                                if (isset($row['id']) && strpos($actionOnclick, '{id}') !== false) {
-                                                    $actionOnclick = str_replace('{id}', $row['id'], $actionOnclick);
+                                                // Convert row to array for dynamic placeholder replacement
+                                                $rowData = is_object($row) ? get_object_vars($row) : $row;
+                                                
+                                                foreach ($rowData as $k => $v) {
+                                                    if (is_scalar($v)) { // Only replace strings/numbers
+                                                        $placeholder = '{' . $k . '}';
+                                                        if ($actionUrl) $actionUrl = str_replace($placeholder, $v, $actionUrl);
+                                                        if ($actionOnclick) $actionOnclick = str_replace($placeholder, $v, $actionOnclick);
+                                                    }
                                                 }
+
+                                                $actionClass = isset($action['class']) ? $action['class'] : '';
                                                 ?>
+                                                
                                                 <?php if ($actionUrl): ?>
                                                     <a href="<?php echo htmlspecialchars($actionUrl); ?>" 
                                                        class="btn-icon <?php echo htmlspecialchars($actionClass); ?>" 

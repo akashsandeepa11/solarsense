@@ -158,25 +158,19 @@
             [
                 'key' => 'assigned',
                 'render' => function ($row) {
-                    return '<span class="badge bg-primary">' . htmlspecialchars($row['assigned']) . '</span>';
+                    return '<div class="assgined text-sm">' . htmlspecialchars($row['assigned']) . '</div>';
                 }
             ],
             [
                 'key' => 'completed',
                 'render' => function ($row) {
-                    $percentage = $row['assigned'] > 0 ? intval(($row['completed'] / $row['assigned']) * 100) : 0;
-                    return '<div class="task-progress">
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: ' . $percentage . '%"></div>
-                                </div>
-                                <div class="badge bg-success">' . htmlspecialchars($row['completed']) . '</div>
-                            </div>';
+                    return '<div class="completed text-sm">' . htmlspecialchars($row['completed']) . '</div>';
                 }
             ],
             [
                 'key' => 'pending',
                 'render' => function ($row) {
-                    return '<span class="badge bg-warning">' . htmlspecialchars($row['pending']) . '</span>';
+                    return '<div class="pending text-sm">' . htmlspecialchars($row['pending']) . '</div>';
                 }
             ],
             [

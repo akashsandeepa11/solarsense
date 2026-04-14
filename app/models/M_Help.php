@@ -37,4 +37,21 @@ class M_Help
                           ORDER BY c.received_at DESC');
         return $this->db->resultSet();
     }
+
+    public function resolve_complaint($id)
+    {
+        try {
+            $this->db->query("
+            UPDATE complaint 
+            SET status = 'Resolved' 
+            WHERE complaint_id = :id
+            ");
+            $this->db->bind(':id', $id);
+
+            return $this->db->execute();
+        } catch (Exception $e) {
+            error_log('resolve_complaint failed: ' . $e->getMessage());
+            return false;
+        }
+    }
 }

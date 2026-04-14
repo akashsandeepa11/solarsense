@@ -98,7 +98,7 @@ class SuperAdmin extends Controller
 
         // Send welcome email using the helper function
         $newUserId = (int) ($result['user_id'] ?? 0);
-        $resetUrl  = $newUserId ? generateWelcomeResetUrl($newUserId) : '';
+        $resetUrl = $newUserId ? generateWelcomeResetUrl($newUserId) : '';
         $mailSent = sendWelcomeEmail(
             $result['email'],   // to
             $result['email'],   // username
@@ -136,6 +136,24 @@ class SuperAdmin extends Controller
         ];
 
         $this->view('pages/super_admin/complaints', $data, 'dashboard');
+    }
+
+    public function resolve_ticket($id = null)
+    {
+        if (empty($id)) {
+            redirect('superadmin/complaints');
+            return;
+        }
+
+        $helpModel = $this->model('M_Help');
+
+        if ($helpModel->resolve_complaint($id)) {
+            setToast('Ticket marked as resolved!', 'success');
+        } else {
+            setToast('Failed to resolve ticket.', 'error');
+        }
+
+        redirect('superadmin/complaints');
     }
 
     public function profile()

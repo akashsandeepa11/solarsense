@@ -1,9 +1,65 @@
 <?php
 // Retrieve real data from SuperAdmin controller
 $tasks = $data['complaints'] ?? [];
+
+// Calculate Statistics
+$pending = count(array_filter($tasks, fn($t) => (is_object($t) ? $t->status : $t['status']) === 'Pending'));
+$resolved = count(array_filter($tasks, fn($t) => (is_object($t) ? $t->status : $t['status']) === 'Resolved'));
+
+$summary_cards = [
+    ['label' => 'Pending Tickets', 'value' => $pending, 'icon' => 'fas fa-exclamation-circle', 'color' => 'warning'],
+    ['label' => 'Resolved Tickets', 'value' => $resolved, 'icon' => 'fas fa-check-circle', 'color' => 'success'],
+    ['label' => 'Total Requests', 'value' => count($tasks), 'icon' => 'fas fa-headset', 'color' => 'primary'],
+];
+
+// Helper for status dot class
+function getComplaintStatusClass($status)
+{
+    return (strtolower($status) === 'pending') ? 'bg-warning' : 'bg-success';
+}
 ?>
 
-<div class="content-area" style="padding: 1.5rem;">
+<link rel="stylesheet" href="<?php echo URLROOT ?>/public/css/components.css">
+<link rel="stylesheet" href="<?php echo URLROOT ?>/public/css/pages/installer/dashboard.css">
+
+<style>
+    /* Synchronized Status Dots */
+    .status-dot {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .status-dot.bg-success {
+        background-color: #22c55e !important;
+    }
+
+    .status-dot.bg-warning {
+        background-color: #f59e0b !important;
+    }
+
+    /* User Details Layout (reusing company style from verifications) */
+    .user-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        min-width: 0;
+    }
+
+    .user-name {
+        font-size: 0.95rem;
+        color: #212121;
+        font-weight: 600;
+    }
+
+    .font-semibold {
+        font-weight: 600;
+    }
+</style>
+
+<div class="container-fluid p-8">
     <?php
     $config = [
         'title' => 'System Support Tickets',
@@ -26,43 +82,89 @@ $tasks = $data['complaints'] ?? [];
                 'name' => 'status',
                 'label' => 'Status Filter',
                 'options' => [
-                    ['value' => 'all', 'label' => 'All Status'],
+                    ['value' => '', 'label' => 'All Status'],
                     ['value' => 'Pending', 'label' => 'Pending'],
                     ['value' => 'Resolved', 'label' => 'Resolved']
                 ]
             ]
         ],
-        'buttons' => [],
-        'form_action' => '',
         'form_method' => 'GET',
-        'auto_submit' => false,
-        'result_count' => true,
-        'result_count_id' => 'resultCount'
+        'auto_submit' => true,
+        'reset_on_clear' => true
     ];
     include __DIR__ . '/../../inc/components/filter_bar.php';
     ?>
 
     <?php
-    $summary_cards = [
-        ['label' => 'Pending Tickets', 'value' => 0, 'icon' => 'fas fa-exclamation-circle', 'color' => 'warning', 'id' => 'pendingCount'],
-        ['label' => 'Resolved Tickets', 'value' => 0, 'icon' => 'fas fa-check-circle', 'color' => 'success', 'id' => 'doneCount'],
-        ['label' => 'Total Requests', 'value' => 0, 'icon' => 'fas fa-headset', 'color' => 'primary', 'id' => 'totalCount'],
-    ];
     $config = ['stats' => $summary_cards, 'columns' => 6];
     include __DIR__ . '/../../inc/components/stat_card.php';
     ?>
 
-    <div id="taskList"></div>
-
-    <div id="emptyState" class="card shadow-sm rounded-xl" style="display: none;">
-        <div class="card-body text-center" style="padding: 3rem;">
-            <i class="fas fa-inbox text-secondary" style="font-size: 4rem; opacity: 0.3;"></i>
-            <h4 class="mt-4 mb-2">No Support Requests Found</h4>
-            <p class="text-secondary mb-0">There are no tickets matching your current search or filter.</p>
-        </div>
-    </div>
+    <?php
+    $config = [
+        'headers' => [
+            ['key' => 'customer', 'label' => 'Submitted By'],
+            ['key' => 'title', 'label' => 'Subject'],
+            ['key' => 'date', 'label' => 'Date Received'],
+            ['key' => 'status', 'label' => 'Status']
+        ],
+        'rows' => $tasks,
+        'columns' => [
+            [
+                'key' => 'complaint_id',
+                'render' => function ($row) {
+                    $id = is_object($row) ? $row->complaint_id : $row['complaint_id'];
+                    return '<span class="font-semibold">#' . $id . '</span>';
+                }
+            ],
+            [
+                'key' => 'customer',
+                'render' => function ($row) {
+                    $name = is_object($row) ? $row->customer : $row['customer'];
+                    $role = is_object($row) ? $row->user_type : $row['user_type'];
+                    return '<div class="d-flex align-center gap-3">
+                                <img src="' . getAvatarUrl($name) . '" alt="' . htmlspecialchars($name) . '">
+                                <div class="user-details">
+                                    <div class="user-name">' . htmlspecialchars($name) . '</div>
+                                    <div class="text-secondary text-xs">' . htmlspecialchars($role) . '</div>
+                                </div>
+                            </div>';
+                }
+            ],
+            [
+                'key' => 'status',
+                'render' => function ($row) {
+                    $status = is_object($row) ? $row->status : $row['status'];
+                    return '<div class="d-flex align-center">
+                                <span class="status-dot ' . getComplaintStatusClass($status) . ' mr-2"></span>
+                                <span class="badge ' . (strtolower($status) === 'pending' ? 'badge-warning' : 'badge-success') . '">' . ucfirst($status) . '</span>
+                            </div>';
+                }
+            ]
+        ],
+        'actions' => [
+            [
+                'label' => 'View Details',
+                'icon' => 'fas fa-eye',
+                'class' => 'btn-sm btn-info',
+                'onclick' => 'onclick="openViewModal({complaint_id})"'
+            ],
+            [
+                'label' => 'Resolve',
+                'icon' => 'fas fa-check-circle',
+                'class' => 'btn-sm btn-success',
+                'onclick' => 'onclick="openResolveModal({complaint_id})"',
+                'condition' => function ($row) {
+                    $status = is_object($row) ? $row->status : $row['status'];
+                    return strtolower($status) === 'pending';
+                }
+            ]
+        ],
+        'empty_message' => 'No support requests found.'
+    ];
+    include __DIR__ . '/../../inc/components/data_table.php';
+    ?>
 </div>
-
 <div id="viewModal" class="custom-modal" style="display: none;">
     <div class="modal-overlay" onclick="closeViewModal()"></div>
     <div class="modal-dialog" style="max-width: 700px;">
@@ -71,36 +173,44 @@ $tasks = $data['complaints'] ?? [];
                 <h5 class="modal-title">
                     <i class="fas fa-ticket-alt text-primary mr-2"></i>Support Ticket Details
                 </h5>
-                <button type="button" class="btn-close" onclick="closeViewModal()"><i class="fas fa-times"></i></button>
+                <button type="button" class="btn-close" onclick="closeViewModal()" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
 
             <div class="modal-body">
                 <div class="row g-3">
                     <div class="col-12">
-                        <h4 class="mb-0 font-bold" id="modalTitle"></h4>
+                        <h4 class="mb-0 font-bold" id="modalSubject"></h4>
                         <span id="modalStatusBadge" class="badge mt-2"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-secondary text-sm mb-1">Ticket ID</label>
+                        <p class="mb-0 font-semibold" id="modalTicketId"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-secondary text-sm mb-1">Date Received</label>
+                        <p class="mb-0 font-semibold" id="modalDate"></p>
                     </div>
                     <div class="col-md-6">
                         <label class="text-secondary text-sm mb-1">Submitted By</label>
                         <p class="mb-0 font-semibold" id="modalUsername"></p>
                     </div>
                     <div class="col-md-6">
-                        <label class="text-secondary text-sm mb-1">Date Received</label>
-                        <p class="mb-0 font-semibold" id="modalDate"></p>
-                    </div>
-                    <div class="col-12">
                         <label class="text-secondary text-sm mb-1">User Role</label>
-                        <p class="mb-0 font-semibold" id="modalUser"></p>
+                        <p class="mb-0 font-semibold" id="modalUserRole"></p>
                     </div>
                     <div class="col-12 border-top pt-3">
                         <label class="text-secondary text-sm mb-1">Issue Description</label>
-                        <div class="p-3 bg-light rounded" id="modalNotes" style="white-space: pre-wrap;"></div>
+                        <div class="p-3 bg-light rounded" id="modalDescription" style="white-space: pre-wrap; font-size: 0.9rem;"></div>
                     </div>
                 </div>
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-sm btn-secondary" onclick="closeViewModal()">Close</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="closeViewModal()">
+                    <i class="fas fa-times mr-2"></i>Close
+                </button>
                 <button type="button" id="modalResolveBtn" class="btn btn-sm btn-success" style="display: none;">
                     <i class="fas fa-check-circle mr-2"></i>Mark as Resolved
                 </button>
@@ -109,138 +219,89 @@ $tasks = $data['complaints'] ?? [];
     </div>
 </div>
 
+<?php
+$config = [
+    'modal_id' => 'resolveModal',
+    'title' => 'Resolve Ticket',
+    'icon' => 'fas fa-check-circle',
+    'icon_color' => 'text-success',
+    'heading' => 'Mark Ticket as Resolved',
+    'message' => 'Are you sure you want to mark this support ticket as resolved? This will notify the user that their issue has been addressed.',
+    'confirm_text' => 'Resolve Ticket',
+    'cancel_text' => 'Cancel',
+    'confirm_action' => '', // Set dynamically via JS
+    'confirm_method' => 'GET',
+    'confirm_class' => 'btn-success',
+    'confirm_icon' => 'fas fa-check-circle'
+];
+include __DIR__ . '/../../inc/models/confirmation_modal.php';
+?>
+
 <script>
-    // 1. Initialize data and elements
-    const tasks = <?php echo json_encode($tasks); ?>;
-    const taskList = document.getElementById("taskList");
-    const searchBar = document.getElementById("searchBar");
-    const statusFilter = document.getElementById("statusFilter");
-    const emptyState = document.getElementById("emptyState");
-    const viewModal = document.getElementById("viewModal"); // Added missing declaration
+    // Initialize data from controller
+    const tasks = <?php echo json_encode($data['complaints'] ?? []); ?>;
 
-    let currentTaskIndex = null;
-
-    // 2. Count management
-    function updateCounts(filtered) {
-        const pending = tasks.filter(t => (t.status || '').toLowerCase() === 'pending').length;
-        const resolved = tasks.filter(t => (t.status || '').toLowerCase() === 'resolved').length;
-
-        document.getElementById('pendingCount').textContent = pending;
-        document.getElementById('doneCount').textContent = resolved;
-        document.getElementById('totalCount').textContent = tasks.length;
-        document.getElementById('resultCount').textContent = filtered.length;
-    }
-
-    // 3. Render cards with correct DB aliases
-    function renderTasks() {
-        taskList.innerHTML = "";
-        const search = (searchBar.value || "").toLowerCase();
-        const filter = (statusFilter.value || "all").toLowerCase();
-
-        const filtered = tasks.filter(task => {
-            const matchesSearch = (task.customer || '').toLowerCase().includes(search) ||
-                (task.user_type || '').toLowerCase().includes(search);
-            const taskStatus = (task.status || '').toLowerCase();
-            const matchesFilter = filter === "all" || taskStatus === filter;
-            return matchesSearch && matchesFilter;
-        });
-
-        updateCounts(filtered);
-
-        if (filtered.length === 0) {
-            emptyState.style.display = 'block';
-            return;
-        } else {
-            emptyState.style.display = 'none';
-        }
-
-        filtered.forEach((task) => {
-            const card = document.createElement("div");
-            card.className = "complaint-card";
-
-            const isPending = (task.status || '').toLowerCase() === 'pending';
-            const statusClass = isPending ? 'bg-warning text-dark' : 'bg-success';
-            const iconClass = isPending ? 'fa-clock' : 'fa-check-circle';
-
-            card.innerHTML = `
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <div class="d-flex align-items-start gap-3">
-                        <div class="stat-icon ${isPending ? 'bg-warning' : 'bg-success'}" style="width: 50px; height: 50px;">
-                            <i class="fas ${iconClass}"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <h5 class="mb-1 font-bold">Support Request: ${task.user_type}</h5>
-                            <div class="text-secondary text-sm">
-                                <i class="fas fa-user mr-1"></i><strong>${task.customer}</strong>
-                                <span class="mx-2">|</span>
-                                <i class="fas fa-id-badge mr-1"></i>${task.user_type}
-                                <span class="mx-2">|</span>
-                                <i class="fas fa-calendar mr-1"></i>${task.date}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 text-end">
-                    <div class="d-flex gap-2 justify-content-end align-items-center">
-                        <span class="badge ${statusClass} p-2 px-3" style="font-size: 0.85rem;">
-                            <i class="fas ${iconClass} mr-1"></i>${task.status}
-                        </span>
-                        <button class="btn btn-sm btn-primary py-2" onclick="showViewModal(${tasks.indexOf(task)})">
-                            <i class="fas fa-eye mr-1"></i>View Details
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-            taskList.appendChild(card);
-        });
-    }
-
-    // 4. Modal handling
+    /**
+     * Populate and show the View Details modal
+     */
     function showViewModal(index) {
         const task = tasks[index];
         if (!task) return;
-        currentTaskIndex = index;
 
-        // Map modal IDs to M_Help.php aliases
-        document.getElementById('modalTitle').textContent = "Ticket #" + task.complaint_id;
-        document.getElementById('modalUsername').textContent = task.customer; // alias for full_name
-        document.getElementById('modalUser').textContent = task.user_type; // alias for type
-        document.getElementById('modalDate').textContent = task.date; // alias for received_at
-        document.getElementById('modalNotes').textContent = task.notes; // alias for description
+        // Helper to handle both objects and arrays
+        const getVal = (obj, key) => obj != null && typeof obj === 'object' && !Array.isArray(obj) ? obj[key] : obj[key];
+        
+        // Map data to modal fields
+        document.getElementById('modalSubject').textContent = task.title || 'Support Request';
+        document.getElementById('modalTicketId').textContent = '#' + (task.complaint_id || '');
+        document.getElementById('modalDate').textContent = task.date || '';
+        document.getElementById('modalUsername').textContent = task.customer || '';
+        document.getElementById('modalUserRole').textContent = task.user_type || '';
+        document.getElementById('modalDescription').textContent = task.notes || '';
 
+        // Status styling
         const statusBadge = document.getElementById('modalStatusBadge');
         const isPending = (task.status || '').toLowerCase() === 'pending';
         statusBadge.className = `badge mt-2 ${isPending ? 'bg-warning text-dark' : 'bg-success'}`;
         statusBadge.innerHTML = `<i class="fas ${isPending ? 'fa-clock' : 'fa-check-circle'} mr-1"></i>${task.status}`;
 
-        // Show button only for pending
+        // Footer Action Button logic
         const resolveBtn = document.getElementById('modalResolveBtn');
-        if (resolveBtn) {
-            resolveBtn.style.display = isPending ? 'inline-block' : 'none';
-            resolveBtn.onclick = function () {
+        if (isPending) {
+            resolveBtn.style.display = 'inline-block';
+            resolveBtn.onclick = function() {
                 closeViewModal();
-                // Optional: call your resolve confirmation modal here
+                openResolveModal(task.complaint_id);
             };
+        } else {
+            resolveBtn.style.display = 'none';
         }
 
-        viewModal.classList.add('show');
-        viewModal.style.display = 'flex';
+        const modal = document.getElementById('viewModal');
+        modal.classList.add('show');
+        modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
     }
 
-    function closeViewModal() {
-        viewModal.classList.remove('show');
-        viewModal.style.display = 'none';
-        document.body.style.overflow = 'auto';
+    /**
+     * Trigger the Resolve confirmation modal
+     */
+    function openResolveModal(id) {
+        const modal = document.getElementById('resolveModal');
+        
+        // Update confirmation action URL
+        const confirmBtn = modal.querySelector('.btn-success');
+        if (confirmBtn) {
+            confirmBtn.setAttribute('href', "<?php echo URLROOT; ?>/superadmin/resolve_ticket/" + id);        
+        }
+        
+        showConfirmationModal('resolveModal');
     }
 
-    // 5. Global Event Listeners
-    searchBar.addEventListener("input", renderTasks);
-    statusFilter.addEventListener("change", renderTasks);
-    document.querySelector('#viewModal .modal-overlay')?.addEventListener('click', closeViewModal);
-
-    // Initial render
-    renderTasks();
+    function closeViewModal() {
+        const modal = document.getElementById('viewModal');
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
 </script>
