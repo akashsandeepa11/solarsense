@@ -75,23 +75,12 @@ class M_InstallerAdmin_Dashboard
         $this->db->bind(':company_id', $companyId);
         $activeAgents = $this->db->single()->total ?? 0;
 
-        // 6. Total Energy Generated
-        $this->db->query("
-        SELECT SUM(s.export_reading) as total 
-        FROM sms s
-        JOIN homeowner h ON s.user_id = h.user_id
-        WHERE h.company_id = :company_id
-    ");
-        $this->db->bind(':company_id', $companyId);
-        $totalKwh = $this->db->single()->total ?? 0;
-
         return [
             'active_clients' => $activeClients,
             'critical_faults' => $criticalFaults,
             'underperforming' => $underperforming,
             'pending_tasks' => $pendingTasks,
             'active_agents' => $activeAgents,
-            'total_energy' => round($totalKwh / 1000, 2), 
             'pending_installations' => 0
         ];
     }

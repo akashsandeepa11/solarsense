@@ -14,12 +14,10 @@ $summary_cards = [
     ['label' => 'Underperforming Systems', 'value' => $stats['underperforming'], 'icon' => 'fas fa-chart-line', 'color' => 'warning'],
     ['label' => 'Pending Tasks', 'value' => $stats['pending_tasks'], 'icon' => 'fas fa-wrench', 'color' => 'warning'],
     ['label' => 'Pending Installations', 'value' => $stats['pending_installations'], 'icon' => 'fas fa-tools', 'color' => 'warning'],
-    ['label' => 'Active Agents', 'value' => $stats['active_agents'], 'icon' => 'fas fa-users-cog', 'color' => 'accent'],
-    ['label' => 'Total Energy', 'value' => number_format($stats['total_energy']) . ' MWh', 'icon' => 'fas fa-bolt', 'color' => 'success']
+    ['label' => 'Active Agents', 'value' => $stats['active_agents'], 'icon' => 'fas fa-users-cog', 'color' => 'accent']
 ];
 
 // High-Priority Alerts
-// Inside dashboard.php, replace the hardcoded $alerts array:
 $alerts = [];
 if (!empty($data['alerts'])) {
     foreach ($data['alerts'] as $alert) {
@@ -171,12 +169,26 @@ function getAgentStatusClass($status) {
                 </div>
             </div>
 
-            <!-- Fleet-Wide Energy Generation Chart -->
-            <div class="card shadow-lg rounded-xl mb-6">
-                <div class="card-body">
-                    <h3 class="card-title text-xl font-semibold mb-4">Fleet-Wide Energy Generation (MWh)</h3>
-                    <div class="chart-container" style="height: 300px;">
-                        <canvas id="fleetGenerationChart"></canvas>
+           <!-- Performance Charts Row -->
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-lg rounded-xl">
+                        <div class="card-body">
+                            <h3 class="card-title text-lg font-semibold mb-4">New Customers (Last 6 Months)</h3>
+                            <div class="chart-container" style="height: 250px;">
+                                <canvas id="newCustomersChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-lg rounded-xl">
+                        <div class="card-body">
+                            <h3 class="card-title text-lg font-semibold mb-4">Service Task Status</h3>
+                            <div class="chart-container" style="height: 250px;">
+                                <canvas id="serviceTasksChart"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -202,30 +214,6 @@ function getAgentStatusClass($status) {
                     <?php else: ?>
                         <p class="text-secondary text-center py-4">No alerts at this time</p>
                     <?php endif; ?>
-                </div>
-            </div>
-
-            <!-- Performance Charts Row -->
-            <div class="row">
-                <div class="col-md-6 mb-4">
-                    <div class="card shadow-lg rounded-xl">
-                        <div class="card-body">
-                            <h3 class="card-title text-lg font-semibold mb-4">New Customers (Last 6 Months)</h3>
-                            <div class="chart-container" style="height: 250px;">
-                                <canvas id="newCustomersChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-4">
-                    <div class="card shadow-lg rounded-xl">
-                        <div class="card-body">
-                            <h3 class="card-title text-lg font-semibold mb-4">Service Task Status</h3>
-                            <div class="chart-container" style="height: 250px;">
-                                <canvas id="serviceTasksChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -305,38 +293,6 @@ function getAgentStatusClass($status) {
                 }
             }
         };
-
-        // Fleet-Wide Energy Generation Chart (Line)
-        const fleetGenerationCtx = document.getElementById('fleetGenerationChart');
-        if (fleetGenerationCtx) {
-            new Chart(fleetGenerationCtx, {
-                type: 'line',
-                data: {
-                    labels: <?php echo json_encode($fleet_generation_data['labels']); ?>,
-                    datasets: [{
-                        label: 'Total Generation (MWh)',
-                        data: <?php echo json_encode($fleet_generation_data['data']); ?>,
-                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                        borderColor: 'rgba(34, 197, 94, 1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: 'rgba(34, 197, 94, 1)',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 5,
-                        pointHoverRadius: 7
-                    }]
-                },
-                options: {
-                    ...chartOptions,
-                    scales: {
-                        y: { beginAtZero: false, grid: { color: '#e5e7eb' } },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-        }
 
         // New Customers Chart (Bar)
         const newCustomersCtx = document.getElementById('newCustomersChart');

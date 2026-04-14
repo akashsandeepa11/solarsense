@@ -357,10 +357,7 @@ class M_Fleet
             return [];
         }
     }
-
-    /**
-     * Fetch detailed customer and solar system information by user ID and company ID
-     */
+    
     public function get_customer_details_by_company($customerId, $companyId)
     {
         try {
@@ -372,7 +369,8 @@ class M_Fleet
                 s.inverter_brand, s.installation_date, s.module_type, s.array_type
             FROM user u
             JOIN homeowner h ON u.user_id = h.user_id
-            JOIN solar_system s ON u.user_id = s.user_id
+            -- Use LEFT JOIN to show the profile even if hardware data is missing
+            LEFT JOIN solar_system s ON u.user_id = s.user_id 
             WHERE u.user_id = :customer_id AND h.company_id = :company_id
         ');
 
@@ -383,6 +381,42 @@ class M_Fleet
         } catch (Exception $e) {
             error_log('get_customer_details_by_company failed: ' . $e->getMessage());
             return false;
+        }
+    }
+
+    /**
+     * Get all customers with their system info for a specific company
+     */
+    public function get_customer_by_company($companyId)
+    {
+        try {
+            $this->db->query("
+            SELECT 
+                u.user_id,
+                u.full_name,
+                u.email,
+                h.contact,
+                h.district,
+                h.address,
+                h.register_date,
+                s.capacity as size,
+                sm.last_reading as last_upload
+            FROM homeowner h
+            JOIN user u ON h.user_id = u.user_id
+            LEFT JOIN solar_system s ON u.user_id = s.user_id
+            LEFT JOIN (
+                SELECT user_id, MAX(reading_date) as last_reading
+                FROM sms
+                GROUP BY user_id
+            ) sm ON u.user_id = sm.user_id
+            WHERE h.company_id = :company_id
+            ORDER BY u.full_name ASC
+        ");
+            $this->db->bind(':company_id', $companyId);
+            return $this->db->resultSet();
+        } catch (Exception $e) {
+            error_log('get_customer_by_company failed: ' . $e->getMessage());
+            return [];
         }
     }
 

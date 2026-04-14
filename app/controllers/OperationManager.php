@@ -20,29 +20,57 @@ class OperationManager extends Controller
 
     // --- Admin-Specific Pages ---
 
-    public function dashboard()
+    // In class OperationManager (app/controllers/OperationManager.php)
+    public function dashboard($page = 'dashboard')
     {
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
+
+        // Debugging: Echo the company ID as requested
+        echo "";
+
+        if (!$companyId) {
+            setToast('Unauthorized access. Company ID not found.', 'error');
+            redirect('pages/login');
+            return;
+        }
+
+        // Load the dashboard model
+        $dashboardModel = $this->model('M_InstallerAdmin_Dashboard');
+
+        // Fetch the same data used by the Installer Admin
         $data = [
             'user' => $this->user,
+            'stats' => $dashboardModel->getStats($companyId),
+            'alerts' => $dashboardModel->getAlerts($companyId),
+            'performance_snapshot' => $dashboardModel->getPerformanceSnapshot($companyId),
+            'service_agents' => $dashboardModel->getServiceTeamStatus($companyId),
+            'new_customers_data' => $dashboardModel->getNewCustomersChartData($companyId),
+            'service_tasks_data' => $dashboardModel->getServiceTasksChartData($companyId)
         ];
 
+        // Handle system performance sub-page
+        if ($page == 'system_performance') {
+            return $this->view('pages/common/system_performance', $data, layout: 'dashboard');
+        }
 
-
-        $this->view('pages/operation_manager/dashboard', $data, layout: 'dashboard');
+        // Load the shared common dashboard view
+        $this->view('pages/common/dashboard', $data, layout: 'dashboard');
     }
 
     public function fleet($page = 'dashboard', $customerId = null)
     {
-
         if ($page === 'customer_details') {
-            return $this->customerdetails($customerId);
+        return $this->customerdetails($customerId);
         }
 
-        // Hardcoded company 1 for OM — replace with session lookup when OM company is wired up
-        $companyId = 1;
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
+
+        // FIX: Use get_customer_stats to return ARRAYS and prevent the stdClass error
         $data = [
             'user' => $this->user,
-            'customers' => $this->fleetModel->get_customer_by_company($companyId),
+            'customers' => $this->fleetModel->get_customer_stats($companyId),
             'stats' => [
                 'total_clients' => $this->fleetModel->get_total_customers($companyId) ?? 0,
                 'pending_maintenace' => $this->fleetModel->get_pending_services($companyId) ?? 0,
@@ -53,42 +81,19 @@ class OperationManager extends Controller
         $this->view('pages/common/fleet_dashboard', $data, layout: 'dashboard');
     }
 
-    public function customerdetails($customerId = null)
-    {
-        if (empty($customerId)) {
-            redirect('operationmanager/fleet');
-            return;
-        }
-
-        $customer = $this->fleetModel->get_customer_details($customerId);
-        $serviceAgents = $this->teamModel->get_service_agents_by_customer($customerId);
-
-        if (!$customer) {
-            redirect('operationmanager/fleet');
-            return;
-        }
-
-        $data = [
-            'user' => $this->user,
-            'customerId' => $customerId,
-            'customer' => $customer,
-            'service_agents' => $serviceAgents,
-        ];
-
-        $this->view('pages/common/customer_details', $data, layout: 'dashboard');
-    }
-
     public function team($page = 'dashboard', $agentId = null)
     {
-
         if ($page === 'agent_details') {
             return $this->agent_details($agentId);
         }
 
-        $companyId = 1;
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
+
+        // FIX: Use get_service_agent_stats to align with InstallerAdmin logic
         $data = [
             'user' => $this->user,
-            'agents' => $this->teamModel->get_service_agents_by_company($companyId),
+            'agents' => $this->teamModel->get_service_agent_stats($companyId),
             'stats' => [
                 'total_agents' => $this->teamModel->get_total_agents($companyId)->total_agents ?? 0,
                 'active_agents' => $this->teamModel->get_active_agents($companyId)->active_agents ?? 0,
@@ -100,15 +105,77 @@ class OperationManager extends Controller
         $this->view('pages/common/team', $data, layout: 'dashboard');
     }
 
-    public function agent_details($agentId = null)
+    public function customerdetails($customerId = null)
     {
+        if (empty($customerId)) {
+            setToast('Invalid customer ID', 'error');
+            redirect('operationmanager/fleet');
+            return;
+        }
+
+        // 1. Get company context for the logged-in manager
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
+
+        // 2. Fetch detailed customer and system object
+        $customer = $this->fleetModel->get_customer_details_by_company($customerId, $companyId);
+
+        // 3. Fetch service agents assigned to this specific homeowner
+        $serviceAgents = $this->teamModel->get_service_agents_by_customer($customerId);
+
+        if (!$customer) {
+            setToast('Customer not found or access denied', 'error');
+            redirect('operationmanager/fleet');
+            return;
+        }
+
         $data = [
             'user' => $this->user,
+            'customerId' => $customerId,
+            'customer' => $customer,
+            'service_agents' => $serviceAgents,
         ];
 
-        // TODO: Fetch agent details from database using $agentId
-        // For now, using sample data
+        // Render the shared customer details view
+        $this->view('pages/common/customer_details', $data, layout: 'dashboard');
+    }
 
+    /**
+     * View detailed information for a specific service agent
+     */
+    public function agent_details($agentId = null)
+    {
+        if (empty($agentId)) {
+            setToast('Invalid agent ID', 'error');
+            redirect('operationmanager/team');
+            return;
+        }
+
+        // 1. Get company context for the logged-in manager
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
+
+        if (!$companyId) {
+            setToast('Unauthorized access.', 'error');
+            redirect('pages/login');
+            return;
+        }
+
+        // 2. Fetch specific agent details using the model
+        $agent = $this->teamModel->get_agent_details_by_id($agentId, $companyId);
+
+        if (!$agent) {
+            setToast('Agent not found or access denied.', 'error');
+            redirect('operationmanager/team');
+            return;
+        }
+
+        $data = [
+            'user' => $this->user,
+            'agent' => $agent
+        ];
+
+        // Render the shared agent details view
         $this->view('pages/common/agent_details', $data, layout: 'dashboard');
     }
 
@@ -123,7 +190,8 @@ class OperationManager extends Controller
 
     public function maintenance($action = null, $id = null)
     {
-        $companyId = 1; // TODO: resolve from session once OM company is wired up
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
 
         // --- Handle POST actions ---
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -168,18 +236,16 @@ class OperationManager extends Controller
             }
         }
 
-        // --- Load page data ---
         $data = [
             'user' => $this->user,
             'tasks' => $this->taskModel->get_tasks_by_company($companyId),
-            'agents' => $this->teamModel->get_service_agents_by_company($companyId),
-            'customers' => $this->fleetModel->get_customer_by_company($companyId),
+            'agents' => $this->teamModel->get_service_agent_stats($companyId),
+            'customers' => $this->fleetModel->get_customer_stats($companyId),
             'service_types' => $this->taskModel->get_service_types(),
         ];
 
         $this->view('pages/operation_manager/maintenance', $data, layout: 'dashboard');
     }
-
 
     public function reports()
     {

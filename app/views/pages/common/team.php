@@ -102,12 +102,10 @@
     <?php
     $agents = $data['agents'];
     $processedAgents = [];
-    if (!empty($agents)) 
-    {
-        foreach ($agents as $agent) 
-        {
-            $agent = (array)$agent; // Convert stdClass to array for easier access
-
+    if (!empty($agents)) {
+        foreach ($agents as $agent) {
+            $agent = (array) $agent; // Convert stdClass to array for easier access
+    
             $processedAgents[] = [
                 'id' => $agent['id'],
                 'name' => $agent['full_name'],
@@ -193,16 +191,16 @@
         ]
     ];
 
-    // Build actions array - View Details always available
-    if (!isset($config['actions'])) {
-        $config['actions'] = [
-            [
-                'label' => 'View Details',
-                'icon' => 'fas fa-eye',
-                'url' => URLROOT . '/installeradmin/team/agent_details/{id}'
-            ]
-        ];
-    }
+    $rolePath = ($data['user']['role'] === ROLE_INSTALLER_ADMIN) ? 'installeradmin' : 'operationmanager';
+
+    $config['actions'] = [
+        [
+            'label' => 'View Details',
+            'icon' => 'fas fa-eye',
+            'url' => URLROOT . '/' . $rolePath . '/team/agent_details/{id}',
+            'class' => 'btn-sm btn-info'
+        ]
+    ];
 
     // Add Edit and Remove actions only for Installer Admin
     if ($data['user']['role'] === ROLE_INSTALLER_ADMIN) {

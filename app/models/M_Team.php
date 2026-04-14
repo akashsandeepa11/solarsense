@@ -255,13 +255,30 @@ class M_Team
         }
     }
 
-    // Add this method to class M_Team in M_Team.php
     public function get_company_id_by_user($userId)
     {
+        // 1. Check if user is an Installer Admin
         $this->db->query('SELECT company_id FROM installer_admin WHERE user_id = :user_id');
         $this->db->bind(':user_id', $userId);
         $row = $this->db->single();
-        return $row->company_id ?? null;
+        if ($row)
+            return $row->company_id;
+
+        // 2. Check if user is an Operation Manager
+        $this->db->query('SELECT company_id FROM operation_manager WHERE user_id = :user_id');
+        $this->db->bind(':user_id', $userId);
+        $row = $this->db->single();
+        if ($row)
+            return $row->company_id;
+
+        // 3. Check if user is an Inventory Manager
+        $this->db->query('SELECT company_id FROM inventory_manager WHERE user_id = :user_id');
+        $this->db->bind(':user_id', $userId);
+        $row = $this->db->single();
+        if ($row)
+            return $row->company_id;
+
+        return null;
     }
 
     /**
@@ -518,6 +535,31 @@ class M_Team
             return $this->db->resultSet() ?: [];
         } catch (Exception $e) {
             error_log('get_service_agents_by_customer failed: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function get_service_agents_by_company($companyId)
+    {
+        try {
+            $this->db->query("
+            SELECT 
+                u.user_id,
+                u.full_name,
+                u.email,
+                sa.contact,
+                sa.specialization,
+                sa.status,
+                sa.district
+            FROM service_agent sa
+            JOIN user u ON sa.user_id = u.user_id
+            WHERE sa.company_id = :company_id
+            ORDER BY u.full_name ASC
+        ");
+            $this->db->bind(':company_id', $companyId);
+            return $this->db->resultSet();
+        } catch (Exception $e) {
+            error_log('get_service_agents_by_company failed: ' . $e->getMessage());
             return [];
         }
     }

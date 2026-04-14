@@ -43,14 +43,14 @@ class InstallerAdmin extends Controller
             'performance_snapshot' => $dashboardModel->getPerformanceSnapshot($companyId),
             'service_agents' => $dashboardModel->getServiceTeamStatus($companyId),
             'new_customers_data' => $dashboardModel->getNewCustomersChartData($companyId),
-            'service_tasks_data' => $dashboardModel->getServiceTasksChartData($companyId) // Fetch task status data
+            'service_tasks_data' => $dashboardModel->getServiceTasksChartData($companyId)
         ];
 
         if ($page == 'system_performance') {
             return $this->view('pages/common/system_performance', $data, layout: 'dashboard');
         }
 
-        $this->view('pages/installer_admin/dashboard', $data, layout: 'dashboard');
+        $this->view('pages/common/dashboard', $data, layout: 'dashboard');
     }
 
     // --- Notifications ---
