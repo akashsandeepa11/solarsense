@@ -2,40 +2,67 @@
 class M_Service
 {
     private $db;
-    private $stmt;
 
     public function __construct()
     {
         $this->db = new Database();
     }
 
+    public function get_service_types()
+    {
+          
+    
+        $this->db->query("SELECT service_type_id, type_name FROM service_type");
+        $rows = $this->db->resultSet();
+
+        // IMPORTANT: convert to dropdown format (id => name)
+        $types = [];
+        foreach ($rows as $row) {
+            $types[$row->service_type_id] = $row->type_name;
+        }
+
+        return $types;
+    
+    }
+
     public function add_service_request($data)
     {
-        try {
-            $this->db->query('INSERT INTO service_task 
-            (user_id, service_type, service_description, status, agent_id) 
-            VALUES (:user_id, :service_type, :service_description, \'Pending\', NULL)');
+        $this->db->query("
+            INSERT INTO service_req
+            (service_type_id, service_description, request_date, homeowner_id, status, agent_id)
+            VALUES
+            (:service_type_id, :service_description, NOW(), :homeowner_id, 'Pending', NULL)
+        ");
 
-            $this->db->bind(':user_id', $_SESSION['user_id']);  // No fallback to $_SESSION here unless needed
-            $this->db->bind(':service_type', $data['service_type']);  // No (int) cast needed since DB is varchar
-            $this->db->bind(':service_description', $data['service_description']);
+        $this->db->bind(':service_type_id', $data['service_type_id']);
+        $this->db->bind(':service_description', $data['service_description']);
+        $this->db->bind(':homeowner_id', $_SESSION['user_id']);
 
-            return $this->db->execute();
-        } catch (Exception $e) {
-            error_log("Service Request Error: " . $e->getMessage());
-            var_dump($e->getMessage());
-            return false;
-        }
+        return $this->db->execute();
     }
+
 
     public function get_service_history()
     {
-        $this->db->query('SELECT * FROM service_task 
-                      WHERE user_id = :user_id 
-                      ORDER BY request_date DESC');
+        $this->db->query("
+            SELECT 
+                sr.task_id,
+                sr.request_date,
+                sr.status,
+                st.type_name AS service_type,
+                u.full_name AS agent_name
+            FROM service_req sr
+            LEFT JOIN service_type st ON sr.service_type_id = st.service_type_id
+            LEFT JOIN user u ON sr.agent_id = u.user_id
+            WHERE sr.homeowner_id = :homeowner_id
+            ORDER BY sr.request_date DESC
+        ");
 
-        $this->db->bind(':user_id', $_SESSION['user_id'] ?? 0);
+        $this->db->bind(':homeowner_id', $_SESSION['user_id']);
+
         return $this->db->resultSet();
     }
+
+
 }
 ?>
