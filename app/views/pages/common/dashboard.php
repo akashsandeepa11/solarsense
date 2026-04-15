@@ -123,6 +123,14 @@ function getAgentStatusClass($status) {
     $config = [
         'title' => 'Dashboard',
         'description' => 'Business and fleet performance overview',
+        'buttons' => [
+            [
+                'label' => 'Generate Report',
+                'url' => URLROOT . '/operationmanager/reports/generate',
+                'icon' => 'fas fa-file-alt',
+                'class' => 'btn-primary'
+            ]
+        ]
     ];
     include __DIR__ . '/../../inc/components/page_header.php';
     ?>

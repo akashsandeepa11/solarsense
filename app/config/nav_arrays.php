@@ -33,11 +33,11 @@ $installer_admin_nav = [
 $operation_manager_nav = [
     'MAIN' => [
         ['title' => 'Dashboard', 'url' => '/operationmanager/dashboard', 'icon' => 'fa-solid fa-list-check'],
-        ['title' => 'Fleet', 'url' => '/operationmanager/fleet', 'icon' => 'fa-solid fa-solar-panel'],
-        ['title' => 'Quotation', 'url' => '/operationmanager/quotation', 'icon' => 'fa-solid fa-file-invoice-dollar'],
-        ['title' => 'Maintenance', 'url' => '/operationmanager/maintenance', 'icon' => 'fa-solid fa-wrench'],
+        ['title' => 'Fleet', 'url' => '/operationmanager/fleet', 'icon' => 'fa-solid fa-solar-panel'],        
         ['title' => 'Team', 'url' => '/operationmanager/team', 'icon' => 'fa-solid fa-users'],
-        ['title' => 'Reports', 'url' => '/operationmanager/reports', 'icon' => 'fa-solid fa-file-lines'],
+        ['title' => 'Maintenance', 'url' => '/operationmanager/maintenance', 'icon' => 'fa-solid fa-wrench'],        
+        ['title' => 'Quotation', 'url' => '/operationmanager/quotation', 'icon' => 'fa-solid fa-file-invoice-dollar'],
+        //['title' => 'Reports', 'url' => '/operationmanager/reports', 'icon' => 'fa-solid fa-file-lines'],
     ],
     'PERSONAL' => [
         ['title' => 'Profile', 'url' => '/operationmanager/profile', 'icon' => 'fa-solid fa-user-tie'],

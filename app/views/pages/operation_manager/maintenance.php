@@ -1,15 +1,15 @@
 <?php
 // --- PHP Setup for Data ---
-$tasks        = $data['tasks']         ?? [];
-$agents       = $data['agents']        ?? [];
-$customers    = $data['customers']     ?? [];
+$tasks = $data['tasks'] ?? [];
+$agents = $data['agents'] ?? [];
+$customers = $data['customers'] ?? [];
 $serviceTypes = $data['service_types'] ?? [];
 
 // Calculate Statistics
-$totalTasks    = count($tasks);
+$totalTasks = count($tasks);
 $assignedTasks = count(array_filter($tasks, fn($t) => !empty($t->agent_id)));
-$unassigned    = $totalTasks - $assignedTasks;
-$pending       = count(array_filter($tasks, fn($t) => ($t->status ?? '') === 'Pending'));
+$unassigned = $totalTasks - $assignedTasks;
+$pending = count(array_filter($tasks, fn($t) => ($t->status ?? '') === 'Pending'));
 
 $summary_cards = [
     ['label' => 'Total Tasks', 'value' => $totalTasks, 'icon' => 'fas fa-tasks', 'color' => 'primary'],
@@ -19,24 +19,50 @@ $summary_cards = [
 ];
 
 // Helper for status styling
-function getMaintenanceStatusClass($status) {
+function getMaintenanceStatusClass($status)
+{
     return $status === 'Completed' ? 'bg-success' : ($status === 'Pending' ? 'bg-warning' : 'bg-secondary');
 }
 ?>
 
 <link rel="stylesheet" href="<?php echo URLROOT ?>/public/css/components.css">
+    <link rel="stylesheet" href="<?php echo URLROOT?>/css/pages/installer_admin/managers.css">
+
 <link rel="stylesheet" href="<?php echo URLROOT ?>/public/css/pages/installer/dashboard.css">
 
 <style>
     /* Synchronized Status Dots */
-    .status-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-    .status-dot.bg-success { background-color: #22c55e !important; }
-    .status-dot.bg-warning { background-color: #f59e0b !important; }
-    .status-dot.bg-secondary { background-color: #9ca3af !important; }
+    .status-dot {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .status-dot.bg-success {
+        background-color: #22c55e !important;
+    }
+
+    .status-dot.bg-warning {
+        background-color: #f59e0b !important;
+    }
+
+    .status-dot.bg-secondary {
+        background-color: #9ca3af !important;
+    }
 
     /* Layout Helpers */
-    .agent-details { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
-    .font-semibold { font-weight: 600; }
+    .agent-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        min-width: 0;
+    }
+
+    .font-semibold {
+        font-weight: 600;
+    }
 </style>
 
 <div class="container-fluid p-8">
@@ -56,6 +82,22 @@ function getMaintenanceStatusClass($status) {
     ];
     include __DIR__ . '/../../inc/components/page_header.php';
     ?>
+
+    <div class="managers-tabs mb-6">
+        <div class="tabs-container">
+            <a href="<?php echo URLROOT; ?>/operationmanager/maintenance/tasks"
+                class="tab-item <?php echo ($data['active_tab'] === 'tasks') ? 'active' : ''; ?>">
+                <i class="fas fa-tools"></i>
+                <span>Maintenance Tasks</span>
+            </a>
+
+            <a href="<?php echo URLROOT; ?>/operationmanager/maintenance/purchases/all"
+                class="tab-item <?php echo ($data['active_tab'] === 'purchases') ? 'active' : ''; ?>">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Purchase Orders</span>
+            </a>
+        </div>
+    </div>
 
     <?php
     $config = [
@@ -115,11 +157,13 @@ function getMaintenanceStatusClass($status) {
         'columns' => [
             [
                 'key' => 'id',
-                'render' => function($row) { return '<span class="font-semibold">#' . $row->task_id . '</span>'; }
+                'render' => function ($row) {
+                    return '<span class="font-semibold">#' . $row->task_id . '</span>';
+                }
             ],
             [
                 'key' => 'customer',
-                'render' => function($row) {
+                'render' => function ($row) {
                     return '<div class="agent-details">
                                 <div class="agent-name font-semibold">' . htmlspecialchars($row->customer_name) . '</div>
                                 <div class="agent-role text-secondary text-xs">' . htmlspecialchars($row->customer_address) . '</div>
@@ -128,7 +172,7 @@ function getMaintenanceStatusClass($status) {
             ],
             [
                 'key' => 'agent',
-                'render' => function($row) {
+                'render' => function ($row) {
                     if ($row->agent_name) {
                         return '<span class="text-success"><i class="fas fa-user-check mr-1"></i>' . htmlspecialchars($row->agent_name) . '</span>';
                     }
@@ -137,7 +181,7 @@ function getMaintenanceStatusClass($status) {
             ],
             [
                 'key' => 'status',
-                'render' => function($row) {
+                'render' => function ($row) {
                     return '<div class="d-flex align-center">
                                 <span class="status-dot ' . getMaintenanceStatusClass($row->status) . ' mr-2"></span>
                                 <span class="badge ' . ($row->status === 'Completed' ? 'badge-success' : 'badge-warning') . '">' . $row->status . '</span>
@@ -169,10 +213,10 @@ function getMaintenanceStatusClass($status) {
     const BASE = '<?php echo URLROOT; ?>';
     const $ = id => document.getElementById(id);
 
-    function showAddModal()    { $('addModal').classList.add('show'); }
-    function closeAddModal()   { $('addModal').classList.remove('show'); }
-    function closeAssignModal(){ $('assignModal').classList.remove('show'); }
-    function closeDeleteModal(){ $('deleteModal').classList.remove('show'); }
+    function showAddModal() { $('addModal').classList.add('show'); }
+    function closeAddModal() { $('addModal').classList.remove('show'); }
+    function closeAssignModal() { $('assignModal').classList.remove('show'); }
+    function closeDeleteModal() { $('deleteModal').classList.remove('show'); }
 
     function openAssignModal(taskId, currentAgentId, type, customer) {
         $('assignTaskInfo').innerText = `Task: "${type}" for ${customer}`;

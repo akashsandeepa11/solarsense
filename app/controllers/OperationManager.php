@@ -6,6 +6,7 @@ class OperationManager extends Controller
     private $fleetModel;
     private $teamModel;
     private $taskModel;
+    private $inventoryModel;
 
     private $user = [
         'role' => ROLE_OPERATION_MANAGER,
@@ -16,6 +17,7 @@ class OperationManager extends Controller
         $this->fleetModel = $this->model('M_Fleet');
         $this->teamModel = $this->model('M_Team');
         $this->taskModel = $this->model('M_maintenance_task');
+        $this->inventoryModel = $this->model('M_inventory');
     }
 
     // --- Admin-Specific Pages ---
@@ -61,7 +63,7 @@ class OperationManager extends Controller
     public function fleet($page = 'dashboard', $customerId = null)
     {
         if ($page === 'customer_details') {
-        return $this->customerdetails($customerId);
+            return $this->customerdetails($customerId);
         }
 
         $userId = $_SESSION['user_id'] ?? null;
@@ -188,64 +190,84 @@ class OperationManager extends Controller
         $this->view('pages/operation_manager/quotation', $data, layout: 'dashboard');
     }
 
-    public function maintenance($action = null, $id = null)
+    /**
+     * Unified Maintenance and Purchases Management
+     */
+    public function maintenance($tab = 'tasks', $id = 'all', $action = null)
     {
         $userId = $_SESSION['user_id'] ?? null;
         $companyId = $this->teamModel->get_company_id_by_user($userId);
 
-        // --- Handle POST actions ---
+        // --- Handle POST Actions for Maintenance Tasks ---
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-            if ($action === 'create') {
-                $taskData = [
-                    'homeowner_id' => $_POST['homeowner_id'] ?? null,
-                    'service_type_id' => $_POST['service_type_id'] ?? null,
-                    'service_description' => trim($_POST['service_description'] ?? ''),
-                ];
-                if (
-                    $taskData['homeowner_id'] && $taskData['service_type_id'] &&
-                    $this->taskModel->create_task($taskData)
-                ) {
-                    setToast('Task created successfully.', 'success');
-                } else {
-                    setToast('Failed to create task. Check all fields.', 'error');
+            if ($tab === 'tasks') {
+                if ($id === 'create') {
+                    $taskData = [
+                        'homeowner_id' => $_POST['homeowner_id'] ?? null,
+                        'service_type_id' => $_POST['service_type_id'] ?? null,
+                        'service_description' => trim($_POST['service_description'] ?? ''),
+                    ];
+                    if ($taskData['homeowner_id'] && $taskData['service_type_id'] && $this->taskModel->create_task($taskData)) {
+                        setToast('Task created successfully.', 'success');
+                    } else {
+                        setToast('Failed to create task.', 'error');
+                    }
                 }
-                redirect('operationmanager/maintenance');
-                return;
-            }
 
-            if ($action === 'assign' && $id) {
-                $agentId = $_POST['agent_id'] ?? null;
-                if ($agentId && $this->taskModel->assign_agent($id, $agentId)) {
-                    setToast('Agent assigned successfully.', 'success');
-                } else {
-                    setToast('Failed to assign agent.', 'error');
+                if ($id === 'assign' && $action) {
+                    $agentId = $_POST['agent_id'] ?? null;
+                    if ($agentId && $this->taskModel->assign_agent($action, $agentId)) {
+                        setToast('Agent assigned successfully.', 'success');
+                    }
                 }
-                redirect('operationmanager/maintenance');
-                return;
-            }
 
-            if ($action === 'delete' && $id) {
-                if ($this->taskModel->delete_task($id)) {
-                    setToast('Task deleted successfully.', 'success');
-                } else {
-                    setToast('Failed to delete task.', 'error');
+                if ($id === 'delete' && $action) {
+                    if ($this->taskModel->delete_task($action)) {
+                        setToast('Task deleted successfully.', 'success');
+                    }
                 }
-                redirect('operationmanager/maintenance');
+                // Redirect back to the task tab
+                redirect('operationmanager/maintenance/tasks');
                 return;
             }
         }
 
+        // --- Prepare Data for View ---
         $data = [
             'user' => $this->user,
-            'tasks' => $this->taskModel->get_tasks_by_company($companyId),
-            'agents' => $this->teamModel->get_service_agent_stats($companyId),
-            'customers' => $this->fleetModel->get_customer_stats($companyId),
-            'service_types' => $this->taskModel->get_service_types(),
+            'active_tab' => $tab, // Helper for the view to highlight the active tab
         ];
 
-        $this->view('pages/operation_manager/maintenance', $data, layout: 'dashboard');
+        if ($tab === 'purchases') {
+            // Handle Purchase Orders (reusing common purchases view logic)
+            $statusFilter = $id; // In purchase tab, the second parameter acts as the status filter
+            $data['orders'] = ($statusFilter !== 'all')
+                ? $this->inventoryModel->get_orders_by_status($statusFilter)
+                : $this->inventoryModel->get_all_orders();
+            $data['stats'] = $this->inventoryModel->get_order_stats();
+            $data['status_filter'] = $statusFilter;
+
+            $this->view('pages/common/purchases', $data, layout: 'dashboard');
+        } else {
+            // Handle Maintenance Tasks
+            $data['tasks'] = $this->taskModel->get_tasks_by_company($companyId);
+            $data['agents'] = $this->teamModel->get_service_agent_stats($companyId);
+            $data['customers'] = $this->fleetModel->get_customer_stats($companyId);
+            $data['service_types'] = $this->taskModel->get_service_types();
+
+            $this->view('pages/operation_manager/maintenance', $data, layout: 'dashboard');
+        }
     }
+
+    // --- Create Purchase Order ---
+    public function create_purchase()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            // TODO: Implement create purchase logic
+        }
+        redirect('operationsmanager/purchases');
+    }
+
 
     public function reports()
     {

@@ -324,7 +324,7 @@ class InventoryManager extends Controller
             'status_filter' => $statusFilter,
         ];
 
-        $this->view('pages/inventory_manager/purchases', $data, layout: 'dashboard');
+        $this->view('pages/common/purchases', $data, layout: 'dashboard');
     }
 
     // --- Create Purchase Order ---
