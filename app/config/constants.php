@@ -78,5 +78,18 @@ define('DISTRICTS', [
     'Puttalam'     => ['lat' => 8.0362, 'lon' => 79.8283],
 ]);
 
+
+// --- System Health Performance Thresholds ---
+// These define the percentage bands for classifying solar performance vs expected generation.
+define('HEALTH_EXCELLENT_THRESHOLD', 90); // >= 90% → Excellent
+define('HEALTH_GOOD_THRESHOLD',      75); // >= 75% and < 90% → Good
+define('HEALTH_WARNING_THRESHOLD',   50); // >= 50% and < 75% → Warning
+                                          // <  50%           → Critical
+
+define('HEALTH_STATUS_EXCELLENT', 'Excellent');
+define('HEALTH_STATUS_GOOD',      'Good');
+define('HEALTH_STATUS_WARNING',   'Warning');
+define('HEALTH_STATUS_CRITICAL',  'Critical');
+
 ?>
 

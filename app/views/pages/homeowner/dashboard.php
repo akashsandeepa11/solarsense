@@ -55,12 +55,34 @@ $latest_bill         = $latest ? (float) $latest->monthly_bill            : 0;
 $latest_expected     = $latest ? (float) ($latest->expected_generation ?? 0) : 0;
 $monthly_income_lkr  = $latest_export * SOLAR_TARIFF_RATE_LKR;
 
-// --- System health: actual vs expected (last month) ---
+// --- System Health: actual generation vs expected (last month) ---
+// Actual generation is tracked as grid_export in the SMS table.
 $performance_pct = ($latest_expected > 0)
-    ? min(100, round(($latest_consumption / $latest_expected) * 100))
+    ? min(100, round(($latest_export / $latest_expected) * 100))
     : 0;
 
-$system_health   = ['performance_vs_expected' => $performance_pct];
+// Classify the percentage against threshold constants from constants.php
+if ($performance_pct >= HEALTH_EXCELLENT_THRESHOLD) {
+    $health_status = HEALTH_STATUS_EXCELLENT;
+    $health_class  = 'health-excellent';
+} elseif ($performance_pct >= HEALTH_GOOD_THRESHOLD) {
+    $health_status = HEALTH_STATUS_GOOD;
+    $health_class  = 'health-good';
+} elseif ($performance_pct >= HEALTH_WARNING_THRESHOLD) {
+    $health_status = HEALTH_STATUS_WARNING;
+    $health_class  = 'health-warning';
+} else {
+    $health_status = HEALTH_STATUS_CRITICAL;
+    $health_class  = 'health-critical';
+}
+
+$system_health = [
+    'performance_vs_expected' => $performance_pct,
+    'status'                  => $health_status,
+    'css_class'               => $health_class,
+    'actual_kwh'              => $latest_export,
+    'expected_kwh'            => $latest_expected,
+];
 
 // --- Bar colors based on actual vs expected ---
 $bar_colors = [];
@@ -213,15 +235,24 @@ $quick_actions = [
             <!-- System Health -->
             <div class="card shadow-lg rounded-xl mb-6">
                 <div class="card-body">
-                    <h3 class="card-title text-xl font-semibold">System Health</h3>
-                    <p class="text-secondary text-sm mb-2">Performance vs. Expected</p>
+                    <div class="d-flex align-center justify-between mb-1">
+                        <h3 class="card-title text-xl font-semibold" style="margin:0;">System Health</h3>
+                        <span class="health-status-badge health-badge-<?php echo $system_health['css_class']; ?>">
+                            <?php echo $system_health['status']; ?>
+                        </span>
+                    </div>
+                    <p class="text-secondary text-sm mb-3">Actual vs. Expected Generation &mdash; Last Month</p>
+                    <div class="d-flex justify-between text-sm mb-2">
+                        <span class="text-secondary">Actual: <strong><?php echo number_format($system_health['actual_kwh'], 1); ?> kWh</strong></span>
+                        <span class="text-secondary">Expected: <strong><?php echo number_format($system_health['expected_kwh'], 1); ?> kWh</strong></span>
+                    </div>
                     <div class="progress-bar-container">
-                        <div class="progress-bar"
+                        <div class="progress-bar <?php echo $system_health['css_class']; ?>"
                             style="width: <?php echo $system_health['performance_vs_expected']; ?>%;">
-                            <span
-                                class="progress-bar-label"><?php echo $system_health['performance_vs_expected']; ?>%</span>
+                            <span class="progress-bar-label"><?php echo $system_health['performance_vs_expected']; ?>%</span>
                         </div>
                     </div>
+                    <p class="text-xs text-secondary mt-2">Thresholds: Critical &lt;50% &bull; Warning &lt;75% &bull; Good &lt;90% &bull; Excellent &ge;90%</p>
                 </div>
             </div>
 
