@@ -81,15 +81,22 @@ define('DISTRICTS', [
 
 // --- System Health Performance Thresholds ---
 // These define the percentage bands for classifying solar performance vs expected generation.
-define('HEALTH_EXCELLENT_THRESHOLD', 90); // >= 90% → Excellent
-define('HEALTH_GOOD_THRESHOLD',      75); // >= 75% and < 90% → Good
-define('HEALTH_WARNING_THRESHOLD',   50); // >= 50% and < 75% → Warning
+define('HEALTH_EXCELLENT_THRESHOLD', 95); // >= 90% → Excellent
+define('HEALTH_GOOD_THRESHOLD',      90); // >= 75% and < 90% → Good
+define('HEALTH_WARNING_THRESHOLD',   80); // >= 50% and < 75% → Warning
                                           // <  50%           → Critical
 
 define('HEALTH_STATUS_EXCELLENT', 'Excellent');
 define('HEALTH_STATUS_GOOD',      'Good');
 define('HEALTH_STATUS_WARNING',   'Warning');
 define('HEALTH_STATUS_CRITICAL',  'Critical');
+
+// --- System Health Status Colors (rgba for Chart.js bars, hex for UI badges) ---
+define('HEALTH_COLOR_EXCELLENT', 'rgba(34, 197, 94, 0.75)');   // green
+define('HEALTH_COLOR_GOOD',      'rgba(56, 189, 248, 0.75)');   // blue
+define('HEALTH_COLOR_WARNING',   'rgba(245, 158, 11, 0.75)');   // amber
+define('HEALTH_COLOR_CRITICAL',  'rgba(239, 68, 68, 0.75)');    // red
+
 
 ?>
 
