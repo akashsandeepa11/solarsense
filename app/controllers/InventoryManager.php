@@ -8,12 +8,18 @@ class InventoryManager extends Controller
     ];
 
     private $inventoryModel;
+    private $company_id;
 
     public function __construct()
     {
         // Load the model
         $this->inventoryModel = $this->model('M_inventory');
 
+        // Resolve company_id from the logged-in inventory manager's record
+        $userId = $_SESSION['user_id'] ?? null;
+        $this->company_id = $userId
+            ? (int) $this->inventoryModel->get_company_id($userId)
+            : null;
     }
 
     // --- Dashboard Page ---
@@ -79,7 +85,7 @@ class InventoryManager extends Controller
 
 
         //     $data = [
-        //         'company_id' => 1, // or $_SESSION['company_id'] if dynamic
+        //         'company_id' => , // or $_SESSION['company_id'] if dynamic
         //         'item_name'  => trim($_POST['itemName']),
         //         'category'   => trim($_POST['itemCategory']),
         //         'quantity'   => (int) $_POST['itemQty'],
@@ -103,7 +109,7 @@ class InventoryManager extends Controller
 
         // --- Fetch items from DB ---
 
-        $items = $this->inventoryModel->get_all_items();
+        $items = $this->inventoryModel->get_all_items($this->company_id);
         $categories = $this->inventoryModel->get_categories();
 
         $data = [
@@ -175,7 +181,7 @@ class InventoryManager extends Controller
 
             $catId = (int) ($_POST['category_id'] ?? 0);
             $data = [
-                'company_id' => 1,
+                'company_id' => $this->company_id,
                 'item_name' => trim($_POST['item_name'] ?? ''),
                 'description' => trim($_POST['description'] ?? ''),
                 'category_id' => $catId > 0 ? $catId : null,
@@ -204,7 +210,7 @@ class InventoryManager extends Controller
             if ($success) {
                 setToast('Item Added Successfully', 'success');
             } else {
-                setToast('Failed to add item. Please try again.', 'failure');
+                // setToast('Failed to add item. Please try again.', 'failure');
             }
 
             redirect('inventorymanager/inventory');
@@ -218,7 +224,7 @@ class InventoryManager extends Controller
 
             $data = [
                 'inventory_id' => (int) ($_POST['inventory_id'] ?? 0),
-                'company_id' => 1,
+                'company_id' => $this->company_id,
                 'item_name' => trim($_POST['item_name'] ?? ''),
                 'category_id' => (int) ($_POST['category_id'] ?? 0),
                 'quantity' => (int) ($_POST['quantity'] ?? 0),

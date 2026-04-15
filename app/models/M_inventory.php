@@ -9,6 +9,14 @@ class M_inventory{
         $this->db = new Database;
     }
 
+    // Get the company_id for a given inventory manager user_id
+    public function get_company_id($userId) {
+        $this->db->query('SELECT company_id FROM inventory_manager WHERE user_id = :user_id LIMIT 1');
+        $this->db->bind(':user_id', (int)$userId);
+        $row = $this->db->single();
+        return $row ? $row->company_id : 1;
+    }  
+
     // Get all categories from item_category table
     public function get_categories() {
         $this->db->query("SELECT id, name FROM item_categories ORDER BY name");
@@ -73,18 +81,19 @@ class M_inventory{
         } catch (Exception $e) {
             $this->db->rollBack();
             error_log('Add inventory item failed: ' . $e->getMessage());
+            setToast('Add inventory item failed: ' . $e->getMessage(), 'failure');
             return false;
         }
     }
 
-    public function get_all_items() {
+    public function get_all_items($company_id) {
         $this->db->query("
             SELECT i.*, c.name as category_name 
             FROM inventory i 
             LEFT JOIN item_categories c ON i.category_id = c.id 
             WHERE i.company_id = :company_id
         ");
-        $this->db->bind(':company_id', 1);
+        $this->db->bind(':company_id', $company_id);
         return $this->db->resultSet();
     }
 
