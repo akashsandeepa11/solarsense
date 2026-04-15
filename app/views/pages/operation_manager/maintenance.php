@@ -29,6 +29,7 @@ function getMaintenanceStatusClass($status)
     <link rel="stylesheet" href="<?php echo URLROOT?>/css/pages/installer_admin/managers.css">
 
 <link rel="stylesheet" href="<?php echo URLROOT ?>/public/css/pages/installer/dashboard.css">
+<link rel="stylesheet" href="<?php echo URLROOT ?>/public/css/pages/operation_manager/maintenance.css">
 
 <style>
     /* Synchronized Status Dots */
@@ -73,7 +74,7 @@ function getMaintenanceStatusClass($status)
         'buttons' => [
             [
                 'label' => 'Create New Task',
-                'url' => '#',
+                'url' => 'javascript:showAddModal()',
                 'icon' => 'fas fa-plus',
                 'class' => 'btn-primary btn-md',
                 'onclick' => 'onclick="showAddModal()"'
@@ -189,45 +190,149 @@ function getMaintenanceStatusClass($status)
                 }
             ]
         ],
-        'actions' => [
-            [
-                'label' => 'Assign',
-                'icon' => 'fas fa-user-plus',
-                'class' => 'btn-sm btn-success',
-                'onclick' => 'onclick="openAssignModal(\'{task_id}\', \'{agent_id}\', \'{service_type}\', \'{customer_name}\')"'
-            ],
-            [
-                'label' => 'Delete',
-                'icon' => 'fas fa-trash',
-                'class' => 'btn-icon-danger',
-                'onclick' => 'onclick="openDeleteModal(\'{task_id}\', \'{service_type}\', \'{customer_name}\')"'
-            ]
-        ],
+       'actions' => [
+    [
+        'label' => 'Assign',
+        'icon' => 'fas fa-user-plus',
+        'class' => 'btn-sm btn-success',
+            'onclick' => 'onclick="openAssignModal(&quot;{task_id}&quot;, &quot;{service_type}&quot;, &quot;{customer_name}&quot;, &quot;{agent_id}&quot;)"'
+    ],
+    [
+        'label' => 'Delete',
+        'icon' => 'fas fa-trash',
+        'class' => 'btn-icon-danger',
+        'onclick' => 'onclick="openDeleteModal(&quot;{task_id}&quot;, &quot;{service_type}&quot;, &quot;{customer_name}&quot;)"'
+    ]
+],
         'empty_message' => 'No maintenance tasks found.'
     ];
     include __DIR__ . '/../../inc/components/data_table.php';
     ?>
 </div>
 
+<!-- Add Task Modal -->
+<div id="addModal" class="modal" hidden>
+    <div class="modal-content">
+        <h3 class="text-2xl font-semibold mb-4">Create New Task</h3>
+
+        <form id="addForm" method="POST" action="<?= URLROOT ?>/operationmanager/maintenance/create">
+
+            <input type="text" name="title" placeholder="Task Title" class="form-control mb-3" required>
+            <input type="text" name="customer_name" placeholder="Customer Name" class="form-control mb-3" required>
+            <input type="text" name="customer_address" placeholder="Address" class="form-control mb-3" required>
+            <input type="text" name="panel_id" placeholder="Panel ID" class="form-control mb-3" required>
+
+            <select name="priority" class="form-control mb-3">
+                <option value="High">High</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="Low">Low</option>
+            </select>
+
+            <div class="modal-buttons">
+                <button class="btn btn-primary btn-sm">Create</button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="closeAddModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Assign Modal -->
+<div id="assignModal" class="modal" hidden>
+    <div class="modal-content">
+        <h3 class="text-2xl font-semibold mb-4">Assign Task</h3>
+
+        <form id="assignForm" method="POST">
+
+            <p id="assignTaskInfo" class="mb-4 text-secondary"></p>
+
+            <select name="agent_id" id="assignAgentSelect" class="form-control mb-3" required>
+                <option value="">Select Agent</option>
+                <!-- You can PHP loop agents here -->
+            </select>
+
+            <div class="modal-buttons">
+                <button class="btn btn-success btn-sm">Assign</button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="closeAssignModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div id="deleteModal" class="modal" hidden>
+    <div class="modal-content">
+        <h3 class="text-2xl font-semibold mb-4">Delete Task</h3>
+
+        <form id="deleteForm" method="POST">
+            <p id="deleteMessage" class="text-secondary mb-6"></p>
+
+            <div class="modal-buttons">
+                <button class="btn btn-danger btn-sm">Delete</button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="closeDeleteModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
-    const BASE = '<?php echo URLROOT; ?>';
-    const $ = id => document.getElementById(id);
+   const BASE = "<?= URLROOT ?>";
 
-    function showAddModal() { $('addModal').classList.add('show'); }
-    function closeAddModal() { $('addModal').classList.remove('show'); }
-    function closeAssignModal() { $('assignModal').classList.remove('show'); }
-    function closeDeleteModal() { $('deleteModal').classList.remove('show'); }
+// ---------- OPEN MODALS ----------
+function showAddModal() {
+    const addModal = document.getElementById("addModal");
+    addModal.hidden = false;
+    addModal.classList.add("show");
+}
 
-    function openAssignModal(taskId, currentAgentId, type, customer) {
-        $('assignTaskInfo').innerText = `Task: "${type}" for ${customer}`;
-        $('assignForm').action = `${BASE}/operationmanager/maintenance/assign/${taskId}`;
-        $('assignAgentSelect').value = currentAgentId === 'null' ? '' : currentAgentId;
-        $('assignModal').classList.add('show');
-    }
+function closeAddModal() {
+    const addModal = document.getElementById("addModal");
+    addModal.classList.remove("show");
+    addModal.hidden = true;
+}
 
-    function openDeleteModal(taskId, type, customer) {
-        $('deleteMessage').innerText = `Delete "${type}" task for ${customer}? This cannot be undone.`;
-        $('deleteForm').action = `${BASE}/operationmanager/maintenance/delete/${taskId}`;
-        $('deleteModal').classList.add('show');
-    }
+function openAssignModal(taskId, type, customer, currentAgentId = '') {
+    document.getElementById("assignTaskInfo").innerText =
+        `Task: "${type}" for ${customer}`;
+
+    document.getElementById("assignForm").action =
+        `${BASE}/operationmanager/maintenance/assign/${taskId}`;
+
+    document.getElementById("assignAgentSelect").value =
+        currentAgentId || "";
+
+    const assignModal = document.getElementById("assignModal");
+    assignModal.hidden = false;
+    assignModal.classList.add("show");
+}
+
+function closeAssignModal() {
+    const assignModal = document.getElementById("assignModal");
+    assignModal.classList.remove("show");
+    assignModal.hidden = true;
+}
+
+function openDeleteModal(taskId, type, customer) {
+    document.getElementById("deleteMessage").innerText =
+        `Delete "${type}" task for ${customer}? This cannot be undone.`;
+
+    document.getElementById("deleteForm").action =
+        `${BASE}/operationmanager/maintenance/delete/${taskId}`;
+
+    const deleteModal = document.getElementById("deleteModal");
+    deleteModal.hidden = false;
+    deleteModal.classList.add("show");
+}
+
+function closeDeleteModal() {
+    const deleteModal = document.getElementById("deleteModal");
+    deleteModal.classList.remove("show");
+    deleteModal.hidden = true;
+}
+
+// Close on outside click
+window.addEventListener("click", function (e) {
+    if (e.target.id === "addModal") closeAddModal();
+    if (e.target.id === "assignModal") closeAssignModal();
+    if (e.target.id === "deleteModal") closeDeleteModal();
+});
 </script>
