@@ -181,10 +181,38 @@ class OperationManager extends Controller
         $this->view('pages/common/agent_details', $data, layout: 'dashboard');
     }
 
-    public function quotation()
+    public function quotation($action = null, $id = null)
     {
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
+        $quotationModel = $this->model('M_Quotation');
+
+        // Handle Actions (Approve/Delete)
+        if ($action === 'approve' && $id) {
+            if ($quotationModel->update_status($id, 'Approved')) {
+                setToast('Quotation approved successfully!', 'success');
+            }
+            redirect('operationmanager/quotation');
+            return;
+        }
+
+        if ($action === 'delete' && $id) {
+            if ($quotationModel->delete_quotation($id)) {
+                setToast('Quotation removed.', 'success');
+            }
+            redirect('operationmanager/quotation');
+            return;
+        }
+
+        // Fetch dynamic data
+        $quotationsRaw = $quotationModel->get_quotations_by_company($companyId);
+
+        // Convert to array for view compatibility
+        $quotations = json_decode(json_encode($quotationsRaw), true);
+
         $data = [
             'user' => $this->user,
+            'quotations' => $quotations
         ];
 
         $this->view('pages/operation_manager/quotation', $data, layout: 'dashboard');

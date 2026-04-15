@@ -6,7 +6,18 @@ $serviceAgents = $data['service_agents'] ?? [];
 <link rel="stylesheet" href="<?php echo URLROOT; ?>/css/pages/installer_admin/customer_details.css">
 
 <div class="customer-details-container">
-    <?php
+    <?php if ($data['user']['role'] === ROLE_OPERATION_MANAGER): 
+        $config = [
+        'title' => 'Customer Details',
+        'description' => 'View and manage solar customer information',
+        'show_back' => true,
+        'back_url' => URLROOT . '/operationmanager/fleet',
+        'back_label' => 'Back to Fleet'
+    ];
+    include __DIR__ . '/../../inc/components/page_header.php';
+    ?>
+    <?php endif; ?>
+    <?php if ($data['user']['role'] === ROLE_INSTALLER_ADMIN):
     $config = [
         'title' => 'Customer Details',
         'description' => 'View and manage solar customer information',
@@ -16,6 +27,7 @@ $serviceAgents = $data['service_agents'] ?? [];
     ];
     include __DIR__ . '/../../inc/components/page_header.php';
     ?>
+    <?php endif; ?>
 
     <div class="row gap-6">
         <div class="col-md-12">
