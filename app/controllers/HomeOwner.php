@@ -14,71 +14,70 @@ class HomeOwner extends Controller
 
     public function __construct()
     {
-        $this->serviceModel = $this->model('M_Service');
-        $this->smsModel = $this->model('M_SMS');
-        $this->solarSystemModel = $this->model('M_SolarSystem');
-        $this->dashboardModel = $this->model('M_Homeowner_Dashboard');
-        $this->inventoryModel = $this->model('M_Inventory');
-        $this->profileModel = $this->model('M_Profile');
+        $this->serviceModel      = $this->model('M_Service');
+        $this->smsModel          = $this->model('M_SMS');
+        $this->solarSystemModel  = $this->model('M_SolarSystem');
+        $this->dashboardModel    = $this->model('M_Homeowner_Dashboard');
+        $this->inventoryModel    = $this->model('M_Inventory');
+        $this->profileModel      = $this->model('M_Profile');
     }
 
 
     public function dashboard($page = 'index')
     {
         if ($page == 'index') {
-
-            $userId = (int) $_SESSION['user_id'];
+        
+            $userId     = (int) $_SESSION['user_id'];
             $availYears = $this->smsModel->get_available_years($userId);
             $stats = $this->dashboardModel->getStats($_SESSION['user_id']);
             $system = $this->solarSystemModel->findById($userId);
-
+        
             if (empty($availYears)) {
                 $availYears = [(int) date('Y')];
             }
-
+        
             if (isset($_GET['year']) && in_array((int) $_GET['year'], $availYears)) {
                 $selectedYear = (int) $_GET['year'];
             } else {
                 $selectedYear = (int) $availYears[0];
             }
-
+        
             $lat = 6.9271;
             $lon = 79.8612;
-
+        
             require_once APPROOT . '/api/weather_api.php';
             $daily_forecast = getDailySolarForecast($lat, $lon);
-
+        
             $data = [
-                'user' => $this->user,
-                'stats' => $stats,
-                'chart_data' => $this->smsModel->get_chart_data($userId, 12, $selectedYear),
-                'selected_year' => $selectedYear,
+                'user'            => $this->user,
+                'stats'           => $stats,
+                'chart_data'      => $this->smsModel->get_chart_data($userId, 12, $selectedYear),
+                'selected_year'   => $selectedYear,
                 'available_years' => $availYears,
-                'daily_forecast' => $daily_forecast
+                'daily_forecast'  => $daily_forecast
             ];
-
+        
             $this->view('pages/homeowner/dashboard', $data, layout: 'dashboard');
-
-        } else if ($page == 'uploadsms') {
-
+        
+        } else if ($page == 'uploadsms') { 
+        
             $data = [
                 'user' => $this->user,
             ];
-
+        
             $this->uploadSMS();
         }
     }
-
+        
     // --- PayHere Checkout ---
-    public function checkout()
-    {
+    public function checkout() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: ' . URLROOT . '/homeowner/shop/cart');
             exit();
         }
 
         $cartJson = $_POST['cart'] ?? '[]';
-        $cart = json_decode($cartJson, true);
+        $cart     = json_decode($cartJson, true);
 
         if (empty($cart)) {
             header('Location: ' . URLROOT . '/homeowner/shop/cart');
@@ -88,74 +87,71 @@ class HomeOwner extends Controller
         // Calculate total
         $amount = 0;
         foreach ($cart as $item) {
-            $amount += (float) ($item['price'] ?? 0) * (int) ($item['qty'] ?? 1);
+            $amount += (float)($item['price'] ?? 0) * (int)($item['qty'] ?? 1);
         }
-        $amount = round($amount, 2);
+        $amount   = round($amount, 2);
         $currency = 'LKR';
 
         // Save order to DB first — use its real integer ID as the PayHere order_id
         $orderId = $this->inventoryModel->create_order([
-            'user_id' => 1, // replace with session user id when auth is added
+            'user_id'      => 1, // replace with session user id when auth is added
             'total_amount' => $amount,
-            'status' => 'pending',
-            'date' => date('Y-m-d'),
+            'status'       => 'pending',
+            'date'         => date('Y-m-d'),
         ], $cart);
 
         // Generate PayHere hash
         // hash = MD5(merchant_id + order_id + amount + currency + MD5(secret).toUpperCase())
-        $merchantId = PAYHERE_MERCHANT_ID;
+        $merchantId     = PAYHERE_MERCHANT_ID;
         $merchantSecret = PAYHERE_MERCHANT_SECRET;
-        $secretHash = strtoupper(md5($merchantSecret));
-        $hash = strtoupper(md5($merchantId . $orderId . number_format($amount, 2, '.', '') . $currency . $secretHash));
+        $secretHash     = strtoupper(md5($merchantSecret));
+        $hash           = strtoupper(md5($merchantId . $orderId . number_format($amount, 2, '.', '') . $currency . $secretHash));
 
         $payhereUrl = PAYHERE_SANDBOX
             ? 'https://sandbox.payhere.lk/pay/checkout'
             : 'https://www.payhere.lk/pay/checkout';
 
         $data = [
-            'user' => $this->user,
-            'payhere_url' => $payhereUrl,
-            'merchant_id' => $merchantId,
-            'order_id' => $orderId,
-            'amount' => number_format($amount, 2, '.', ''),
-            'currency' => $currency,
-            'hash' => $hash,
-            'return_url' => URLROOT . '/homeowner/paymentReturn',
-            'cancel_url' => URLROOT . '/homeowner/paymentCancel',
-            'notify_url' => URLROOT . '/homeowner/paymentNotify',
-            'cart' => $cart,
+            'user'         => $this->user,
+            'payhere_url'  => $payhereUrl,
+            'merchant_id'  => $merchantId,
+            'order_id'     => $orderId,
+            'amount'       => number_format($amount, 2, '.', ''),
+            'currency'     => $currency,
+            'hash'         => $hash,
+            'return_url'   => URLROOT . '/homeowner/paymentReturn',
+            'cancel_url'   => URLROOT . '/homeowner/paymentCancel',
+            'notify_url'   => URLROOT . '/homeowner/paymentNotify',
+            'cart'         => $cart,
         ];
 
         $this->view('pages/homeowner/checkout', $data, layout: 'dashboard');
     }
 
-    public function paymentReturn()
-    {
+    public function paymentReturn() {
         $data = ['user' => $this->user, 'status' => 'success'];
         $this->view('pages/homeowner/payment_result', $data, layout: 'dashboard');
     }
 
-    public function paymentCancel()
-    {
+    public function paymentCancel() {
         $data = ['user' => $this->user, 'status' => 'cancelled'];
         $this->view('pages/homeowner/payment_result', $data, layout: 'dashboard');
     }
 
-    public function paymentNotify()
-    {
+    public function paymentNotify() {
         // Verify PayHere notification
-        $merchantId = PAYHERE_MERCHANT_ID;
+        $merchantId     = PAYHERE_MERCHANT_ID;
         $merchantSecret = PAYHERE_MERCHANT_SECRET;
 
-        $orderId = $_POST['order_id'] ?? '';
-        $paymentId = $_POST['payment_id'] ?? '';
-        $payhereAmount = $_POST['payhere_amount'] ?? '';
-        $payhereCurrency = $_POST['payhere_currency'] ?? '';
-        $statusCode = $_POST['status_code'] ?? '';
-        $md5sig = $_POST['md5sig'] ?? '';
+        $orderId        = $_POST['order_id']        ?? '';
+        $paymentId      = $_POST['payment_id']      ?? '';
+        $payhereAmount  = $_POST['payhere_amount']  ?? '';
+        $payhereCurrency= $_POST['payhere_currency']?? '';
+        $statusCode     = $_POST['status_code']     ?? '';
+        $md5sig         = $_POST['md5sig']          ?? '';
 
-        $secretHash = strtoupper(md5($merchantSecret));
-        $localHash = strtoupper(md5($merchantId . $orderId . $payhereAmount . $payhereCurrency . $statusCode . $secretHash));
+        $secretHash     = strtoupper(md5($merchantSecret));
+        $localHash      = strtoupper(md5($merchantId . $orderId . $payhereAmount . $payhereCurrency . $statusCode . $secretHash));
 
         if ($localHash === $md5sig && $statusCode == 2) {
             // Payment successful — update order status
@@ -236,8 +232,8 @@ class HomeOwner extends Controller
             $categories = $this->inventoryModel->get_categories();
 
             $data = [
-                'user' => $this->user,
-                'products' => $this->getProducts(),
+                'user'       => $this->user,
+                'products'   => $this->getProducts(),
                 'categories' => $categories ?? [],
             ];
 
@@ -266,38 +262,20 @@ class HomeOwner extends Controller
 
     public function help()
     {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
-
-            $helpModel = $this->model('M_Help');
-            $userId = $_SESSION['user_id'];
-
-            $data = [
-                'user_id' => $userId,
-                'type' => $this->user['role'],
-                'full_name' => $_SESSION['user_name'] ?? 'Homeowner',
-                'title' => trim($_POST['title']), // Capture title from view
-                'description' => trim($_POST['notes']), // Map 'notes' from view to 'description'
-            ];
-
-            if ($helpModel->add_complaint($data)) {
-                setToast('Support request submitted!', 'success');
-                redirect('homeowner/help');
-            } else {
-                setToast('Database error. Please try again.', 'error');
-            }
-        }
-
-        $data = ['user' => $this->user];
-        $this->view('pages/homeowner/help', $data, layout: 'dashboard');
+        $data = [
+            'user' => $this->user,
+        ];
+        $this->view('pages/homeowner/help', $data, 'dashboard');
     }
-
 
     public function reports()
     {
         $data = [
             'user' => $this->user,
         ];
+        
+        $this->calculateExpectedGeneration('2025-02-05');
+
         $this->view('pages/homeowner/reports', $data, 'dashboard');
     }
 
@@ -330,11 +308,11 @@ class HomeOwner extends Controller
                 return;
             }
 
-            $parsed['user_id'] = $userId;
+            $parsed['user_id']    = $userId;
             $parsed['created_at'] = date('Y-m-d H:i:s');
-            $parsed['raw_sms'] = $sms;
+            $parsed['raw_sms']    = $sms;
             $parsed['expected_generation'] = $this->calculateExpectedGeneration($parsed['reading_date']);
-
+            
             if ($this->smsModel->upload_sms($parsed)) {
                 setToast('SMS uploaded successfully!', 'success');
                 redirect('homeowner/dashboard/uploadsms');
@@ -404,23 +382,23 @@ class HomeOwner extends Controller
             // get_all_items() returns objects from PDO; handle both object and array
             if (is_object($row)) {
                 $products[] = [
-                    'id' => $row->inventory_id,
-                    'title' => $row->item_name,
-                    'company' => '',                          // inventory table has no company field on items
-                    'price' => (float) $row->unit_price,
+                    'id'          => $row->inventory_id,
+                    'title'       => $row->item_name,
+                    'company'     => '',                          // inventory table has no company field on items
+                    'price'       => (float) $row->unit_price,
                     'description' => $row->description ?? '',
-                    'image' => $row->item_image ?? '',
-                    'category' => $row->category_name ?? '',
+                    'image'       => $row->item_image ?? '',
+                    'category'    => $row->category_name ?? '',
                 ];
             } else {
                 $products[] = [
-                    'id' => $row['inventory_id'],
-                    'title' => $row['item_name'],
-                    'company' => '',
-                    'price' => (float) $row['unit_price'],
+                    'id'          => $row['inventory_id'],
+                    'title'       => $row['item_name'],
+                    'company'     => '',
+                    'price'       => (float) $row['unit_price'],
                     'description' => $row['description'] ?? '',
-                    'image' => $row['item_image'] ?? '',
-                    'category' => $row['category_name'] ?? '',
+                    'image'       => $row['item_image'] ?? '',
+                    'category'    => $row['category_name'] ?? '',
                 ];
             }
         }
@@ -445,24 +423,38 @@ class HomeOwner extends Controller
         $system = $this->solarSystemModel->findById($userId);
 
         if (!$system) {
-            return null; // no solar system on record for this user
+            error_log("[ExpGen] FAIL: no solar_system row found for user {$userId}");
+            return null;
         }
 
-        $month = (int) date('n', strtotime($readingDate));
-        $district = DISTRICTS[$system->district] ?? DISTRICTS[COLOMBO];
+        $month        = (int) date('n', strtotime($readingDate));
+        $districtName = $system['district'] ?? null;
+
+        
+        
+        if (empty($districtName) || !isset(DISTRICTS[$districtName])) {
+            error_log("[ExpGen] FAIL: district '{$districtName}' missing or not in DISTRICTS array");
+            error_log("[ExpGen] DISTRICTS keys=" . implode(', ', array_keys(DISTRICTS)));
+            return null;
+        }
+        
+        $coords = DISTRICTS[$districtName];
+        echo "<script>console.log('" . json_encode($coords) . "');</script>";
 
         $result = getSolarGenerationByMonth(
-            month: $month,
-            systemCapacity: (float) $system->capacity,
-            moduleType: (int) $system->module_type,
-            losses: (float) $system->losses_pct,
-            arrayType: (int) $system->array_type,
-            tilt: (float) $system->tilt,
-            azimuth: (float) $system->azimuth,
-            lat: $district['lat'],
-            lon: $district['lon'],
-            apiKey: NREL_API_KEY
+            month:          $month,
+            systemCapacity: (float) $system['capacity'],
+            moduleType:     (int)   $system['module_type'],
+            losses:         (float) $system['losses_pct'],
+            arrayType:      (int)   $system['array_type'],
+            tilt:           (float) $system['tilt'],
+            azimuth:        (float) $system['azimuth'],
+            lat:            $coords['lat'],
+            lon:            $coords['lon'],
+            apiKey:         NREL_API_KEY
         );
+
+        error_log("[ExpGen] API result=" . json_encode($result));
 
         return $result['success'] ? round($result['generation_kwh'], 2) : null;
     }

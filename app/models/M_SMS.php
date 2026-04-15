@@ -109,7 +109,7 @@ class M_SMS
 
     public function sms_history()
     {
-        $this->db->query("SELECT reading_date, export_reading, import_reading, consumption_units, monthly_bill FROM sms WHERE user_id = :user_id ORDER BY created_at DESC LIMIT 5");
+        $this->db->query("SELECT reading_date, export_reading, import_reading, consumption_units, monthly_bill FROM sms WHERE user_id = :user_id ORDER BY created_at DESC");
         $this->db->bind(':user_id', $_SESSION['user_id']);
         return $this->db->resultSet();
     }

@@ -25,6 +25,8 @@ function getSolarGenerationByMonth(
         'timeframe'       => 'monthly',
     ]);
 
+    // echo '<script> console.log("aaahhhhhh.. fuck uuuu...") </script>';
+
     $url = "https://developer.nrel.gov/api/pvwatts/v8.json?{$params}";
 
     $ch = curl_init($url);
