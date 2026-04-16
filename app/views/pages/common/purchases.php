@@ -133,7 +133,12 @@ $orderRows = array_map(function ($o) {
                 }
             ],
         ],
-        'actions' => [
+        'empty_message' => 'No orders found.',
+    ];
+
+    // ONLY ALLOW OPERATION MANAGER TO SEE ACTIONS
+    if ($data['user']['role'] === ROLE_OPERATION_MANAGER) {
+        $config['actions'] = [
             [
                 'label' => 'Assign',
                 'icon' => 'fas fa-user-plus',
@@ -146,9 +151,9 @@ $orderRows = array_map(function ($o) {
                 'class' => 'btn-icon-danger',
                 'onclick' => 'onclick="openDeleteModal(\'{task_id}\', \'{service_type}\', \'{customer_name}\')"'
             ]
-        ],
-        'empty_message' => 'No orders found.',
-    ];
+        ];
+    }
+
     include __DIR__ . '/../../inc/components/data_table.php';
     ?>
 </div>
@@ -178,4 +183,5 @@ $orderRows = array_map(function ($o) {
         $('deleteForm').action = `${BASE}/operationmanager/purchases/delete/${taskId}`;
         $('deleteModal').classList.add('show');
     }
+
 </script>
