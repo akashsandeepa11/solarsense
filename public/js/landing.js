@@ -215,30 +215,6 @@ function initializeButtonHoverEffects() {
   });
 }
 
-function initializeTypingEffect() {
-  const titleElement = document.querySelector(".hero__title");
-  if (!titleElement || sessionStorage.getItem("titleAnimated")) return;
-
-  const words = titleElement.innerHTML.split(" ");
-  titleElement.innerHTML = "";
-
-  words.forEach((word, index) => {
-    setTimeout(() => {
-      if (index > 0) titleElement.innerHTML += " ";
-      titleElement.innerHTML += word;
-
-      if (index === words.length - 1) {
-        titleElement.innerHTML += '<span class="cursor">|</span>';
-        setTimeout(() => {
-          titleElement.querySelector(".cursor")?.remove();
-        }, 900);
-      }
-    }, index * 260);
-  });
-
-  sessionStorage.setItem("titleAnimated", "true");
-}
-
 /* -------------------------------------------------------------------------- */
 /*  Quotation Calculator Section                                              */
 /* -------------------------------------------------------------------------- */
