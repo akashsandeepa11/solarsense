@@ -1,11 +1,10 @@
 <?php
-$serviceTypes = [
-    1 => 'Inspection',
-    2 => 'Repair',
-    3 => 'Cleaning',
-    4 => 'Maintenance',
-    5 => 'Troubleshooting'
-];
+
+
+$serviceTypes = $data['serviceTypes'];
+$history = $data['serviceHistory'];
+
+
 ?>
 
 <!-- Link to custom CSS file for this page -->
@@ -106,6 +105,19 @@ $serviceTypes = [
         </div>
     </div>
 
+    <div class="row mt-6">
+        <div class="col-12">
+            <div class="card shadow-lg rounded-xl">
+                <div class="card-body">
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    
+
     <!-- Service History Section -->
     <div class="row mt-6">
         <div class="col-12">
@@ -117,59 +129,48 @@ $serviceTypes = [
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th class="text-sm font-semibold text-secondary">Request ID</th>
-                                    <th class="text-sm font-semibold text-secondary">Date</th>
+                                    <th class="text-sm font-semibold text-secondary">Service ID</th>
+                                    <th class="text-sm font-semibold text-secondary">RequestDate</th>
                                     <th class="text-sm font-semibold text-secondary">Service Type</th>
-                                    <th class="text-sm font-semibold text-secondary">Component</th>
                                     <th class="text-sm font-semibold text-secondary">Technician</th>
-                                    <th class="text-sm font-semibold text-secondary">Remarks</th>
+                            
                                     <th class="text-sm font-semibold text-secondary">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($data['serviceHistory'] as $record): ?>
-                                    <tr>
-                                        <td class="text-sm font-semibold"><?php echo htmlspecialchars($record->task_id); ?>
+                                    <?php foreach ($data['serviceHistory'] as $record): ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($record->task_id) ?></td>
+
+                                            <td><?= htmlspecialchars($record->request_date) ?></td>
+
+                                            <td><?= htmlspecialchars($record->service_type) ?></td>
+
+                                            <!-- <td><?= htmlspecialchars($record->agent_name ?? 'Not Assigned') ?></td> -->
+
+                                            <td>
+                                                <?php if (!empty($record->agent_name)): ?>
+                                                    <?= htmlspecialchars($record->agent_name) ?>
+                                                <?php else: ?>
+                                                    <span class="badge badge-success">Not Assigned</span>
+                                                <?php endif; ?>
                                         </td>
-                                        <td class="text-sm"><?php echo htmlspecialchars($record->request_date); ?></td>
-                                        <td class="text-sm">
-                                            <?php
-                                            $serviceTypes = [
-                                                1 => 'Inspection',
-                                                2 => 'Repair',
-                                                3 => 'Cleaning',
-                                                4 => 'Maintenance',
-                                                5 => 'Troubleshooting'
-                                            ];
-                                            echo $serviceTypes[$record->service_type] ?? 'Unknown';
-                                            ?>
-                                            ?>
-                                        </td>
-                                        <td class="text-sm">Solar System</td>
-                                        <td class="text-sm">
-                                            <?php echo (empty($record->agent_id)) ? 'Pending' : htmlspecialchars($record->agent_id); ?>
-                                        </td>
-                                        <td class="text-sm"><?php echo htmlspecialchars($record->service_description); ?>
-                                        </td>
-                                        <td class="text-sm">
-                                            <?php if ($record->status === 'Completed'): ?>
-                                                <span class="badge badge-success">
-                                                    <i class="fas fa-check-circle mr-1"></i>Completed
-                                                </span>
-                                            <?php else: ?>
-                                                <span class="badge badge-warning">
-                                                    <i
-                                                        class="fas fa-clock mr-1"></i><?php echo htmlspecialchars($record->status); ?>
-                                                </span>
-                                            <?php endif; ?>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
+                                            <td>
+                                                <?php if ($record->status == 'Completed'): ?>
+                                                    <span class="badge badge-success">Completed</span>
+                                                <?php elseif ($record->status == 'In Progress'): ?>
+                                                    <span class="badge badge-primary">In Progress</span>
+                                                <?php else: ?>
+                                                    <span class="badge badge-warning">Pending</span>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                        <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </div> 
 </div>

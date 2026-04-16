@@ -8,6 +8,8 @@ class HomeOwner extends Controller
     private $inventoryModel;
     private $profileModel;
 
+    
+
     private $user = [
         'role' => ROLE_HOMEOWNER,
     ];
@@ -168,65 +170,107 @@ class HomeOwner extends Controller
         exit();
     }
 
-    public function service(): void
-    {
-        $history = $this->serviceModel->get_service_history();
+    // public function service(): void
+    // {
+    //     $history = $this->serviceModel->get_service_history();
 
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS);
+    //     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    //         $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS);
 
-            $data = [
-                'user' => $this->user,
-                'service_type' => trim($_POST['service_type'] ?? ''),
-                'service_description' => trim($_POST['service_description'] ?? ''),
-                'serviceHistory' => $history,
-                'service_type_err' => '',
-                'service_description_err' => ''
-            ];
+    //         $data = [
+    //             'user' => $this->user,
+    //             'service_type' => trim($_POST['service_type'] ?? ''),
+    //             'service_description' => trim($_POST['service_description'] ?? ''),
+    //             'serviceHistory' => $history,
+    //             'service_type_err' => '',
+    //             'service_description_err' => ''
+    //         ];
 
-            // Validation
-            if (empty($data['service_type'])) {
-                $data['service_type_err'] = "Please select a service type";
-            }
-            if (empty($data['service_description'])) {
-                $data['service_description_err'] = "Please describe the issue";
-            }
+    //         // Validation
+    //         if (empty($data['service_type'])) {
+    //             $data['service_type_err'] = "Please select a service type";
+    //         }
+    //         if (empty($data['service_description'])) {
+    //             $data['service_description_err'] = "Please describe the issue";
+    //         }
 
-            if (!empty($data['service_type_err']) || !empty($data['service_description_err'])) {
-                $this->view('pages/homeowner/service', $data, layout: 'dashboard');
-                return;
-            }
+    //         if (!empty($data['service_type_err']) || !empty($data['service_description_err'])) {
+    //             $this->view('pages/homeowner/service', $data, layout: 'dashboard');
+    //             return;
+    //         }
 
-            // // Safe user_id extraction
-            // $userId = $this->user['user_id'] ?? null;
-            // if (empty($userId)) {
-            //     setToast('User not authenticated.', 'error');
-            //     redirect('login');
-            //     return;
-            // }
+    //         // // Safe user_id extraction
+    //         // $userId = $this->user['user_id'] ?? null;
+    //         // if (empty($userId)) {
+    //         //     setToast('User not authenticated.', 'error');
+    //         //     redirect('login');
+    //         //     return;
+    //         // }
 
-            $modelData = [  // pass scalar ID only
-                'service_type' => $data['service_type'],
-                'service_description' => $data['service_description']
-            ];
+    //         $modelData = [  // pass scalar ID only
+    //             'service_type' => $data['service_type'],
+    //             'service_description' => $data['service_description']
+    //         ];
+
+  public function service(): void
+{
+    $serviceTypes = $this->serviceModel->get_service_types();
+    $history = $this->serviceModel->get_service_history();
 
 
-            if ($this->serviceModel->add_service_request($modelData)) {
-                setToast('Service request submitted successfully!', 'success');
-                redirect('homeowner/service');
-            } else {
-                setToast('Failed to submit request. Try again.', 'error');
-                $this->view('pages/homeowner/service', $data, layout: 'dashboard');
-            }
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+        $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS);
+
+        $data = [
+            'user' => $this->user,
+            'serviceTypes' => $serviceTypes,
+            'serviceHistory' => $history,
+            'service_type' => trim($_POST['service_type'] ?? ''),
+            'service_description' => trim($_POST['service_description'] ?? ''),
+            'service_type_err' => '',
+            'service_description_err' => ''
+        ];
+
+        // validation
+        if (empty($data['service_type'])) {
+            $data['service_type_err'] = "Please select a service type";
+        }
+
+        if (empty($data['service_description'])) {
+            $data['service_description_err'] = "Please describe the issue";
+        }
+
+        if (!empty($data['service_type_err']) || !empty($data['service_description_err'])) {
+            $this->view('pages/homeowner/service', $data, layout: 'dashboard');
+            return;
+        }
+
+        $modelData = [
+            'service_type_id' => $data['service_type'],
+            'service_description' => $data['service_description']
+        ];
+
+        if ($this->serviceModel->add_service_request($modelData)) {
+            setToast('Request submitted successfully!', 'success');
+            redirect('homeowner/service');
         } else {
+            setToast('Failed to submit request', 'error');
+            $this->view('pages/homeowner/service', $data, layout: 'dashboard');
+        }
+
+        } else {
+        
             $data = [
                 'user' => $this->user,
+                'serviceTypes' => $serviceTypes,
+                 'serviceHistory' => $history,
                 'service_type' => '',
                 'service_description' => '',
-                'serviceHistory' => $history,
                 'service_type_err' => '',
                 'service_description_err' => ''
             ];
+        
             $this->view('pages/homeowner/service', $data, layout: 'dashboard');
         }
     }
