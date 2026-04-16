@@ -21,12 +21,12 @@ $summary_cards = [
 // Helper for status styling
 function getMaintenanceStatusClass($status)
 {
-    return $status === 'Completed' ? 'bg-success' : ($status === 'Pending' ? 'bg-warning' : 'bg-secondary');
+    return $status === 'Completed' ? 'bg-success' : ($status === 'Pending' ? 'bg-warning' : ($status === 'In Progress' ? 'bg-info' : 'bg-secondary'));
 }
 ?>
 
 <link rel="stylesheet" href="<?php echo URLROOT ?>/public/css/components.css">
-    <link rel="stylesheet" href="<?php echo URLROOT?>/css/pages/installer_admin/managers.css">
+<link rel="stylesheet" href="<?php echo URLROOT?>/css/pages/installer_admin/managers.css">
 
 <link rel="stylesheet" href="<?php echo URLROOT ?>/public/css/pages/installer/dashboard.css">
 <link rel="stylesheet" href="<?php echo URLROOT ?>/public/css/pages/operation_manager/maintenance.css">
@@ -64,6 +64,21 @@ function getMaintenanceStatusClass($status)
     .font-semibold {
         font-weight: 600;
     }
+
+   /* table {
+        table-layout: fixed;
+        width: 100%;
+    } */
+
+      
+    td:nth-child(1) { width: 5%; }   
+    td:nth-child(2) { width: 10%; } 
+    td:nth-child(3) { width: 20%; } 
+    td:nth-child(4) { width: 30%; }  
+    td:nth-child(5) { width: 15%; }  
+    td:nth-child(6) { width: 10%; }  
+    td:nth-child(7) { width: 5%; }   
+
 </style>
 
 <div class="container-fluid p-8">
@@ -116,6 +131,7 @@ function getMaintenanceStatusClass($status)
                 'options' => [
                     ['value' => '', 'label' => 'All Status'],
                     ['value' => 'Pending', 'label' => 'Pending'],
+                    ['value' => 'In Progress', 'label' => 'In Progress'],
                     ['value' => 'Completed', 'label' => 'Completed']
                 ]
             ],
@@ -162,6 +178,13 @@ function getMaintenanceStatusClass($status)
                     return '<span class="font-semibold">#' . $row->task_id . '</span>';
                 }
             ],
+
+            [
+                'key' => 'type',
+                'render' => fn($row) => htmlspecialchars($row->service_type ?? '-')
+            ],
+
+
             [
                 'key' => 'customer',
                 'render' => function ($row) {
@@ -171,21 +194,39 @@ function getMaintenanceStatusClass($status)
                             </div>';
                 }
             ],
+
+            [
+                'key' => 'description',
+                'render' => fn($row) => htmlspecialchars($row->service_description ?? '-')
+            ],
+
+            [
+                'key' => 'date',
+                'render' => fn($row) => date('Y-m-d', strtotime($row->request_date))
+            ],
+
             [
                 'key' => 'agent',
                 'render' => function ($row) {
-                    if ($row->agent_name) {
-                        return '<span class="text-success"><i class="fas fa-user-check mr-1"></i>' . htmlspecialchars($row->agent_name) . '</span>';
+                    if (!empty($row->agent_id)) {
+                        return '<div data-filter="assigned" data-filter-value="yes">
+                                    <span class="text-success font-semibold">'
+                                    . htmlspecialchars($row->agent_name) .
+                                '</span><br>
+                                    <small class="text-success">Assigned</small>
+                                </div>';
+                    } else {
+                        return '<span class="text-warning" data-filter="assigned" data-filter-value="no">Unassigned</span>';
                     }
-                    return '<span class="text-secondary"><i class="fas fa-user-slash mr-1"></i>Unassigned</span>';
                 }
             ],
             [
                 'key' => 'status',
                 'render' => function ($row) {
-                    return '<div class="d-flex align-center">
-                                <span class="status-dot ' . getMaintenanceStatusClass($row->status) . ' mr-2"></span>
-                                <span class="badge ' . ($row->status === 'Completed' ? 'badge-success' : 'badge-warning') . '">' . $row->status . '</span>
+                    $badgeClass = $row->status === 'Completed' ? 'badge-success' : ($row->status === 'Pending' ? 'badge-warning' : ($row->status === 'In Progress' ? 'badge-info' : 'badge-secondary'));
+                    return '<div class="d-flex align-center" data-filter="status">
+                                <span class="' . getMaintenanceStatusClass($row->status) . ' mr-2"></span>
+                                <span class="badge ' . $badgeClass . '">' . $row->status . '</span>
                             </div>';
                 }
             ]
@@ -247,11 +288,17 @@ function getMaintenanceStatusClass($status)
 
             <select name="agent_id" id="assignAgentSelect" class="form-control mb-3" required>
                 <option value="">Select Agent</option>
-                <!-- You can PHP loop agents here -->
+               
+                <?php foreach ($agents as $agent): ?>
+                    <option value="<?= $agent->user_id ?>">
+                        <?= htmlspecialchars($agent->user_id) ?>
+                    </option>
+                <?php endforeach; ?>
+
             </select>
 
             <div class="modal-buttons">
-                <button class="btn btn-success btn-sm">Assign</button>
+                <button class="btn btn-success btn-sm" >Assign</button>
                 <button type="button" class="btn btn-secondary btn-sm" onclick="closeAssignModal()">Cancel</button>
             </div>
         </form>
@@ -295,8 +342,8 @@ function openAssignModal(taskId, type, customer, currentAgentId = '') {
         `Task: "${type}" for ${customer}`;
 
     document.getElementById("assignForm").action =
-        `${BASE}/operationmanager/maintenance/assign/${taskId}`;
-
+    `${BASE}/operationmanager/maintenance/tasks/assign/${taskId}`;
+    
     document.getElementById("assignAgentSelect").value =
         currentAgentId || "";
 
