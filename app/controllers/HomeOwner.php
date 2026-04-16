@@ -360,7 +360,13 @@ class HomeOwner extends Controller
             exit();
         }
 
-        $products = $this->getProducts();
+        // 1. Get the correct company ID for the logged-in homeowner
+        $userId = $_SESSION['user_id'];
+        $companyId = $this->inventoryModel->getCompanyIdForHomeowner($userId);
+
+        // 2. Pass the companyId to fix the ArgumentCountError
+        $products = $this->getProducts($companyId);
+
         $product = null;
         foreach ($products as $p) {
             if ($p['id'] == $id) {
@@ -384,7 +390,6 @@ class HomeOwner extends Controller
 
     private function getProducts($company_id)
     {
-        // FIX: Use the $company_id passed from the shop() method
         if (!$company_id)
             return [];
 
@@ -396,15 +401,18 @@ class HomeOwner extends Controller
 
         $products = [];
         foreach ($rows as $row) {
-            $products[] = [
-                'id' => $row->inventory_id,
-                'title' => $row->item_name,
-                'company' => '',
-                'price' => (float) $row->unit_price,
-                'description' => $row->description ?? '',
-                'image' => $row->item_image ?? '',
-                'category' => $row->category_name ?? '',
-            ];
+            // ... (rest of your existing mapping logic remains the same)
+            if (is_object($row)) {
+                $products[] = [
+                    'id' => $row->inventory_id,
+                    'title' => $row->item_name,
+                    'company' => '',
+                    'price' => (float) $row->unit_price,
+                    'description' => $row->description ?? '',
+                    'image' => $row->item_image ?? '',
+                    'category' => $row->category_name ?? '',
+                ];
+            }
         }
         return $products;
     }
