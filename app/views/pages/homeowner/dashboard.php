@@ -290,7 +290,7 @@ $quick_actions = [
                             <span class="progress-bar-label"><?php echo $system_health['performance_vs_expected']; ?>%</span>
                         </div>
                     </div>
-                    <p class="text-xs text-secondary mt-2">Thresholds: Critical &lt;50% &bull; Warning &lt;75% &bull; Good &lt;90% &bull; Excellent &ge;90%</p>
+                    <p class="text-xs text-secondary mt-2">Thresholds: Critical &lt;<?php echo HEALTH_WARNING_THRESHOLD; ?>% &bull; Warning &lt;<?php echo HEALTH_GOOD_THRESHOLD; ?>% &bull; Good &lt;<?php echo HEALTH_EXCELLENT_THRESHOLD; ?>% &bull; Excellent &ge;90%</p>
                 </div>
             </div>
 
