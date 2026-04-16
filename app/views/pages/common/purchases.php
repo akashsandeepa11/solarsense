@@ -133,6 +133,20 @@ $orderRows = array_map(function ($o) {
                 }
             ],
         ],
+        'actions' => [
+            [
+                'label' => 'Assign',
+                'icon' => 'fas fa-user-plus',
+                'class' => 'btn-sm btn-success',
+                'onclick' => 'onclick="openAssignModal(\'{task_id}\', \'{agent_id}\', \'{service_type}\', \'{customer_name}\')"'
+            ],
+            [
+                'label' => 'Delete',
+                'icon' => 'fas fa-trash',
+                'class' => 'btn-icon-danger',
+                'onclick' => 'onclick="openDeleteModal(\'{task_id}\', \'{service_type}\', \'{customer_name}\')"'
+            ]
+        ],
         'empty_message' => 'No orders found.',
     ];
     include __DIR__ . '/../../inc/components/data_table.php';
@@ -148,4 +162,20 @@ $orderRows = array_map(function ($o) {
             row.style.display = text.includes(q) ? '' : 'none';
         });
     });
+
+    function closeAssignModal() { $('assignModal').classList.remove('show'); }
+    function closeDeleteModal() { $('deleteModal').classList.remove('show'); }
+
+    function openAssignModal(taskId, currentAgentId, type, customer) {
+        $('assignTaskInfo').innerText = `Task: "${type}" for ${customer}`;
+        $('assignForm').action = `${BASE}/operationmanager/purchases/assign/${taskId}`;
+        $('assignAgentSelect').value = currentAgentId === 'null' ? '' : currentAgentId;
+        $('assignModal').classList.add('show');
+    }
+
+    function openDeleteModal(taskId, type, customer) {
+        $('deleteMessage').innerText = `Delete "${type}" task for ${customer}? This cannot be undone.`;
+        $('deleteForm').action = `${BASE}/operationmanager/purchases/delete/${taskId}`;
+        $('deleteModal').classList.add('show');
+    }
 </script>
