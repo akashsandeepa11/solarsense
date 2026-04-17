@@ -81,6 +81,54 @@
   background: linear-gradient(90deg, var(--color-accent), #06b6d4);
 }
 
+/* ===== SYSTEM HEALTH BAR COLORS ===== */
+.progress-bar.health-excellent {
+  background: linear-gradient(90deg, #16a34a, #22c55e);
+}
+
+.progress-bar.health-good {
+  background: linear-gradient(90deg, #0284c7, #38bdf8);
+}
+
+.progress-bar.health-warning {
+  background: linear-gradient(90deg, #d97706, #fbbf24);
+}
+
+.progress-bar.health-critical {
+  background: linear-gradient(90deg, #dc2626, #f87171);
+}
+
+/* ===== HEALTH STATUS BADGE ===== */
+.health-status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.health-badge-health-excellent {
+  background: rgba(34, 197, 94, 0.15);
+  color: #16a34a;
+}
+
+.health-badge-health-good {
+  background: rgba(56, 189, 248, 0.15);
+  color: #0284c7;
+}
+
+.health-badge-health-warning {
+  background: rgba(251, 191, 36, 0.15);
+  color: #d97706;
+}
+
+.health-badge-health-critical {
+  background: rgba(248, 113, 113, 0.15);
+  color: #dc2626;
+}
+
 .progress-bar-label {
   color: white;
   font-weight: 600;

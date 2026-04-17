@@ -55,22 +55,46 @@ $latest_bill         = $latest ? (float) $latest->monthly_bill            : 0;
 $latest_expected     = $latest ? (float) ($latest->expected_generation ?? 0) : 0;
 $monthly_income_lkr  = $latest_export * SOLAR_TARIFF_RATE_LKR;
 
-// --- System health: actual vs expected (last month) ---
+// --- System Health: actual generation vs expected (last month) ---
+// Actual generation is tracked as grid_export in the SMS table.
 $performance_pct = ($latest_expected > 0)
-    ? min(100, round(($latest_consumption / $latest_expected) * 100))
+    ? min(100, round(($latest_export / $latest_expected) * 100))
     : 0;
 
-$system_health   = ['performance_vs_expected' => $performance_pct];
+// Classify the percentage against threshold constants from constants.php
+if ($performance_pct >= HEALTH_EXCELLENT_THRESHOLD) {
+    $health_status = HEALTH_STATUS_EXCELLENT;
+    $health_class  = 'health-excellent';
+} elseif ($performance_pct >= HEALTH_GOOD_THRESHOLD) {
+    $health_status = HEALTH_STATUS_GOOD;
+    $health_class  = 'health-good';
+} elseif ($performance_pct >= HEALTH_WARNING_THRESHOLD) {
+    $health_status = HEALTH_STATUS_WARNING;
+    $health_class  = 'health-warning';
+} else {
+    $health_status = HEALTH_STATUS_CRITICAL;
+    $health_class  = 'health-critical';
+}
 
-// --- Bar colors based on actual vs expected ---
+$system_health = [
+    'performance_vs_expected' => $performance_pct,
+    'status'                  => $health_status,
+    'css_class'               => $health_class,
+    'actual_kwh'              => $latest_export,
+    'expected_kwh'            => $latest_expected,
+];
+
+// --- Bar colors based on actual vs expected (driven by health threshold constants) ---
 $bar_colors = [];
 foreach ($actual_generation as $i => $actual) {
     $expected = $expected_generation[$i] ?? 0;
-    $ratio    = ($expected > 0) ? ($actual / $expected) : 1;
-    if ($ratio >= 0.9)       $bar_colors[] = 'rgba(34, 197, 94, 0.7)';
-    elseif ($ratio >= 0.75)  $bar_colors[] = 'rgba(245, 158, 11, 0.7)';
-    else                     $bar_colors[] = 'rgba(239, 68, 68, 0.7)';
+    $pct      = ($expected > 0) ? (($actual / $expected) * 100) : 0;
+    if ($pct >= HEALTH_EXCELLENT_THRESHOLD)      $bar_colors[] = HEALTH_COLOR_EXCELLENT;
+    elseif ($pct >= HEALTH_GOOD_THRESHOLD)       $bar_colors[] = HEALTH_COLOR_GOOD;
+    elseif ($pct >= HEALTH_WARNING_THRESHOLD)    $bar_colors[] = HEALTH_COLOR_WARNING;
+    else                                         $bar_colors[] = HEALTH_COLOR_CRITICAL;
 }
+
 
 // $selected_year and $available_years are injected by the controller
 $currentYear = $selected_year ?? (int) date('Y');
@@ -102,11 +126,47 @@ $stat_metrics = [
     ]
 ];
 
-$recent_alerts = [
-    ['date' => 'July 15th',  'description' => 'Performance 15% below expected for weather conditions.'],
-    ['date' => 'June 28th',  'description' => 'High grid import detected during peak sun hours.'],
-    ['date' => 'June 22nd',  'description' => 'Inverter efficiency lower than usual. Schedule maintenance.'],
-];
+// --- Recent Faults & Alerts: auto-generated from SMS chart data ---
+// Only shows months where performance vs expected is Critical or Warning.
+$recent_alerts = [];
+foreach ($chart_data as $row) {
+    $row_expected = (float) ($row->expected_generation ?? 0);
+    $row_actual   = (float) ($row->grid_export ?? 0);
+
+    if ($row_expected <= 0) continue; // skip rows with no expected value
+
+    $row_pct = min(100, round(($row_actual / $row_expected) * 100));
+
+    if ($row_pct >= HEALTH_WARNING_THRESHOLD) continue; // Good / Excellent → not an alert
+
+    // Classify severity
+    if ($row_pct < HEALTH_WARNING_THRESHOLD && $row_pct >= 1) {
+        $severity    = ($row_pct < HEALTH_WARNING_THRESHOLD && $row_pct < 50) ? HEALTH_STATUS_CRITICAL : HEALTH_STATUS_WARNING;
+        $sev_class   = ($severity === HEALTH_STATUS_CRITICAL) ? 'critical' : 'warning';
+    } else {
+        $severity  = HEALTH_STATUS_CRITICAL;
+        $sev_class = 'critical';
+    }
+
+    $deficit_kwh = round($row_expected - $row_actual, 1);
+    $reading_dt  = $row->reading_date ?? '';
+    $display_date = !empty($reading_dt)
+        ? date('M j, Y', strtotime($reading_dt))
+        : ($row->label ?? 'Unknown date');
+
+    $recent_alerts[] = [
+        'date'        => $display_date,
+        'reading_date'=> $reading_dt,
+        'description' => "System performance at {$row_pct}% of expected generation ({$severity}). Deficit: {$deficit_kwh} kWh.",
+        'severity'    => $severity,
+        'sev_class'   => $sev_class,
+        'pct'         => $row_pct,
+    ];
+}
+
+// Sort most recent first, cap at 5 entries
+usort($recent_alerts, fn($a, $b) => strcmp($b['reading_date'], $a['reading_date']));
+$recent_alerts = array_slice($recent_alerts, 0, 5);
 
 $quick_actions = [
     ['label' => 'Request Maintenance',    'url' => URLROOT . '/homeowner/service',          'icon' => 'fas fa-wrench',        'class' => 'btn-secondary'],
@@ -213,15 +273,24 @@ $quick_actions = [
             <!-- System Health -->
             <div class="card shadow-lg rounded-xl mb-6">
                 <div class="card-body">
-                    <h3 class="card-title text-xl font-semibold">System Health</h3>
-                    <p class="text-secondary text-sm mb-2">Performance vs. Expected</p>
+                    <div class="d-flex align-center justify-between mb-1">
+                        <h3 class="card-title text-xl font-semibold" style="margin:0;">System Health</h3>
+                        <span class="health-status-badge health-badge-<?php echo $system_health['css_class']; ?>">
+                            <?php echo $system_health['status']; ?>
+                        </span>
+                    </div>
+                    <p class="text-secondary text-sm mb-3">Actual vs. Expected Generation &mdash; Last Month</p>
+                    <div class="d-flex justify-between text-sm mb-2">
+                        <span class="text-secondary">Actual: <strong><?php echo number_format($system_health['actual_kwh'], 1); ?> kWh</strong></span>
+                        <span class="text-secondary">Expected: <strong><?php echo number_format($system_health['expected_kwh'], 1); ?> kWh</strong></span>
+                    </div>
                     <div class="progress-bar-container">
-                        <div class="progress-bar"
+                        <div class="progress-bar <?php echo $system_health['css_class']; ?>"
                             style="width: <?php echo $system_health['performance_vs_expected']; ?>%;">
-                            <span
-                                class="progress-bar-label"><?php echo $system_health['performance_vs_expected']; ?>%</span>
+                            <span class="progress-bar-label"><?php echo $system_health['performance_vs_expected']; ?>%</span>
                         </div>
                     </div>
+                    <p class="text-xs text-secondary mt-2">Thresholds: Critical &lt;<?php echo HEALTH_WARNING_THRESHOLD; ?>% &bull; Warning &lt;<?php echo HEALTH_GOOD_THRESHOLD; ?>% &bull; Good &lt;<?php echo HEALTH_EXCELLENT_THRESHOLD; ?>% &bull; Excellent &ge;90%</p>
                 </div>
             </div>
 
@@ -247,10 +316,33 @@ $quick_actions = [
         <div class="col-lg-8">
             <div class="card shadow-lg rounded-xl h-100">
                 <div class="card-body">
-                    <h3 class="card-title text-2xl font-semibold mb-4">Recent Faults & Alerts</h3>
-                    <?php foreach ($recent_alerts as $alert): ?>
-                        <?php require APPROOT . '/views/inc/components/alert_item.php'; ?>
-                    <?php endforeach; ?>
+                    <h3 class="card-title text-2xl font-semibold mb-4">Recent Faults &amp; Alerts</h3>
+                    <?php if (empty($recent_alerts)): ?>
+                        <div class="d-flex align-center gap-3 py-4">
+                            <i class="fas fa-check-circle text-success text-2xl"></i>
+                            <div>
+                                <div class="font-semibold text-success">All Systems Performing Well</div>
+                                <div class="text-sm text-secondary">No critical or warning alerts for the selected year.</div>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($recent_alerts as $alert): ?>
+                            <div class="alert-item d-flex align-center py-3">
+                                <?php if ($alert['sev_class'] === 'critical'): ?>
+                                    <i class="fas fa-times-circle text-xl mr-4" style="color:#dc2626;flex-shrink:0;"></i>
+                                <?php else: ?>
+                                    <i class="fas fa-exclamation-triangle text-xl mr-4" style="color:#d97706;flex-shrink:0;"></i>
+                                <?php endif; ?>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-sm" style="color:<?php echo ($alert['sev_class'] === 'critical') ? '#dc2626' : '#d97706'; ?>">
+                                        <?php echo htmlspecialchars($alert['severity']); ?> &mdash; <?php echo htmlspecialchars($alert['pct']); ?>% of Expected Generation
+                                    </div>
+                                    <div class="text-sm text-secondary"><?php echo htmlspecialchars($alert['description']); ?></div>
+                                </div>
+                                <div class="text-xs text-muted ml-3" style="white-space:nowrap;"><?php echo htmlspecialchars($alert['date']); ?></div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
