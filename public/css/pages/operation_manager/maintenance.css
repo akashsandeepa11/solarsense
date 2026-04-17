@@ -274,6 +274,10 @@
 }
 
 /* ===== MODAL STYLING ===== */
+[hidden] {
+  display: none !important;
+}
+
 .modal {
   display: none;
   position: fixed;

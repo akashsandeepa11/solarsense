@@ -52,6 +52,20 @@ class M_maintenance_task {
             return [];
         }
     }
+    // for dropdown of agents when assigning task
+    public function get_active_agents($companyId) {
+        $this->db->query("
+            SELECT 
+                sa.user_id,
+                u.full_name
+            FROM service_agent sa
+            JOIN user u ON sa.user_id = u.user_id
+            WHERE sa.company_id = :company_id
+            AND sa.status = 'Active'
+        ");
+        $this->db->bind(':company_id', $companyId);
+        return $this->db->resultSet();
+    }
 
     /**
      * Create a new service request
@@ -78,6 +92,7 @@ class M_maintenance_task {
      * Assign a service agent to a task and set status to Pending
      */
     public function assign_agent($taskId, $agentId) {
+    
         try {
             $this->db->query("
                 UPDATE service_req

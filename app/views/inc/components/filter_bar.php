@@ -400,6 +400,9 @@ $formId = 'filter-form-' . uniqid();
                                     const statusCell = row.querySelector('[data-filter="status"]') || 
                                                       row.cells[5]; // Fallback to status column position
                                     columnText = statusCell ? statusCell.textContent.toLowerCase().trim() : '';
+                                } else if (filterName === 'assigned') {
+                                    const assignedCell = row.querySelector('[data-filter="assigned"]');
+                                    columnText = assignedCell ? assignedCell.getAttribute('data-filter-value').toLowerCase().trim() : '';
                                 } else if (filterName === 'workload') {
                                     const workloadCell = row.querySelector('[data-filter="workload"]');
                                     columnText = workloadCell ? workloadCell.textContent.toLowerCase().trim() : '';

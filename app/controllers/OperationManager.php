@@ -251,7 +251,8 @@ class OperationManager extends Controller
         } else {
             // Handle Maintenance Tasks
             $data['tasks'] = $this->taskModel->get_tasks_by_company($companyId);
-            $data['agents'] = $this->teamModel->get_service_agent_stats($companyId);
+            // $data['agents'] = $this->teamModel->get_service_agent_stats($companyId);
+            $data['agents'] = $this->taskModel->get_active_agents($companyId);
             $data['customers'] = $this->fleetModel->get_customer_stats($companyId);
             $data['service_types'] = $this->taskModel->get_service_types();
 
