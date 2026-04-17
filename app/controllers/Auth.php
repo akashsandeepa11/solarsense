@@ -23,32 +23,32 @@
             switch($user->type) {
                 case ROLE_HOMEOWNER:
                     error_log("DEBUG: Redirecting homeowner to HomeOwner/dashboard");
-                    redirect('HomeOwner/dashboard');
+                    redirect('homeowner/dashboard');
                     exit; // Force exit after redirect
                     break;
                 case ROLE_INSTALLER_ADMIN:
                     error_log("DEBUG: Redirecting installer admin");
-                    redirect('InstallerAdmin/dashboard');
+                    redirect('installeradmin/dashboard');
                     exit;
                     break;
                 case ROLE_OPERATION_MANAGER:
                     error_log("DEBUG: Redirecting operation manager");
-                    redirect('OperationManager/dashboard');
+                    redirect('operationmanager/dashboard');
                     exit;
                     break;
                 case ROLE_INVENTORY_MANAGER:
                     error_log("DEBUG: Redirecting inventory manager");
-                    redirect('InventoryManager/inventory');
+                    redirect('inventorymanager/inventory');
                     exit;
                     break;
                 case ROLE_SERVICE_AGENT:
                     error_log("DEBUG: Redirecting service agent");
-                    redirect('ServiceAgent/tasks');
+                    redirect('serviceagent/tasks');
                     exit;
                     break;
                 case ROLE_SUPER_ADMIN:
                     error_log("DEBUG: Redirecting super admin");
-                    redirect('SuperAdmin/dashboard');
+                    redirect('superadmin/dashboard');
                     exit;
                     break;
                 default:
