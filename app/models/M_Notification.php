@@ -24,7 +24,6 @@ class M_Notification
                 type,
                 title,
                 message,
-                is_read,
                 created_at
             FROM notifications
             WHERE user_id = :user_id
@@ -34,20 +33,18 @@ class M_Notification
         $this->db->bind(':user_id', $user_id);
         $this->db->bind(':limit',   $limit, PDO::PARAM_INT);
 
-        $rows = $this->db->resultSet(); // returns stdObject[]
+        $rows = $this->db->resultSet();
 
-        // Convert to plain arrays and add derived fields expected by the panel
         $result = [];
         foreach ($rows as $row) {
             $type = $row->type ?? 'info';
             $result[] = [
                 'id'        => (int) $row->id,
                 'type'      => $type,
-                'icon'      => NOTIFICATION_ICONS[$type]       ?? 'fas fa-bell',
+                'icon'      => NOTIFICATION_ICONS[$type] ?? 'fas fa-bell',
                 'title'     => $row->title,
                 'message'   => $row->message,
                 'timestamp' => $this->timeAgo($row->created_at),
-                'is_read'   => (bool) $row->is_read,
             ];
         }
         return $result;
@@ -62,58 +59,6 @@ class M_Notification
     public function get_all_notifications(int $user_id): array
     {
         return $this->get_notifications($user_id, 100);
-    }
-
-    /**
-     * Count unread notifications for a user.
-     *
-     * @param int $user_id
-     * @return int
-     */
-    public function get_unread_count(int $user_id): int
-    {
-        $this->db->query("
-            SELECT COUNT(*) AS cnt
-            FROM notifications
-            WHERE user_id = :user_id AND is_read = 0
-        ");
-        $this->db->bind(':user_id', $user_id);
-        $row = $this->db->single();
-        return $row ? (int) $row->cnt : 0;
-    }
-
-    /**
-     * Mark a single notification as read.
-     *
-     * @param int $notification_id
-     * @param int $user_id
-     * @return bool
-     */
-    public function mark_as_read(int $notification_id, int $user_id): bool
-    {
-        $this->db->query("
-            UPDATE notifications
-            SET is_read = 1
-            WHERE notification_id = :notification_id AND user_id = :user_id
-        ");
-        $this->db->bind(':notification_id', $notification_id);
-        $this->db->bind(':user_id',         $user_id);
-        return $this->db->execute();
-    }
-
-    /**
-     * Mark all notifications for a user as read.
-     *
-     * @param int $user_id
-     * @return bool
-     */
-    public function mark_all_read(int $user_id): bool
-    {
-        $this->db->query("
-            UPDATE notifications SET is_read = 1 WHERE user_id = :user_id
-        ");
-        $this->db->bind(':user_id', $user_id);
-        return $this->db->execute();
     }
 
     /**

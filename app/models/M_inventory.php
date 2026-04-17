@@ -349,6 +349,43 @@ class M_inventory
         $this->db->bind(':order_id', (int) $orderId);
         $this->db->execute();
     }
+
+    /**
+     * Get current stock level and company_id for an inventory item.
+     * Used after a purchase to check whether stock fell below the low-stock threshold.
+     *
+     * @param int $inventory_id
+     * @return object|null  stdClass with ->quantity and ->company_id, or null
+     */
+    public function get_item_stock_and_company(int $inventory_id): ?object
+    {
+        $this->db->query("
+            SELECT inventory_id, item_name, quantity, company_id
+            FROM inventory
+            WHERE inventory_id = :inventory_id
+            LIMIT 1
+        ");
+        $this->db->bind(':inventory_id', $inventory_id);
+        return $this->db->single() ?: null;
+    }
+
+    /**
+     * Return the user_id of every inventory manager that belongs to a company.
+     *
+     * @param int $company_id
+     * @return array  plain array of integer user_ids
+     */
+    public function get_inventory_managers_by_company(int $company_id): array
+    {
+        $this->db->query("
+            SELECT user_id
+            FROM inventory_manager
+            WHERE company_id = :company_id
+        ");
+        $this->db->bind(':company_id', $company_id);
+        $rows = $this->db->resultSet();
+        return $rows ? array_column(array_map('get_object_vars', $rows), 'user_id') : [];
+    }
 }
 
 ?>

@@ -4,11 +4,9 @@
  *
  * Dropdown notification panel — icon and colours are derived from `type`
  * using the NOTIFICATION_* constants defined in constants.php.
- * The `icon` key in each notification entry is optional (model already adds it).
  *
  * @param array $config
- *   - notifications (array): Each entry has: id, type, title, message, timestamp, is_read
- *   - badge_count   (int):   Number displayed on the bell badge
+ *   - notifications (array): Each entry has: id, type, title, message, timestamp
  *   - view_all_url  (string): URL to the full notifications page
  */
 
@@ -17,7 +15,6 @@ if (!isset($config)) {
 }
 
 $notifications = $config['notifications'] ?? [];
-$badgeCount    = $config['badge_count']   ?? 0;
 $viewAllUrl    = $config['view_all_url']  ?? '#';
 
 /**
@@ -54,17 +51,6 @@ function notifBadgeColor(string $type): string {
 <div class="notification-container" style="position: relative;">
     <button class="btn border-0 navbar-icon-btn mr-3" id="notification-btn" style="position: relative;">
         <i class="fas fa-regular fa-bell"></i>
-        <?php if ($badgeCount > 0): ?>
-            <span class="notification-badge" id="notification-badge" style="
-                position: absolute; top: 0; right: 0;
-                background-color: #ef4444; color: white;
-                border-radius: 50%; width: 20px; height: 20px;
-                display: flex; align-items: center; justify-content: center;
-                font-size: 0.75rem; font-weight: 600;
-            ">
-                <?php echo $badgeCount > 9 ? '9+' : $badgeCount; ?>
-            </span>
-        <?php endif; ?>
     </button>
 
     <!-- Notification Dropdown Panel -->
@@ -112,7 +98,6 @@ function notifBadgeColor(string $type): string {
                             padding: 1rem; border-bottom: 1px solid #f3f4f6;
                             cursor: pointer; transition: background-color 0.2s;
                             display: flex; gap: 0.75rem;
-                            <?php echo ($notif['is_read'] ?? false) ? 'opacity: 0.7;' : ''; ?>
                          ">
                         <!-- Icon circle -->
                         <div style="
@@ -137,15 +122,6 @@ function notifBadgeColor(string $type): string {
                                 <?php echo htmlspecialchars($notif['timestamp'] ?? ''); ?>
                             </div>
                         </div>
-
-                        <!-- Unread dot -->
-                        <?php if (!($notif['is_read'] ?? false)): ?>
-                            <div class="unread-dot" style="
-                                width: 8px; height: 8px; border-radius: 50%;
-                                background-color: <?php echo notifBadgeColor($type); ?>;
-                                margin-top: 0.5rem; flex-shrink: 0;
-                            "></div>
-                        <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>
@@ -173,7 +149,6 @@ function notifBadgeColor(string $type): string {
     const notificationPanel = document.getElementById('notification-panel');
     const clearBtn          = document.getElementById('clear-notifications-btn');
     const notificationsList = document.getElementById('notifications-list');
-    const notificationBadge = document.getElementById('notification-badge');
 
     if (!notificationBtn || !notificationPanel) return;
 
@@ -196,43 +171,6 @@ function notifBadgeColor(string $type): string {
         e.stopPropagation();
     });
 
-    // ── Helper: update the badge count ───────────────────────────────────────
-    function updateBadge(count) {
-        if (!notificationBadge) return;
-        if (count <= 0) {
-            notificationBadge.style.display = 'none';
-        } else {
-            notificationBadge.style.display = 'flex';
-            notificationBadge.textContent   = count > 9 ? '9+' : count;
-        }
-    }
-
-    // ── Mark individual notification as read on click ─────────────────────────
-    notificationsList.addEventListener('click', function (e) {
-        const item = e.target.closest('.notification-item');
-        if (!item) return;
-
-        const notifId  = item.dataset.id;
-        const endpoint = item.dataset.url;
-
-        // Optimistic UI update
-        item.style.opacity = '0.7';
-        const dot = item.querySelector('.unread-dot');
-        if (dot) dot.style.display = 'none';
-
-        if (!notifId || !endpoint) return;
-
-        const formData = new FormData();
-        formData.append('notification_id', notifId);
-
-        fetch(endpoint, { method: 'POST', body: formData })
-            .then(r => r.json())
-            .then(res => {
-                if (res.success) updateBadge(res.badge_count);
-            })
-            .catch(() => {/* silent fail — UI already updated */});
-    });
-
     // ── Hover effect ─────────────────────────────────────────────────────────
     notificationsList.addEventListener('mouseover', function (e) {
         const item = e.target.closest('.notification-item');
@@ -252,10 +190,11 @@ function notifBadgeColor(string $type): string {
 
             if (!confirm('Clear all notifications?')) return;
 
-            // Derive the clear endpoint from the mark-read URL
             const sampleItem = notificationsList.querySelector('.notification-item');
             const markUrl    = sampleItem ? sampleItem.dataset.url : '';
-            const clearUrl   = markUrl.replace('markNotificationRead', 'clearNotifications');
+            const clearUrl   = markUrl
+                ? markUrl.replace('markNotificationRead', 'clearNotifications')
+                : window.location.origin + '/homeowner/clearNotifications';
 
             fetch(clearUrl, { method: 'POST' })
                 .then(r => r.json())
@@ -265,7 +204,6 @@ function notifBadgeColor(string $type): string {
                             '<div style="padding: 2rem; text-align: center; color: #9ca3af;">' +
                             '<i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>' +
                             'No notifications</div>';
-                        updateBadge(0);
                     }
                 })
                 .catch(() => {
@@ -273,7 +211,6 @@ function notifBadgeColor(string $type): string {
                         '<div style="padding: 2rem; text-align: center; color: #9ca3af;">' +
                         '<i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>' +
                         'No notifications</div>';
-                    updateBadge(0);
                 });
         });
     }

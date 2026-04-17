@@ -4,11 +4,9 @@
  *
  * Receives from the controller:
  *   $data['notifications']  — array from M_Notification::get_all_notifications()
- *   $data['unread_count']   — int
  */
 
 $allNotifications = $data['notifications'] ?? [];
-$unreadCount      = $data['unread_count']  ?? 0;
 
 // Count by type for the stats row
 $errorCount   = 0;
@@ -128,10 +126,6 @@ foreach ($allNotifications as $n) {
             <p class="stat-label">Total Notifications</p>
         </div>
         <div class="stat-box">
-            <p class="stat-number" style="color: #ef4444;"><?php echo $unreadCount; ?></p>
-            <p class="stat-label">Unread</p>
-        </div>
-        <div class="stat-box">
             <p class="stat-number" style="color: #f59e0b;"><?php echo $errorCount; ?></p>
             <p class="stat-label">Alerts &amp; Warnings</p>
         </div>
@@ -143,9 +137,6 @@ foreach ($allNotifications as $n) {
 
     <!-- Action Bar -->
     <div class="notif-actions">
-        <button class="notif-action-btn" id="mark-all-read-btn">
-            <i class="fas fa-check-double mr-1"></i> Mark All as Read
-        </button>
         <button class="notif-action-btn danger" id="clear-all-btn">
             <i class="fas fa-trash mr-1"></i> Clear All
         </button>
@@ -158,7 +149,6 @@ foreach ($allNotifications as $n) {
         <button class="filter-btn" data-filter="warning">Warnings</button>
         <button class="filter-btn" data-filter="info">Info</button>
         <button class="filter-btn" data-filter="success">Success</button>
-        <button class="filter-btn" data-filter="unread">Unread Only</button>
     </div>
 
     <!-- Notifications List -->
@@ -171,15 +161,13 @@ foreach ($allNotifications as $n) {
         <?php else: ?>
             <?php foreach ($allNotifications as $notif):
                 $type    = $notif['type'] ?? 'info';
-                $isRead  = $notif['is_read'] ?? false;
                 $icon    = !empty($notif['icon']) ? $notif['icon'] : (NOTIFICATION_ICONS[$type] ?? 'fas fa-bell');
                 $bgColor = NOTIFICATION_BG_COLORS[$type]   ?? '#f3f4f6';
                 $icColor = NOTIFICATION_ICON_COLORS[$type] ?? '#6b7280';
             ?>
-            <div class="notification-card <?php echo htmlspecialchars($type); ?> <?php echo $isRead ? '' : 'unread'; ?>"
+            <div class="notification-card <?php echo htmlspecialchars($type); ?>"
                  data-id="<?php echo (int) ($notif['id'] ?? 0); ?>"
-                 data-type="<?php echo htmlspecialchars($type); ?>"
-                 data-read="<?php echo $isRead ? '1' : '0'; ?>">
+                 data-type="<?php echo htmlspecialchars($type); ?>">
 
                 <div class="notification-header">
                     <div class="notification-icon" style="background-color: <?php echo $bgColor; ?>;">
@@ -194,9 +182,6 @@ foreach ($allNotifications as $n) {
                                 <i class="fas fa-clock mr-1"></i>
                                 <?php echo htmlspecialchars($notif['timestamp'] ?? ''); ?>
                             </span>
-                            <?php if (!$isRead): ?>
-                                <span class="notification-badge-label">Unread</span>
-                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -208,9 +193,9 @@ foreach ($allNotifications as $n) {
 
 <script>
 (function () {
-    const baseUrl     = '<?php echo URLROOT; ?>/homeowner';
-    const filterBtns  = document.querySelectorAll('.filter-btn');
-    const list        = document.getElementById('notifications-list');
+    const baseUrl    = '<?php echo URLROOT; ?>/homeowner';
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const list       = document.getElementById('notifications-list');
 
     // ── Filter ────────────────────────────────────────────────────────────────
     filterBtns.forEach(btn => {
@@ -221,57 +206,12 @@ foreach ($allNotifications as $n) {
 
             list.querySelectorAll('.notification-card').forEach(card => {
                 let show = false;
-                if      (filter === 'all')    show = true;
-                else if (filter === 'unread') show = card.dataset.read === '0';
-                else                          show = card.dataset.type === filter;
+                if      (filter === 'all') show = true;
+                else                      show = card.dataset.type === filter;
                 card.style.display = show ? '' : 'none';
             });
         });
     });
-
-    // ── Mark individual as read on click ─────────────────────────────────────
-    list.addEventListener('click', function (e) {
-        const card = e.target.closest('.notification-card');
-        if (!card || card.dataset.read === '1') return;
-
-        const notifId = card.dataset.id;
-        const fd      = new FormData();
-        fd.append('notification_id', notifId);
-
-        fetch(baseUrl + '/markNotificationRead', { method: 'POST', body: fd })
-            .then(r => r.json())
-            .then(res => {
-                if (res.success) {
-                    card.classList.remove('unread');
-                    card.dataset.read = '1';
-                    const badge = card.querySelector('.notification-badge-label');
-                    if (badge) badge.remove();
-                }
-            });
-    });
-
-    // ── Mark All Read ─────────────────────────────────────────────────────────
-    const markAllBtn = document.getElementById('mark-all-read-btn');
-    if (markAllBtn) {
-        markAllBtn.addEventListener('click', function () {
-            const cards = list.querySelectorAll('.notification-card.unread');
-            const promises = Array.from(cards).map(card => {
-                const fd = new FormData();
-                fd.append('notification_id', card.dataset.id);
-                return fetch(baseUrl + '/markNotificationRead', { method: 'POST', body: fd })
-                       .then(r => r.json())
-                       .then(res => {
-                           if (res.success) {
-                               card.classList.remove('unread');
-                               card.dataset.read = '1';
-                               const badge = card.querySelector('.notification-badge-label');
-                               if (badge) badge.remove();
-                           }
-                       });
-            });
-            Promise.all(promises);
-        });
-    }
 
     // ── Clear All ─────────────────────────────────────────────────────────────
     const clearAllBtn = document.getElementById('clear-all-btn');

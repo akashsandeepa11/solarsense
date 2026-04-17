@@ -53,17 +53,15 @@ class HomeOwner extends Controller
             $daily_forecast = getDailySolarForecast($lat, $lon);
 
             $notifications = $this->notificationModel->get_notifications($userId, 10);
-            $notifBadge   = $this->notificationModel->get_unread_count($userId);
 
             $data = [
-                'user'          => $this->user,
-                'stats'         => $stats,
-                'chart_data'    => $this->smsModel->get_chart_data($userId, 12, $selectedYear),
-                'selected_year' => $selectedYear,
+                'user'            => $this->user,
+                'stats'           => $stats,
+                'chart_data'      => $this->smsModel->get_chart_data($userId, 12, $selectedYear),
+                'selected_year'   => $selectedYear,
                 'available_years' => $availYears,
                 'daily_forecast'  => $daily_forecast,
                 'notifications'   => $notifications,
-                'notif_badge'     => $notifBadge,
             ];
 
             $this->view('pages/homeowner/dashboard', $data, layout: 'dashboard');
@@ -112,6 +110,41 @@ class HomeOwner extends Controller
             'status' => 'pending',
             'date' => date('Y-m-d'),
         ], $cart);
+
+        // --- Low-stock notifications (same pattern as SMS health alerts) ------
+        // create_order() already deducted the purchased qty from inventory.
+        // Now check each item: if remaining stock < 10, notify every inventory
+        // manager in that item's company — no AJAX, just direct model calls.
+        foreach ($cart as $item) {
+            $inventoryId = (int) ($item['id'] ?? 0);
+            if ($inventoryId <= 0) continue;
+
+            $stockRow = $this->inventoryModel->get_item_stock_and_company($inventoryId);
+            if (!$stockRow) continue;
+
+            $currentQty = (int) $stockRow->quantity;
+            $itemName   = $stockRow->item_name;
+            $companyId  = (int) $stockRow->company_id;
+
+            if ($currentQty < 10) {
+                $managerIds = $this->inventoryModel->get_inventory_managers_by_company($companyId);
+
+                foreach ($managerIds as $managerId) {
+                    $this->notificationModel->add(
+                        (int) $managerId,
+                        'warning',
+                        'Low Stock Alert – ' . $itemName,
+                        sprintf(
+                            '"%s" has only %d unit%s remaining. Please restock soon.',
+                            $itemName,
+                            $currentQty,
+                            $currentQty === 1 ? '' : 's'
+                        )
+                    );
+                }
+            }
+        }
+        // -----------------------------------------------------------------------
 
         // Generate PayHere hash
         // hash = MD5(merchant_id + order_id + amount + currency + MD5(secret).toUpperCase())
@@ -511,10 +544,8 @@ class HomeOwner extends Controller
         $userId = (int) $_SESSION['user_id'];
 
         $data = [
-            'user'         => $this->user,
+            'user'          => $this->user,
             'notifications' => $this->notificationModel->get_all_notifications($userId),
-            'unread_count'  => $this->notificationModel->get_unread_count($userId),
-            'notif_badge'   => $this->notificationModel->get_unread_count($userId),
         ];
 
         $this->view('pages/common/notifications', $data, layout: 'dashboard');
