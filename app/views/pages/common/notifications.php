@@ -193,7 +193,7 @@ foreach ($allNotifications as $n) {
 
 <script>
 (function () {
-    const baseUrl    = '<?php echo URLROOT; ?>/homeowner';
+    const baseUrl    = '<?php echo URLROOT . '/' . strtolower($data['user']['role'] ?? 'homeowner'); ?>';
     const filterBtns = document.querySelectorAll('.filter-btn');
     const list       = document.getElementById('notifications-list');
 

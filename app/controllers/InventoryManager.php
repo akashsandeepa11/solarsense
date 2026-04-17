@@ -8,42 +8,45 @@ class InventoryManager extends Controller
     ];
 
     private $inventoryModel;
+    private $notificationModel;
+    private $notifications = [];
     private $company_id;
 
     public function __construct()
     {
-        // Load the model
-        $this->inventoryModel = $this->model('M_inventory');
+        // Load models
+        $this->inventoryModel    = $this->model('M_inventory');
+        $this->notificationModel = $this->model('M_Notification');
 
-        // Resolve company_id from the logged-in inventory manager's record
-        $userId = $_SESSION['user_id'] ?? null;
-        $this->company_id = $userId
-            ? (int) $this->inventoryModel->get_company_id($userId)
-            : null;
+        // Resolve company_id and pre-load notifications for the topnavbar panel
+        $userId = (int) ($_SESSION['user_id'] ?? 0);
+        $this->company_id  = $userId ? (int) $this->inventoryModel->get_company_id($userId) : null;
+        $this->notifications = $userId ? $this->notificationModel->get_notifications($userId, 10) : [];
     }
 
     // --- Dashboard Page ---
     public function dashboard()
     {
-        $totalItems = $this->inventoryModel->get_total_items_count();
-        $lowStockItems = $this->inventoryModel->get_low_stock_items(5);
-        $totalStockValue = $this->inventoryModel->get_total_stock_value();
-        $categoriesCount = $this->inventoryModel->get_categories_count();
-        $stockByCategory = $this->inventoryModel->get_stock_by_category();
-        $recentOrders = $this->inventoryModel->get_recent_orders(5);
-        $totalOrdersCount = $this->inventoryModel->get_total_orders_count();
+        $totalItems        = $this->inventoryModel->get_total_items_count();
+        $lowStockItems     = $this->inventoryModel->get_low_stock_items(5);
+        $totalStockValue   = $this->inventoryModel->get_total_stock_value();
+        $categoriesCount   = $this->inventoryModel->get_categories_count();
+        $stockByCategory   = $this->inventoryModel->get_stock_by_category();
+        $recentOrders      = $this->inventoryModel->get_recent_orders(5);
+        $totalOrdersCount  = $this->inventoryModel->get_total_orders_count();
         $totalOrdersAmount = $this->inventoryModel->get_total_orders_amount();
 
         $data = [
-            'user' => $this->user,
-            'total_items' => $totalItems,
-            'low_stock_items' => $lowStockItems,
-            'low_stock_count' => count((array) $lowStockItems),
-            'total_stock_value' => $totalStockValue,
-            'categories_count' => $categoriesCount,
-            'stock_by_category' => $stockByCategory,
-            'recent_orders' => $recentOrders,
-            'total_orders_count' => $totalOrdersCount,
+            'user'                => $this->user,
+            'notifications'       => $this->notifications,
+            'total_items'         => $totalItems,
+            'low_stock_items'     => $lowStockItems,
+            'low_stock_count'     => count((array) $lowStockItems),
+            'total_stock_value'   => $totalStockValue,
+            'categories_count'    => $categoriesCount,
+            'stock_by_category'   => $stockByCategory,
+            'recent_orders'       => $recentOrders,
+            'total_orders_count'  => $totalOrdersCount,
             'total_orders_amount' => $totalOrdersAmount,
         ];
 
@@ -109,13 +112,14 @@ class InventoryManager extends Controller
 
         // --- Fetch items from DB ---
 
-        $items = $this->inventoryModel->get_all_items($this->company_id);
+        $items      = $this->inventoryModel->get_all_items($this->company_id);
         $categories = $this->inventoryModel->get_categories();
 
         $data = [
-            'user' => $this->user,
-            'items' => $items ?? [],
-            'categories' => $categories ?? []
+            'user'          => $this->user,
+            'notifications' => $this->notifications,
+            'items'         => $items ?? [],
+            'categories'    => $categories ?? [],
         ];
 
         $this->view('pages/inventory_manager/inventory', $data, layout: 'dashboard');
@@ -296,8 +300,9 @@ class InventoryManager extends Controller
         }
 
         $data = [
-            'user' => $this->user,
-            'item' => $item,
+            'user'          => $this->user,
+            'notifications' => $this->notifications,
+            'item'          => $item,
         ];
 
         $this->view('pages/inventory_manager/item_view', $data, layout: 'dashboard');
@@ -308,7 +313,8 @@ class InventoryManager extends Controller
     public function suppliers()
     {
         $data = [
-            'user' => $this->user,
+            'user'          => $this->user,
+            'notifications' => $this->notifications,
         ];
 
         $this->view('pages/inventory_manager/suppliers', $data, layout: 'dashboard');
@@ -324,9 +330,10 @@ class InventoryManager extends Controller
         $stats = $this->inventoryModel->get_order_stats();
 
         $data = [
-            'user' => $this->user,
-            'orders' => $orders ?? [],
-            'stats' => $stats,
+            'user'          => $this->user,
+            'notifications' => $this->notifications,
+            'orders'        => $orders ?? [],
+            'stats'         => $stats,
             'status_filter' => $statusFilter,
         ];
 
@@ -346,7 +353,8 @@ class InventoryManager extends Controller
     public function settings()
     {
         $data = [
-            'user' => $this->user,
+            'user'          => $this->user,
+            'notifications' => $this->notifications,
         ];
 
         $this->view('pages/inventory_manager/settings', $data, layout: 'dashboard');
@@ -373,7 +381,8 @@ class InventoryManager extends Controller
     public function reports()
     {
         $data = [
-            'user' => $this->user,
+            'user'          => $this->user,
+            'notifications' => $this->notifications,
         ];
 
         $this->view('pages/inventory_manager/reports', $data, layout: 'dashboard');
@@ -382,20 +391,34 @@ class InventoryManager extends Controller
     public function profile()
     {
         $data = [
-            'user' => $this->user,
+            'user'          => $this->user,
+            'notifications' => $this->notifications,
         ];
 
         $this->view('pages/inventory_manager/profile', $data, layout: 'dashboard');
     }
 
-    // --- Notifications ---
+    // --- Notifications (full page) ---
     public function notifications()
     {
+        $userId = (int) ($_SESSION['user_id'] ?? 0);
+
         $data = [
-            'user' => $this->user,
+            'user'          => $this->user,
+            'notifications' => $this->notificationModel->get_all_notifications($userId),
         ];
 
         $this->view('pages/common/notifications', $data, layout: 'dashboard');
+    }
+
+    // --- Clear all notifications (AJAX) ---
+    public function clearNotifications()
+    {
+        header('Content-Type: application/json');
+        $userId = (int) ($_SESSION['user_id'] ?? 0);
+        $success = $userId ? $this->notificationModel->delete_all($userId) : false;
+        echo json_encode(['success' => $success]);
+        exit();
     }
 
     public function help()
@@ -422,7 +445,10 @@ class InventoryManager extends Controller
             }
         }
 
-        $data = ['user' => $this->user];
+        $data = [
+            'user'          => $this->user,
+            'notifications' => $this->notifications,
+        ];
         $this->view('pages/inventory_manager/help', $data, layout: 'dashboard');
     }
 
