@@ -59,13 +59,9 @@ foreach ($allNotifications as $n) {
         padding: 1.5rem;
         cursor: pointer;
         transition: all 0.2s ease;
-        border-left: 4px solid #e5e7eb;
     }
     .notification-card:hover      { box-shadow: 0 10px 15px -3px rgba(0,0,0,.1); transform: translateY(-2px); }
-    .notification-card.error      { border-left-color: #ef4444; }
-    .notification-card.warning    { border-left-color: #f59e0b; }
-    .notification-card.info       { border-left-color: #3b82f6; }
-    .notification-card.success    { border-left-color: #22c55e; }
+
     .notification-card.unread     { background: rgba(254,150,48,.02); }
 
     .notification-header  { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 0.5rem; }
