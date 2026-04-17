@@ -1,4 +1,4 @@
-<!-- Loading Spinner Overlay -->
+<!-- Loading Spinner Overlay
 <div id="loadingSpinner" class="loading-spinner-overlay">
     <div class="loading-spinner-container">
         <div class="solar-panel-spinner">
@@ -266,4 +266,4 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
-</script>
+</script> -->

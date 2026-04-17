@@ -312,7 +312,7 @@ class M_inventory
                 $inventoryId = (int) ($item['id'] ?? 0);
                 $qty = (int) ($item['qty'] ?? 1);
 
-                // 2) Insert order_item — DB trigger automatically deducts inventory
+                // 2) Insert order_item
                 $this->db->query("
                     INSERT INTO order_item (order_id, inventory_id, quantity)
                     VALUES (:order_id, :inventory_id, :quantity)
@@ -321,7 +321,16 @@ class M_inventory
                 $this->db->bind(':inventory_id', $inventoryId);
                 $this->db->bind(':quantity', $qty);
                 $this->db->execute();
-                // Trigger 'reduce_inventory_on_order_item' fires here automatically
+
+                // 3) Deduct the purchased quantity from inventory stock
+                $this->db->query("
+                    UPDATE inventory
+                    SET quantity = GREATEST(0, quantity - :qty)
+                    WHERE inventory_id = :inventory_id
+                ");
+                $this->db->bind(':qty', $qty);
+                $this->db->bind(':inventory_id', $inventoryId);
+                $this->db->execute();
             }
 
             $this->db->commit();
