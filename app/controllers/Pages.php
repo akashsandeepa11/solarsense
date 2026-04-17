@@ -22,5 +22,12 @@
         public function error403(){
             $this->view('pages/403');
         }
+
+        public function email_verification(){
+            $this->view('pages/auth/email_verification');
+        }
+        public function reset(){
+            $this->view('pages/auth/reset_password_email');
+        }
     }
 ?>  
