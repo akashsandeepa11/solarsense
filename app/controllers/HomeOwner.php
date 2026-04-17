@@ -7,6 +7,7 @@ class HomeOwner extends Controller
     private $dashboardModel;
     private $inventoryModel;
     private $profileModel;
+    private $notificationModel;
 
     
 
@@ -16,12 +17,13 @@ class HomeOwner extends Controller
 
     public function __construct()
     {
-        $this->serviceModel = $this->model('M_Service');
-        $this->smsModel = $this->model('M_SMS');
-        $this->solarSystemModel = $this->model('M_SolarSystem');
-        $this->dashboardModel = $this->model('M_Homeowner_Dashboard');
-        $this->inventoryModel = $this->model('M_inventory');
-        $this->profileModel = $this->model('M_Profile');
+        $this->serviceModel       = $this->model('M_Service');
+        $this->smsModel           = $this->model('M_SMS');
+        $this->solarSystemModel   = $this->model('M_SolarSystem');
+        $this->dashboardModel     = $this->model('M_Homeowner_Dashboard');
+        $this->inventoryModel     = $this->model('M_inventory');
+        $this->profileModel       = $this->model('M_Profile');
+        $this->notificationModel  = $this->model('M_Notification');
     }
 
 
@@ -50,13 +52,17 @@ class HomeOwner extends Controller
             require_once APPROOT . '/api/weather_api.php';
             $daily_forecast = getDailySolarForecast($lat, $lon);
 
+            $notifConfig = $this->getNotificationConfig();
+
             $data = [
-                'user' => $this->user,
-                'stats' => $stats,
-                'chart_data' => $this->smsModel->get_chart_data($userId, 12, $selectedYear),
-                'selected_year' => $selectedYear,
-                'available_years' => $availYears,
-                'daily_forecast' => $daily_forecast
+                'user'             => $this->user,
+                'stats'            => $stats,
+                'chart_data'       => $this->smsModel->get_chart_data($userId, 12, $selectedYear),
+                'selected_year'    => $selectedYear,
+                'available_years'  => $availYears,
+                'daily_forecast'   => $daily_forecast,
+                'notifications'    => $notifConfig['notifications'],
+                'notif_badge'      => $notifConfig['badge_count'],
             ];
 
             $this->view('pages/homeowner/dashboard', $data, layout: 'dashboard');
@@ -463,11 +469,76 @@ class HomeOwner extends Controller
     // --- Notifications ---
     public function notifications()
     {
+        $notifConfig = $this->getNotificationConfig();
+
         $data = [
-            'user' => $this->user,
+            'user'             => $this->user,
+            'notifications'    => $this->notificationModel->get_all_notifications((int) $_SESSION['user_id']),
+            'notif_badge'      => $notifConfig['badge_count'],
+            'unread_count'     => $notifConfig['badge_count'],
         ];
 
         $this->view('pages/common/notifications', $data, layout: 'dashboard');
+    }
+
+    /**
+     * AJAX — Mark a single notification as read.
+     * POST: notification_id
+     */
+    public function markNotificationRead()
+    {
+        header('Content-Type: application/json');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request']);
+            exit();
+        }
+        $notifId = (int) ($_POST['notification_id'] ?? 0);
+        $userId  = (int) $_SESSION['user_id'];
+        if ($notifId < 1) {
+            echo json_encode(['success' => false, 'message' => 'Invalid ID']);
+            exit();
+        }
+        $ok = $this->notificationModel->mark_as_read($notifId, $userId);
+        echo json_encode([
+            'success'     => $ok,
+            'badge_count' => $this->notificationModel->get_unread_count($userId),
+        ]);
+        exit();
+    }
+
+    /**
+     * AJAX — Clear all notifications for the logged-in user.
+     * POST (no body required)
+     */
+    public function clearNotifications()
+    {
+        header('Content-Type: application/json');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request']);
+            exit();
+        }
+        $userId = (int) $_SESSION['user_id'];
+        $ok     = $this->notificationModel->delete_all($userId);
+        echo json_encode(['success' => $ok]);
+        exit();
+    }
+
+    /**
+     * Build the notification config array used by topnavbar and dashboard data.
+     *
+     * @return array  ['notifications' => [...], 'badge_count' => int]
+     */
+    private function getNotificationConfig(): array
+    {
+        $userId        = (int) $_SESSION['user_id'];
+        $notifications = $this->notificationModel->get_notifications($userId, 10);
+        $badgeCount    = $this->notificationModel->get_unread_count($userId);
+
+        return [
+            'notifications' => $notifications,
+            'badge_count'   => $badgeCount,
+            'view_all_url'  => URLROOT . '/' . $this->user['role'] . '/notifications',
+        ];
     }
 
     private function calculateExpectedGeneration(string $readingDate): ?float

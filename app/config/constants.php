@@ -78,5 +78,35 @@ define('DISTRICTS', [
     'Puttalam'     => ['lat' => 8.0362, 'lon' => 79.8283],
 ]);
 
+
+// --- Notification Type Constants ---
+// Icon is derived from type — never stored in the DB
+define('NOTIFICATION_ICONS', [
+    'error'   => 'fas fa-circle-exclamation',
+    'warning' => 'fas fa-triangle-exclamation',
+    'info'    => 'fas fa-circle-info',
+    'success' => 'fas fa-circle-check',
+]);
+
+define('NOTIFICATION_BG_COLORS', [
+    'error'   => '#fee2e2',
+    'warning' => '#fed7aa',
+    'info'    => '#dbeafe',
+    'success' => '#d1fae5',
+]);
+
+define('NOTIFICATION_ICON_COLORS', [
+    'error'   => '#ef4444',
+    'warning' => '#f59e0b',
+    'info'    => '#3b82f6',
+    'success' => '#22c55e',
+]);
+
+define('NOTIFICATION_BADGE_COLORS', [
+    'error'   => '#ef4444',
+    'warning' => '#f59e0b',
+    'info'    => '#3b82f6',
+    'success' => '#22c55e',
+]);
 ?>
 
