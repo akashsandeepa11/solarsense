@@ -291,7 +291,7 @@ function getMaintenanceStatusClass($status)
                
                 <?php foreach ($agents as $agent): ?>
                     <option value="<?= $agent->user_id ?>">
-                        <?= htmlspecialchars($agent->user_id) ?>
+                        <?= htmlspecialchars($agent->full_name) ?>
                     </option>
                 <?php endforeach; ?>
 

@@ -230,6 +230,18 @@ class OperationManager extends Controller
                 redirect('operationmanager/maintenance/tasks');
                 return;
             }
+            else{
+                if ($id === 'assign' && $action) {
+                    $agentId = $_POST['agent_id'] ?? null;
+                    if ($agentId && $this->inventoryModel->assign_agent($action, $agentId)) {
+                        setToast('Agent assigned successfully.', 'success');
+                    }else{
+                        setToast('Cannot assign agent.', 'error');
+                    }
+                }
+                redirect('operationmanager/maintenance/purchases/all');
+                return;
+            }
         }
 
         // --- Prepare Data for View ---
@@ -245,6 +257,8 @@ class OperationManager extends Controller
                 ? $this->inventoryModel->get_orders_by_status($statusFilter)
                 : $this->inventoryModel->get_all_orders();
             $data['stats'] = $this->inventoryModel->get_order_stats();
+            $data['agents'] = $this->taskModel->get_active_agents($companyId);
+            $data['customers'] = $this->fleetModel->get_customer_stats($companyId);
             $data['status_filter'] = $statusFilter;
 
             $this->view('pages/common/purchases', $data, layout: 'dashboard');
@@ -259,16 +273,6 @@ class OperationManager extends Controller
             $this->view('pages/operation_manager/maintenance', $data, layout: 'dashboard');
         }
     }
-
-    // --- Create Purchase Order ---
-    public function create_purchase()
-    {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            // TODO: Implement create purchase logic
-        }
-        redirect('operationsmanager/purchases');
-    }
-
 
     public function reports()
     {

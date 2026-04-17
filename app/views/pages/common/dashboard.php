@@ -149,7 +149,7 @@ function getAgentStatusClass($status) {
         <!-- Left Column -->
         <div class="col-lg-8">
             <!-- Month/Year Selector Card -->
-            <div class="card shadow-lg rounded-xl mb-6">
+            <!-- <div class="card shadow-lg rounded-xl mb-6">
                 <div class="card-body p-6">
                     <h3 class="card-title text-xl font-semibold mb-4">Filter by Period</h3>
                     <form method="GET" class="d-flex gap-3 align-end">
@@ -175,7 +175,7 @@ function getAgentStatusClass($status) {
                         </div>
                     </form>
                 </div>
-            </div>
+            </div> -->
 
            <!-- Performance Charts Row -->
             <div class="row">
