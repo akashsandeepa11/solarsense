@@ -7,6 +7,8 @@ class OperationManager extends Controller
     private $teamModel;
     private $taskModel;
     private $inventoryModel;
+    private $notificationModel;
+    private $notifications = [];
 
     private $user = [
         'role' => ROLE_OPERATION_MANAGER,
@@ -14,10 +16,17 @@ class OperationManager extends Controller
 
     public function __construct()
     {
-        $this->fleetModel = $this->model('M_Fleet');
-        $this->teamModel = $this->model('M_Team');
-        $this->taskModel = $this->model('M_maintenance_task');
-        $this->inventoryModel = $this->model('M_inventory');
+        $this->fleetModel        = $this->model('M_Fleet');
+        $this->teamModel         = $this->model('M_Team');
+        $this->taskModel         = $this->model('M_maintenance_task');
+        $this->inventoryModel    = $this->model('M_inventory');
+        $this->notificationModel = $this->model('M_Notification');
+
+        // Pre-load notifications for the topnavbar bell on every page
+        $userId = (int) ($_SESSION['user_id'] ?? 0);
+        $this->notifications = $userId
+            ? $this->notificationModel->get_notifications($userId, 10)
+            : [];
     }
 
     // --- Admin-Specific Pages ---
@@ -42,13 +51,14 @@ class OperationManager extends Controller
 
         // Fetch the same data used by the Installer Admin
         $data = [
-            'user' => $this->user,
-            'stats' => $dashboardModel->getStats($companyId),
-            'alerts' => $dashboardModel->getAlerts($companyId),
+            'user'               => $this->user,
+            'notifications'      => $this->notifications,
+            'stats'              => $dashboardModel->getStats($companyId),
+            'alerts'             => $dashboardModel->getAlerts($companyId),
             'performance_snapshot' => $dashboardModel->getPerformanceSnapshot($companyId),
-            'service_agents' => $dashboardModel->getServiceTeamStatus($companyId),
+            'service_agents'     => $dashboardModel->getServiceTeamStatus($companyId),
             'new_customers_data' => $dashboardModel->getNewCustomersChartData($companyId),
-            'service_tasks_data' => $dashboardModel->getServiceTasksChartData($companyId)
+            'service_tasks_data' => $dashboardModel->getServiceTasksChartData($companyId),
         ];
 
         // Handle system performance sub-page
@@ -71,13 +81,14 @@ class OperationManager extends Controller
 
         // FIX: Use get_customer_stats to return ARRAYS and prevent the stdClass error
         $data = [
-            'user' => $this->user,
-            'customers' => $this->fleetModel->get_customer_stats($companyId),
-            'stats' => [
-                'total_clients' => $this->fleetModel->get_total_customers($companyId) ?? 0,
+            'user'          => $this->user,
+            'notifications' => $this->notifications,
+            'customers'     => $this->fleetModel->get_customer_stats($companyId),
+            'stats'         => [
+                'total_clients'     => $this->fleetModel->get_total_customers($companyId) ?? 0,
                 'pending_maintenace' => $this->fleetModel->get_pending_services($companyId) ?? 0,
                 'completed_services' => $this->fleetModel->get_completed_services($companyId) ?? 0,
-            ]
+            ],
         ];
 
         $this->view('pages/common/fleet_dashboard', $data, layout: 'dashboard');
@@ -94,14 +105,15 @@ class OperationManager extends Controller
 
         // FIX: Use get_service_agent_stats to align with InstallerAdmin logic
         $data = [
-            'user' => $this->user,
-            'agents' => $this->teamModel->get_service_agent_stats($companyId),
-            'stats' => [
-                'total_agents' => $this->teamModel->get_total_agents($companyId)->total_agents ?? 0,
+            'user'          => $this->user,
+            'notifications' => $this->notifications,
+            'agents'        => $this->teamModel->get_service_agent_stats($companyId),
+            'stats'         => [
+                'total_agents'  => $this->teamModel->get_total_agents($companyId)->total_agents ?? 0,
                 'active_agents' => $this->teamModel->get_active_agents($companyId)->active_agents ?? 0,
-                'total_tasks' => $this->teamModel->get_total_tasks($companyId)->total_tasks ?? 0,
+                'total_tasks'   => $this->teamModel->get_total_tasks($companyId)->total_tasks ?? 0,
                 'pending_tasks' => $this->teamModel->get_pending_tasks($companyId)->pending_tasks ?? 0,
-            ]
+            ],
         ];
 
         $this->view('pages/common/team', $data, layout: 'dashboard');
@@ -132,9 +144,10 @@ class OperationManager extends Controller
         }
 
         $data = [
-            'user' => $this->user,
-            'customerId' => $customerId,
-            'customer' => $customer,
+            'user'           => $this->user,
+            'notifications'  => $this->notifications,
+            'customerId'     => $customerId,
+            'customer'       => $customer,
             'service_agents' => $serviceAgents,
         ];
 
@@ -173,8 +186,9 @@ class OperationManager extends Controller
         }
 
         $data = [
-            'user' => $this->user,
-            'agent' => $agent
+            'user'          => $this->user,
+            'notifications' => $this->notifications,
+            'agent'         => $agent,
         ];
 
         // Render the shared agent details view
@@ -184,7 +198,8 @@ class OperationManager extends Controller
     public function quotation()
     {
         $data = [
-            'user' => $this->user,
+            'user'          => $this->user,
+            'notifications' => $this->notifications,
         ];
 
         $this->view('pages/operation_manager/quotation', $data, layout: 'dashboard');
@@ -234,8 +249,9 @@ class OperationManager extends Controller
 
         // --- Prepare Data for View ---
         $data = [
-            'user' => $this->user,
-            'active_tab' => $tab, // Helper for the view to highlight the active tab
+            'user'          => $this->user,
+            'notifications' => $this->notifications,
+            'active_tab'    => $tab,
         ];
 
         if ($tab === 'purchases') {
@@ -273,7 +289,8 @@ class OperationManager extends Controller
     public function reports()
     {
         $data = [
-            'user' => $this->user,
+            'user'          => $this->user,
+            'notifications' => $this->notifications,
         ];
 
         $this->view('pages/operation_manager/reports', $data, layout: 'dashboard');
@@ -282,20 +299,34 @@ class OperationManager extends Controller
     public function profile()
     {
         $data = [
-            'user' => $this->user,
+            'user'          => $this->user,
+            'notifications' => $this->notifications,
         ];
 
         $this->view('pages/operation_manager/profile', $data, layout: 'dashboard');
     }
 
-    // --- Notifications ---
+    // --- Notifications (full page) ---
     public function notifications()
     {
+        $userId = (int) ($_SESSION['user_id'] ?? 0);
+
         $data = [
-            'user' => $this->user,
+            'user'          => $this->user,
+            'notifications' => $this->notificationModel->get_all_notifications($userId),
         ];
 
         $this->view('pages/common/notifications', $data, layout: 'dashboard');
+    }
+
+    // --- Clear all notifications (AJAX) ---
+    public function clearNotifications()
+    {
+        header('Content-Type: application/json');
+        $userId  = (int) ($_SESSION['user_id'] ?? 0);
+        $success = $userId ? $this->notificationModel->delete_all($userId) : false;
+        echo json_encode(['success' => $success]);
+        exit();
     }
 
     public function help()
@@ -322,7 +353,10 @@ class OperationManager extends Controller
             }
         }
 
-        $data = ['user' => $this->user];
+        $data = [
+            'user'          => $this->user,
+            'notifications' => $this->notifications,
+        ];
         $this->view('pages/operation_manager/help', $data, layout: 'dashboard');
     }
 
