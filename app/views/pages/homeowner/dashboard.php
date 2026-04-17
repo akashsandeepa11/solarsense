@@ -99,7 +99,41 @@ foreach ($actual_generation as $i => $actual) {
 // $selected_year and $available_years are injected by the controller
 $currentYear = $selected_year ?? (int) date('Y');
 
+// Always render all 12 months so bars are left-aligned, not centered.
+$all_month_labels = [];
+for ($m = 1; $m <= 12; $m++) {
+    $all_month_labels[] = date('M Y', mktime(0, 0, 0, $m, 1, $currentYear));
+}
+$data_map = [];
+foreach ($labels as $i => $lbl) {
+    $data_map[$lbl] = [
+        'actual'   => $actual_generation[$i],
+        'expected' => $expected_generation[$i],
+        'color'    => $bar_colors[$i] ?? HEALTH_COLOR_CRITICAL,
+    ];
+}
+$labels              = $all_month_labels;
+$padded_actual       = [];
+$padded_expected     = [];
+$padded_colors       = [];
+foreach ($all_month_labels as $lbl) {
+    $padded_actual[]   = $data_map[$lbl]['actual']   ?? null;
+    $padded_expected[] = $data_map[$lbl]['expected'] ?? null;
+    $padded_colors[]   = $data_map[$lbl]['color']    ?? 'rgba(200,200,200,0.3)';
+}
+$actual_generation   = $padded_actual;
+$expected_generation = $padded_expected;
+$bar_colors          = $padded_colors;
+
+$performance_chart_data = [
+    'labels'              => $labels,
+    'actual_generation'   => $actual_generation,
+    'expected_generation' => $expected_generation,
+    'grid_import'         => $grid_import,
+];
+
 $stats = $data['stats'];
+
 
 $total_export     = $stats->total_export     ?? 0;
 $total_import     = $stats->total_import     ?? 0;
@@ -389,6 +423,7 @@ $quick_actions = [
                             borderColor: 'rgba(254, 150, 48, 1)',
                             borderWidth: 1,
                             borderRadius: 5,
+                            barThickness: 40,
                             yAxisID: 'y',
                         }
                     ]
