@@ -249,27 +249,38 @@ class M_inventory
 
     // ── Orders (used by Purchases page) ──────────────────────────────────────
 
-    /**
-     * Include agent_id in order lists
-     */
     public function get_all_orders()
     {
         $this->db->query("
         SELECT o.order_id, o.user_id, o.agent_id, o.total_amount, o.status, o.date,
-               u.full_name AS customer_name,
+               u1.full_name AS customer_name,
+               u2.full_name AS agent_name,
                COUNT(oi.order_item_id) as item_count
         FROM orders o
-        JOIN user u ON o.user_id = u.user_id
+        JOIN user u1 ON o.user_id = u1.user_id
+        LEFT JOIN user u2 ON o.agent_id = u2.user_id
         LEFT JOIN order_item oi ON oi.order_id = o.order_id
-        GROUP BY o.order_id, u.full_name, o.agent_id, o.total_amount, o.status, o.date
+        GROUP BY o.order_id, u1.full_name, u2.full_name, o.agent_id, o.total_amount, o.status, o.date
         ORDER BY o.date DESC
     ");
         return $this->db->resultSet();
     }
 
-    /**
-     * Correct table name and status
-     */
+    public function get_orders_by_status($status)
+    {
+        $this->db->query("
+            SELECT o.order_id, o.user_id, o.total_amount, o.status, o.date,
+                   COUNT(oi.order_item_id) as item_count
+            FROM orders o
+            LEFT JOIN order_item oi ON oi.order_id = o.order_id
+            WHERE o.status = :status
+            GROUP BY o.order_id, o.user_id, o.total_amount, o.status, o.date
+            ORDER BY o.date DESC
+        ");
+        $this->db->bind(':status', $status);
+        return $this->db->resultSet();
+    }
+
     public function assign_agent($orderId, $agentId)
     {
         try {
@@ -299,21 +310,6 @@ class M_inventory
             FROM orders
         ");
         return $this->db->single();
-    }
-
-    public function get_orders_by_status($status)
-    {
-        $this->db->query("
-            SELECT o.order_id, o.user_id, o.total_amount, o.status, o.date,
-                   COUNT(oi.order_item_id) as item_count
-            FROM orders o
-            LEFT JOIN order_item oi ON oi.order_id = o.order_id
-            WHERE o.status = :status
-            GROUP BY o.order_id, o.user_id, o.total_amount, o.status, o.date
-            ORDER BY o.date DESC
-        ");
-        $this->db->bind(':status', $status);
-        return $this->db->resultSet();
     }
 
     public function create_order($order, $cartItems)

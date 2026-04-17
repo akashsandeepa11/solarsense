@@ -99,17 +99,25 @@ $orderRows = array_map(function ($o) {
         $config = [
             'headers' => [
                 ['key' => 'order_id', 'label' => 'Order #'],
+                ['key' => 'customer_name', 'label' => 'Customer'],
                 ['key' => 'item_count', 'label' => 'Items'],
                 ['key' => 'total', 'label' => 'Total'],
                 ['key' => 'date', 'label' => 'Date'],
+                ['key' => 'agent', 'label' => 'Assigned Agent'],
                 ['key' => 'status', 'label' => 'Status'],
             ],
-            'rows' => $orders, // Pass the raw object array from the controller
+            'rows' => $orders, 
             'columns' => [
                 [
                     'key' => 'order_id',
                     'render' => function ($row) {
-                        return '<span class="font-medium text-primary">#' . htmlspecialchars($row->order_id) . '</span>';
+                        return '<span class="font-semibold">#' . htmlspecialchars($row->order_id) . '</span>';
+                    }
+                ],
+                [
+                    'key' => 'customer_name',
+                    'render' => function ($row) {
+                        return '<span class="customer-name">' . htmlspecialchars($row->customer_name) . '</span>';
                     }
                 ],
                 [
@@ -124,6 +132,21 @@ $orderRows = array_map(function ($o) {
                     'render' => function ($row) {
                         return '<span class="font-semibold">LKR ' . number_format($row->total_amount ?? 0, 2) . '</span>';
                     }
+                ],
+                [
+                'key' => 'agent',
+                'render' => function ($row) {
+                    if (!empty($row->agent_id)) {
+                        return '<div data-filter="assigned" data-filter-value="yes">
+                                    <span class="text-success font-semibold">'
+                                    . htmlspecialchars($row->agent_name) .
+                                '</span><br>
+                                    <small class="text-success">Assigned</small>
+                                </div>';
+                    } else {
+                        return '<span class="text-warning" data-filter="assigned" data-filter-value="no">Unassigned</span>';
+                    }
+                }
                 ],
                 [
                     'key' => 'status',

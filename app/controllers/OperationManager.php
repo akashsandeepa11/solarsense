@@ -251,7 +251,6 @@ class OperationManager extends Controller
         ];
 
         if ($tab === 'purchases') {
-            // Handle Purchase Orders (reusing common purchases view logic)
             $statusFilter = $id; // In purchase tab, the second parameter acts as the status filter
             $data['orders'] = ($statusFilter !== 'all')
                 ? $this->inventoryModel->get_orders_by_status($statusFilter)
