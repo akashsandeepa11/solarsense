@@ -18,13 +18,13 @@
             <a href="<?php echo URLROOT; ?>/operationmanager/maintenance/tasks"
                 class="tab-item <?php echo ($data['active_tab'] === 'tasks') ? 'active' : ''; ?>">
                 <i class="fas fa-tools"></i>
-                <span>Maintenance Tasks</span>
+                <span>Tasks</span>
             </a>
 
             <a href="<?php echo URLROOT; ?>/operationmanager/maintenance/purchases/all"
                 class="tab-item <?php echo ($data['active_tab'] === 'purchases') ? 'active' : ''; ?>">
                 <i class="fas fa-shopping-cart"></i>
-                <span>Purchase Orders</span>
+                <span>Purchases</span>
             </a>
 
             <a href="<?php echo URLROOT; ?>/operationmanager/maintenance/reports"
