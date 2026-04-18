@@ -77,7 +77,7 @@ class InstallerAdmin extends Controller
         $data = [
             'user' => $this->user,
             'items'=>$res,
-            'hehe'=>$hehe
+            'hehe'=>$hehe ];
         $userId    = $_SESSION['user_id'] ?? null;
         $companyId = $this->teamModel->get_company_id_by_user($userId);
 
@@ -169,7 +169,9 @@ class InstallerAdmin extends Controller
             // Form is submitting
             // Validate the data
             $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
-
+            // var_dump($_POST);
+            // die();
+         
             // Input data from form
             $data = [
                 'user' => $this->user,
@@ -183,6 +185,7 @@ class InstallerAdmin extends Controller
                 'systemCapacity' => trim($_POST['systemCapacity'] ?? ''),
                 'panelTilt' => trim($_POST['panelTilt'] ?? ''),
                 'panelAzimuth' => trim($_POST['panelAzimuth'] ?? ''),
+                'Testing' => trim($_POST['testing'] ?? ''),
                 'installationDate' => trim($_POST['installationDate'] ?? ''),
                 'panelBrand' => trim($_POST['panelBrand'] ?? ''),
                 'inverterBrand' => trim($_POST['inverterBrand'] ?? ''),
@@ -214,6 +217,8 @@ class InstallerAdmin extends Controller
                 'invEffPCT_err' => '',
                 'cebAccount_err' => ''
             ];
+            // var_dump($data['Testing']);
+            // die();  
 
             // Convert text azimuth values to numeric degrees (backwards compatibility)
             $azimuthMap = [
@@ -348,6 +353,7 @@ class InstallerAdmin extends Controller
                 'system_capacity' => $data['systemCapacity'],
                 'panel_tilt' => $data['panelTilt'],
                 'panel_azimuth' => $data['panelAzimuth'],
+                'testing' => $data['Testing'],
                 'panel_brand' => $data['panelBrand'],
                 'inverter_brand' => $data['inverterBrand'],
                 'installation_date' => $data['installationDate'],
@@ -769,6 +775,7 @@ class InstallerAdmin extends Controller
                 'address' => trim($_POST['address'] ?? ''),
                 'nic' => trim($_POST['nic'] ?? ''),
                 'district' => trim($_POST['district'] ?? ''),
+                'language' => trim($_POST['language'] ?? ''),
                 'specialization' => trim($_POST['specialization'] ?? ''),
                 'experienceYears' => trim($_POST['experienceYears'] ?? ''),
                 'availability' => trim($_POST['availability'] ?? ''),
@@ -781,6 +788,7 @@ class InstallerAdmin extends Controller
                 'address_err' => '',
                 'nic_err' => '',
                 'district_err' => '',
+                'language_err' => '',
                 'specialization_err' => '',
                 'experienceYears_err' => '',
                 'availability_err' => '',
@@ -821,6 +829,12 @@ class InstallerAdmin extends Controller
                 $data['district_err'] = 'District is required';
             }
 
+            // Validate Language
+            if (empty($data['language'])) {
+                $data['language_err'] = 'Language is required';
+            }
+
+
             // Validate Specialization
             if (empty($data['specialization'])) {
                 $data['specialization_err'] = 'Specialization is required';
@@ -857,6 +871,7 @@ class InstallerAdmin extends Controller
                     'experience_years' => $data['experienceYears'],
                     'availability' => $data['availability'],
                     'certifications' => $data['certifications'],
+                    'language' => $data['language'],
                     'status' => 'active'
                 ];
 
@@ -934,6 +949,7 @@ class InstallerAdmin extends Controller
                 'address' => '',
                 'nic' => '',
                 'district' => '',
+                'language' => '',
                 'specialization' => '',
                 'experienceYears' => '',
                 'availability' => '',
@@ -948,7 +964,8 @@ class InstallerAdmin extends Controller
                 'specialization_err' => '',
                 'experienceYears_err' => '',
                 'availability_err' => '',
-                'certifications_err' => ''
+                'certifications_err' => '',
+                'language_err' => ''
             ];
 
             $this->view('pages/installer_admin/add_service_agent', $data, layout: 'dashboard');

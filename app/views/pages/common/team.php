@@ -118,6 +118,7 @@
                 'email' => $agent['email'],
                 'phone' => $agent['contact'],
                 'assigned' => $agent['assigned_tasks'] ?? 0,
+                'language' => $agent['language'] ?? 0,
                 'completed' => $agent['completed_tasks'] ?? 0,
                 'pending' => $agent['pending_tasks'] ?? 0,
                 'status' => ucfirst($agent['agent_status'] ?? 'Inactive'),
@@ -133,7 +134,8 @@
             ['key' => 'assigned', 'label' => 'Assigned Tasks'],
             ['key' => 'completed', 'label' => 'Completed'],
             ['key' => 'pending', 'label' => 'Pending'],
-            ['key' => 'status', 'label' => 'Status']
+            ['key' => 'status', 'label' => 'Status'],
+            ['key' => 'language', 'label' => 'Language']
         ],
         'rows' => $processedAgents,
         'columns' => [

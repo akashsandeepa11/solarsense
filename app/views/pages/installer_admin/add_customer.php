@@ -67,22 +67,22 @@
                     <h3 class="text-lg font-semibold mb-6"><i class="fas fa-user text-primary mr-2"></i>Personal & Contact Details</h3>
                     <div class="row">
                         <div class="col-md-6 form-group">
-                            <?php $inputConfig = ['id' => 'fullName', 'name' => 'fullName', 'label' => 'Full Name', 'type' => 'text', 'icon' => 'fas fa-user', 'value' => $data['fullName'] ?? '', 'error' => $data['fullName_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                            <?php $inputConfig = ['id' => 'fullName', 'name' => 'fullName', 'label' => 'Full Name', 'type' => 'text', 'icon' => 'fas fa-user', 'value' => $data['fullName'] ?? '', 'error' => $data['fullName_err'] ?? '', 'required' => false]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                         <div class="col-md-6 form-group">
-                            <?php $inputConfig = ['id' => 'email', 'name' => 'email', 'label' => 'Email Address (Username)', 'type' => 'email', 'icon' => 'fas fa-envelope', 'value' => $data['email'] ?? '', 'error' => $data['email_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                            <?php $inputConfig = ['id' => 'email', 'name' => 'email', 'label' => 'Email Address (Username)', 'type' => 'email', 'icon' => 'fas fa-envelope', 'value' => $data['email'] ?? '', 'error' => $data['email_err'] ?? '', 'required' => false]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                         <div class="col-md-6 form-group">
-                            <?php $inputConfig = ['id' => 'contactNumber', 'name' => 'contactNumber', 'label' => 'Contact Number', 'type' => 'tel', 'icon' => 'fas fa-phone', 'value' => $data['contactNumber'] ?? '', 'error' => $data['contactNumber_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                            <?php $inputConfig = ['id' => 'contactNumber', 'name' => 'contactNumber', 'label' => 'Contact Number', 'type' => 'tel', 'icon' => 'fas fa-phone', 'value' => $data['contactNumber'] ?? '', 'error' => $data['contactNumber_err'] ?? '', 'required' => false]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                         <div class="col-md-6 form-group">
                             <?php $inputConfig = ['id' => 'phoneSecondary', 'name' => 'phoneSecondary', 'label' => 'Secondary Phone', 'type' => 'tel', 'icon' => 'fas fa-phone-alt', 'value' => $data['phoneSecondary'] ?? '', 'error' => $data['phoneSecondary_err'] ?? '', 'required' => false]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                         <div class="col-md-6 form-group">
-                            <?php $inputConfig = ['id' => 'nic', 'name' => 'nic', 'label' => 'NIC/ID Number', 'type' => 'text', 'icon' => 'fas fa-id-card', 'value' => $data['nic'] ?? '', 'error' => $data['nic_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                            <?php $inputConfig = ['id' => 'nic', 'name' => 'nic', 'label' => 'NIC/ID Number', 'type' => 'text', 'icon' => 'fas fa-id-card', 'value' => $data['nic'] ?? '', 'error' => $data['nic_err'] ?? '', 'required' => false]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                         <div class="col-md-12 form-group">
-                            <?php $inputConfig = ['id' => 'physicalAddress', 'name' => 'physicalAddress', 'label' => 'Physical Address', 'type' => 'text', 'icon' => 'fas fa-map-marker-alt', 'value' => $data['physicalAddress'] ?? '', 'error' => $data['physicalAddress_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                            <?php $inputConfig = ['id' => 'physicalAddress', 'name' => 'physicalAddress', 'label' => 'Physical Address', 'type' => 'text', 'icon' => 'fas fa-map-marker-alt', 'value' => $data['physicalAddress'] ?? '', 'error' => $data['physicalAddress_err'] ?? '', 'required' => false]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                         <div class="col-md-12 form-group">
                             <?php 
@@ -94,7 +94,7 @@
                                 'options' => $districtOptions,
                                 'value' => $data['district'] ?? '',
                                 'icon' => 'fas fa-map-marker-alt',
-                                'required' => true,
+                                'required' => false,
                                 'error' => $data['district_err'] ?? '',
                                 'placeholder' => 'Select a District'
                             ];
@@ -109,10 +109,10 @@
                     <h3 class="text-lg font-semibold mb-6"><i class="fas fa-solar-panel text-primary mr-2"></i>Solar System Specifications</h3>
                     <div class="row">
                         <div class="col-md-6 form-group">
-                            <?php $inputConfig = ['id' => 'systemCapacity', 'name' => 'systemCapacity', 'label' => 'System Capacity (kWp)', 'type' => 'number', 'icon' => 'fas fa-bolt', 'value' => $data['systemCapacity'] ?? '', 'error' => $data['systemCapacity_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                            <?php $inputConfig = ['id' => 'systemCapacity', 'name' => 'systemCapacity', 'label' => 'System Capacity (kWp)', 'type' => 'number', 'icon' => 'fas fa-bolt', 'value' => $data['systemCapacity'] ?? '', 'error' => $data['systemCapacity_err'] ?? '', 'required' => false]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                         <div class="col-md-6 form-group">
-                            <?php $inputConfig = ['id' => 'panelTilt', 'name' => 'panelTilt', 'label' => 'Panel Tilt (Degrees)', 'type' => 'number', 'icon' => 'fas fa-layer-group', 'value' => $data['panelTilt'] ?? '', 'error' => $data['panelTilt_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                            <?php $inputConfig = ['id' => 'panelTilt', 'name' => 'panelTilt', 'label' => 'Panel Tilt (Degrees)', 'type' => 'number', 'icon' => 'fas fa-layer-group', 'value' => $data['panelTilt'] ?? '', 'error' => $data['panelTilt_err'] ?? '', 'required' => false]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                         <div class="col-md-6 form-group">
                             <?php 
@@ -133,36 +133,63 @@
                                 'options' => $azimuthOptions,
                                 'value' => $data['panelAzimuth'] ?? '',
                                 'icon' => 'fas fa-compass',
-                                'required' => true,
+                                'required' => false,
                                 'error' => $data['panelAzimuth_err'] ?? '',
                                 'placeholder' => 'Select orientation'
                             ];
                             require APPROOT . '/views/inc/components/select_field.php';
                             ?>
                         </div>
+
                         <div class="col-md-6 form-group">
-                            <?php $inputConfig = ['id' => 'installationDate', 'name' => 'installationDate', 'label' => 'Installation Date', 'type' => 'date', 'icon' => 'fas fa-calendar-alt', 'value' => $data['installationDate'] ?? '', 'error' => $data['installationDate_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                            <?php 
+                            $testing = [
+                                '180' => 'South (180°)',
+                                '135' => 'South-West (135°)',
+                                '225' => 'South-East (225°)',
+                                '90' => 'East (90°)',
+                                '270' => 'West (270°)',
+                                '0' => 'North (0°)',
+                                '45' => 'North-East (45°)',
+                                '315' => 'North-West (315°)'
+                            ];
+                            $selectConfig = [
+                                'id' => 'testing',
+                                'name' => 'testing',
+                                'label' => 'Testing',
+                                'options' => $testing,
+                                'value' => $data['testing'] ?? '',
+                                'icon' => 'fas fa-compass',
+                                'required' => false,
+                                'error' => $data['testing_err'] ?? '',
+                                'placeholder' => 'Select orientation'
+                            ];
+                            require APPROOT . '/views/inc/components/select_field.php';
+                            ?>
                         </div>
                         <div class="col-md-6 form-group">
-                            <?php $inputConfig = ['id' => 'panelBrand', 'name' => 'panelBrand', 'label' => 'Panel Brand & Model', 'type' => 'text', 'icon' => 'fas fa-tag', 'value' => $data['panelBrand'] ?? '', 'error' => $data['panelBrand_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                            <?php $inputConfig = ['id' => 'installationDate', 'name' => 'installationDate', 'label' => 'Installation Date', 'type' => 'date', 'icon' => 'fas fa-calendar-alt', 'value' => $data['installationDate'] ?? '', 'error' => $data['installationDate_err'] ?? '', 'required' => false]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                         <div class="col-md-6 form-group">
-                            <?php $inputConfig = ['id' => 'inverterBrand', 'name' => 'inverterBrand', 'label' => 'Inverter Brand & Model', 'type' => 'text', 'icon' => 'fas fa-microchip', 'value' => $data['inverterBrand'] ?? '', 'error' => $data['inverterBrand_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                            <?php $inputConfig = ['id' => 'panelBrand', 'name' => 'panelBrand', 'label' => 'Panel Brand & Model', 'type' => 'text', 'icon' => 'fas fa-tag', 'value' => $data['panelBrand'] ?? '', 'error' => $data['panelBrand_err'] ?? '', 'required' => false]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                         <div class="col-md-6 form-group">
-                            <?php $inputConfig = ['id' => 'moduleType', 'name' => 'moduleType', 'label' => 'Module Type', 'type' => 'number', 'icon' => 'fas fa-microchip', 'value' => $data['moduleType'] ?? '', 'error' => $data['moduleType_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                            <?php $inputConfig = ['id' => 'inverterBrand', 'name' => 'inverterBrand', 'label' => 'Inverter Brand & Model', 'type' => 'text', 'icon' => 'fas fa-microchip', 'value' => $data['inverterBrand'] ?? '', 'error' => $data['inverterBrand_err'] ?? '', 'required' => false]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                         <div class="col-md-6 form-group">
-                            <?php $inputConfig = ['id' => 'arrayType', 'name' => 'arrayType', 'label' => 'Array Type', 'type' => 'number', 'icon' => 'fas fa-microchip', 'value' => $data['arrayType'] ?? '', 'error' => $data['arrayType_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                            <?php $inputConfig = ['id' => 'moduleType', 'name' => 'moduleType', 'label' => 'Module Type', 'type' => 'number', 'icon' => 'fas fa-microchip', 'value' => $data['moduleType'] ?? '', 'error' => $data['moduleType_err'] ?? '', 'required' => false]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                         <div class="col-md-6 form-group">
-                            <?php $inputConfig = ['id' => 'lossesPCT', 'name' => 'lossesPCT', 'label' => 'Losses (%)', 'type' => 'number', 'icon' => 'fas fa-microchip', 'value' => $data['lossesPCT'] ?? '', 'error' => $data['lossesPCT_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                            <?php $inputConfig = ['id' => 'arrayType', 'name' => 'arrayType', 'label' => 'Array Type', 'type' => 'number', 'icon' => 'fas fa-microchip', 'value' => $data['arrayType'] ?? '', 'error' => $data['arrayType_err'] ?? '', 'required' => false]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                         <div class="col-md-6 form-group">
-                            <?php $inputConfig = ['id' => 'dcAcRatio', 'name' => 'dcAcRatio', 'label' => 'DC/AC Ratio', 'type' => 'number', 'icon' => 'fas fa-microchip', 'value' => $data['dcAcRatio'] ?? '', 'error' => $data['dcAcRatio_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                            <?php $inputConfig = ['id' => 'lossesPCT', 'name' => 'lossesPCT', 'label' => 'Losses (%)', 'type' => 'number', 'icon' => 'fas fa-microchip', 'value' => $data['lossesPCT'] ?? '', 'error' => $data['lossesPCT_err'] ?? '', 'required' => false]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                         <div class="col-md-6 form-group">
-                            <?php $inputConfig = ['id' => 'invEffPCT', 'name' => 'invEffPCT', 'label' => 'Inverter Efficiency (%)', 'type' => 'number', 'icon' => 'fas fa-microchip', 'value' => $data['invEffPCT'] ?? '', 'error' => $data['invEffPCT_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                            <?php $inputConfig = ['id' => 'dcAcRatio', 'name' => 'dcAcRatio', 'label' => 'DC/AC Ratio', 'type' => 'number', 'icon' => 'fas fa-microchip', 'value' => $data['dcAcRatio'] ?? '', 'error' => $data['dcAcRatio_err'] ?? '', 'required' => false]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <?php $inputConfig = ['id' => 'invEffPCT', 'name' => 'invEffPCT', 'label' => 'Inverter Efficiency (%)', 'type' => 'number', 'icon' => 'fas fa-microchip', 'value' => $data['invEffPCT'] ?? '', 'error' => $data['invEffPCT_err'] ?? '', 'required' => false]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                     </div>
                 </div>
@@ -172,7 +199,7 @@
                     <h3 class="text-lg font-semibold mb-6"><i class="fas fa-file-invoice-dollar text-primary mr-2"></i>Utility Account Details</h3>
                     <div class="row">
                         <div class="col-md-6 form-group">
-                            <?php $inputConfig = ['id' => 'cebAccount', 'name' => 'cebAccount', 'label' => 'CEB Account Number', 'type' => 'text', 'icon' => 'fas fa-file-invoice-dollar', 'value' => $data['cebAccount'] ?? '', 'error' => $data['cebAccount_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                            <?php $inputConfig = ['id' => 'cebAccount', 'name' => 'cebAccount', 'label' => 'CEB Account Number', 'type' => 'text', 'icon' => 'fas fa-file-invoice-dollar', 'value' => $data['cebAccount'] ?? '', 'error' => $data['cebAccount_err'] ?? '', 'required' => false]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                         <div class="col-md-6 form-group" style="display: flex; align-items: flex-end;">
                             <div class="form-control" style="border: 1px solid #ced4da; padding: 0.7rem 0.75rem; border-radius: 0.75rem; background: #f8f9fa;">

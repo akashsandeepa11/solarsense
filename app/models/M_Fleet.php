@@ -12,7 +12,11 @@ class M_Fleet
     //add customer
     public function add_customer($userData, $customerData, $panelData)
     {
-    
+        // var_dump($userData);
+        // var_dump($customerData);
+        // var_dump($panelData['testing']);
+        // die();
+       
         $plainPassword = substr(bin2hex(random_bytes(6)), 0, 10);
         try {
             // Start transaction
@@ -73,7 +77,8 @@ class M_Fleet
                 ':register_date' => date('Y-m-d'),
                 ':nic' => $customerData['nic'],
                 ':district' => $customerData['district'],
-                ':ceb_account' => $customerData['ceb_account']
+                ':ceb_account' => $customerData['ceb_account'],
+                ':phone_secondary' => $customerData['phone_secondary']
             ];
             error_log('M_Fleet::add_customer homeowner binds: ' . var_export($binds, true));
 
@@ -86,8 +91,8 @@ class M_Fleet
             // 3. Insert into `solar_system` table
             // Columns: user_id, capacity, tilt, azimuth, panel_brand, inverter_brand, installation_date, module_type, array_type, losses_pct, dc_ac_ratio, inv_eff_pct
             $this->db->query('
-            INSERT INTO solar_system (user_id, district, capacity, tilt, azimuth, panel_brand, inverter_brand, installation_date, module_type, array_type, losses_pct, dc_ac_ratio, inv_eff_pct) 
-            VALUES (:user_id, :district, :capacity, :tilt, :azimuth, :panel_brand, :inverter_brand, :installation_date, :module_type, :array_type, :losses_pct, :dc_ac_ratio, :inv_eff_pct)
+            INSERT INTO solar_system (user_id, district, capacity, tilt, azimuth, panel_brand, inverter_brand, installation_date, module_type, array_type, losses_pct, dc_ac_ratio, inv_eff_pct, Testing) 
+            VALUES (:user_id, :district, :capacity, :tilt, :azimuth, :panel_brand, :inverter_brand, :installation_date, :module_type, :array_type, :losses_pct, :dc_ac_ratio, :inv_eff_pct,:testingd)
             ');
 
             $this->db->bind(':user_id', $userId);
@@ -95,6 +100,7 @@ class M_Fleet
             $this->db->bind(':capacity', $panelData['system_capacity']);
             $this->db->bind(':tilt', $panelData['panel_tilt']);
             $this->db->bind(':azimuth', $panelData['panel_azimuth']);
+            $this->db->bind(':testing', $panelData['testing']);
             $this->db->bind(':panel_brand', $panelData['panel_brand']);
             $this->db->bind(':inverter_brand', $panelData['inverter_brand']);
             $this->db->bind(':installation_date', $panelData['installation_date']);
@@ -103,7 +109,6 @@ class M_Fleet
             $this->db->bind(':losses_pct', $panelData['losses_pct']);
             $this->db->bind(':dc_ac_ratio', $panelData['dc_ac_ratio']);
             $this->db->bind(':inv_eff_pct', $panelData['inv_eff_pct']);
-            $this->db->bind(':phone_secondary', $customerData['phone_secondary']);
             $this->db->execute();
 
             // Commit the transaction
@@ -319,6 +324,13 @@ class M_Fleet
     public function get_customer_stats($companyId)
     {
         try {
+            $order = "district";
+            $sortKey = "";
+            if ($order == "size") {
+                $sortKey = "ORDER BY s.capacity ASC";
+            } else if ($order == "district") {
+                $sortKey = "ORDER BY h.district ASC";
+            }
             $this->db->query('SELECT 
                         u.user_id,
                         u.full_name,
@@ -334,7 +346,8 @@ class M_Fleet
                         FROM sms
                         GROUP BY user_id
                     ) sm ON u.user_id = sm.user_id
-                    WHERE h.company_id = :company_id');
+                    WHERE h.company_id = :company_id
+                    ' . $sortKey);
 
             $this->db->bind(':company_id', $companyId);
             $results = $this->db->resultSet();

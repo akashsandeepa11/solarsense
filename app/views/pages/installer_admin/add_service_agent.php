@@ -111,6 +111,28 @@
                             require APPROOT . '/views/inc/components/select_field.php';
                             ?>
                         </div>
+
+                        <div class="col-md-6 form-group">
+                            <?php 
+                            $languageOptions = [
+                                'Sinhala' => 'Sinhala',
+                                'Tamil' => 'Tamil',
+                                'English' => 'English'
+                            ];
+                            $selectConfig = [
+                                'id' => 'language',
+                                'name' => 'language',
+                                'label' => 'Language',
+                                'options' => $languageOptions,
+                                'value' => $data['language'] ?? '',
+                                'icon' => 'fas fa-map-marker-alt',
+                                'required' => true,
+                                'error' => $data['language_err'] ?? '',
+                                'placeholder' => 'Select a Language'
+                            ];
+                            require APPROOT . '/views/inc/components/select_field.php';
+                            ?>
+                        </div>
                     </div>
                 </div>
 

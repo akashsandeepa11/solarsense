@@ -70,9 +70,9 @@ class M_Team
             //          specialization, experience_years, availability, certifications, status, register_date, created_date
             $this->db->query('
                 INSERT INTO service_agent 
-                (user_id, company_id, nic, address, contact, district, specialization, experience_years, availability, certifications, status, register_date) 
+                (user_id, company_id, nic, address, contact, district, language, specialization, experience_years, availability, certifications, status, register_date) 
                 VALUES 
-                (:user_id, :company_id, :nic, :address, :contact, :district, :specialization, :experience_years, :availability, :certifications, :status, :register_date)
+                (:user_id, :company_id, :nic, :address, :contact, :district, :language, :specialization, :experience_years, :availability, :certifications, :status, :register_date)
             ');
 
             $this->db->bind(':user_id', $userId);
@@ -86,6 +86,7 @@ class M_Team
             $this->db->bind(':availability', $agentData['availability']);
             $this->db->bind(':certifications', $agentData['certifications'] ?? NULL);
             $this->db->bind(':status', $agentData['status']);
+            $this->db->bind(':language', $agentData['language']);
             $this->db->bind(':register_date', date('Y-m-d'));
 
             $this->db->execute();
@@ -340,6 +341,7 @@ class M_Team
                     u.full_name,
                     sa.contact,
                     sa.status AS agent_status,
+                    sa.language
                     COUNT(sr.task_id)                                                  AS assigned_tasks,
                     SUM(CASE WHEN sr.status = 'Completed' THEN 1 ELSE 0 END)          AS completed_tasks,
                     SUM(CASE WHEN sr.status = 'Pending'   THEN 1 ELSE 0 END)          AS pending_tasks
@@ -347,7 +349,7 @@ class M_Team
                 INNER JOIN service_agent sa ON u.user_id = sa.user_id
                 LEFT JOIN service_req sr    ON sa.user_id = sr.agent_id
                 WHERE sa.company_id = :company_id
-                GROUP BY u.user_id, u.email, u.full_name, sa.contact, sa.status
+                GROUP BY u.user_id, u.email, u.full_name, sa.contact, sa.status, sa.language
             ");
 
             $this->db->bind(':company_id', $companyId);
