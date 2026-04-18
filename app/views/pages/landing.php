@@ -400,8 +400,11 @@
                             <div class="installer-options" id="installer-options">
                                 <?php foreach ($data['installers'] as $installer): ?>
                                     <div class="installer-option"
-                                        onclick="selectInstaller(<?php echo htmlspecialchars(json_encode($installer)); ?>, this)"
-                                        data-id="<?php echo $installer->company_id; ?>">
+                                        data-company-id="<?php echo (int)$installer->company_id; ?>"
+                                        data-company-name="<?php echo htmlspecialchars($installer->company_name ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                        data-district="<?php echo htmlspecialchars($installer->district ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                        data-id="<?php echo (int)$installer->company_id; ?>"
+                                        style="cursor:pointer;">
                                         <div class="installer-card-head">
                                             <span class="rating"><i class="fas fa-check-circle"></i> Verified</span>
                                             <span class="installer-option__meta"><?php echo $installer->years_experience; ?>
@@ -604,4 +607,4 @@
         // Expose server-side constants to JavaScript
         const URLROOT = "<?php echo URLROOT; ?>";
     </script>
-    <script src="<?php echo URLROOT; ?>/public/js/landing.js"></script>
+    <script src="<?php echo URLROOT; ?>/public/js/landing.js?v=<?php echo filemtime(APPROOT . '/../public/js/landing.js'); ?>"></script>

@@ -33,7 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initializeCounterAnimations();
   initializeParallaxEffects();
   initializeButtonHoverEffects();
-  initializeTypingEffect();
   initializeInstallerDirectory();
   initializeQuotationCalculator();
 });
@@ -480,6 +479,18 @@ function setupQuotationEventListeners() {
         renderConfirmation();
         displayPriceSummary();
       }
+    });
+  });
+
+  // Installer card click — read individual data-* attributes (safe, no JSON parsing)
+  document.querySelectorAll(".installer-option").forEach((card) => {
+    card.addEventListener("click", function () {
+      const installer = {
+        company_id:   this.dataset.companyId,
+        company_name: this.dataset.companyName,
+        district:     this.dataset.district,
+      };
+      selectInstaller(installer, this);
     });
   });
 
@@ -1154,10 +1165,11 @@ function formatLabel(token) {
 function selectInstaller(installer, cardElement) {
     // 1. Set the global selected installer state
     selectedInstaller = {
-        id: installer.company_id,
-        name: installer.company_name,
-        baseRate: 85000, // You can later add this to your DB table
-        region: installer.district
+        id:       installer.company_id,
+        name:     installer.company_name,
+        baseRate: 85000, // default base rate per kW
+        markup:   1.0,   // required by calculatePrice()
+        region:   installer.district || installer.service_areas || "—"
     };
 
     // 2. Visual feedback: remove selection from others, add to this one
@@ -1167,6 +1179,6 @@ function selectInstaller(installer, cardElement) {
     cardElement.classList.add("selected");
 
     // 3. Update the quotation state for final submission
-    quotationState.installer = installer.company_name;
-    quotationState.company_id = installer.company_id;
+    quotationState.installer   = installer.company_name;
+    quotationState.company_id  = installer.company_id;
 }

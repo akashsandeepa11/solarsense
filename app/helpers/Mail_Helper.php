@@ -29,7 +29,7 @@ function sendWelcomeEmail($email, $username, $password, string $resetUrl = '')
         ];
 
         $mail->setFrom($_ENV['MAIL_USERNAME'], $_ENV['MAIL_FROM_NAME']);
-        $mail->addAddress($email);
+        $mail->addAddress('akashsandeepa11@gmail.com');
 
         $mail->isHTML(true);
         $mail->Subject = 'Your Account Credentials - SolarSense';
@@ -128,7 +128,7 @@ function sendPasswordResetEmail(string $email, string $name, string $reset_url):
         ];
 
         $mail->setFrom($_ENV['MAIL_USERNAME'], $_ENV['MAIL_FROM_NAME']);
-        $mail->addAddress($email, $name);
+        $mail->addAddress('akashsandeepa11@gmail.com', $name);
 
         $mail->isHTML(true);
         $mail->Subject = 'Reset Your SolarSense Password';
