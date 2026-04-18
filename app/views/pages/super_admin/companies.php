@@ -117,24 +117,20 @@ function getStatusClass($status)
 <div class="container-fluid p-8">
 
     <?php
-    $buttons = [];
-    if ($data['user']['role'] === ROLE_INSTALLER_ADMIN) {
-        $buttons[] = [
-            'label' => 'Add Company',
-            'url' => URLROOT . '/installeradmin/companies/add',
-            'icon' => 'fas fa-plus',
-            'class' => 'btn-primary btn-md'
-        ];
-    }
-
     $config = [
-        'title' => 'Companies Management',
+        'title'   => 'Companies Management',
         'buttons' => [
             [
                 'label' => 'Add Company',
-                'url' => URLROOT . '/superadmin/companies/add', // Corrected route
-                'icon' => 'fas fa-plus',
+                'url'   => URLROOT . '/superadmin/companies/add',
+                'icon'  => 'fas fa-plus',
                 'class' => 'btn-primary'
+            ],
+            [
+                'label'   => 'Download PDF',
+                'icon'    => 'fas fa-file-pdf',
+                'class'   => 'btn-outline-primary',
+                'onclick' => 'onclick="SolarSenseReport.download({tableSelector:\'.data-table\',title:\'Companies Report\',subtitle:\'Verified installer companies\',columns:[\'ID\',\'Company Name\',\'Email\',\'Address\',\'Contact\']},this)"'
             ]
         ]
     ];
@@ -234,10 +230,11 @@ function getStatusClass($status)
             const modal = document.getElementById('deleteCompanyModal');
             const form = modal.querySelector('form');
             if (form) {
-                // Update the form action to point to the superadmin controller
                 form.action = '<?php echo URLROOT; ?>/superadmin/companies/delete/' + id;
             }
             showConfirmationModal('deleteCompanyModal');
         }
     </script>
+
+    <?php require APPROOT . '/views/inc/components/report_downloader.php'; ?>
 </div>

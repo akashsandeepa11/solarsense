@@ -58,8 +58,16 @@ function getVerificationStatusClass($status)
 <div class="container-fluid p-8">
     <?php
     $config = [
-        'title' => 'Company Verifications',
+        'title'       => 'Company Verifications',
         'description' => 'Review and verify installer company registration requests.',
+        'buttons'     => [
+            [
+                'label'   => 'Download PDF',
+                'icon'    => 'fas fa-file-pdf',
+                'class'   => 'btn-outline-primary',
+                'onclick' => 'onclick="SolarSenseReport.download({tableSelector:\'.data-table\',title:\'Verification Requests Report\',subtitle:\'Company registration and verification status\',columns:[\'Company Name\',\'Contact\',\'Address\',\'Submitted Date\',\'Status\']},this)"'
+            ]
+        ]
     ];
     include __DIR__ . '/../../inc/components/page_header.php';
     ?>
@@ -209,3 +217,5 @@ include __DIR__ . '/../../inc/models/confirmation_modal.php';
         return val != null && typeof val === 'object' && !Array.isArray(val);
     }
 </script>
+
+<?php require APPROOT . '/views/inc/components/report_downloader.php'; ?>
