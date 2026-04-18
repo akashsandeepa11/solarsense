@@ -90,8 +90,13 @@ class ServiceAgent extends Controller
 
     public function reports()
     {
+        $tasks   = $this->taskModel->get_agent_tasks()       ?? [];
+        $history = $this->historyModel->get_agent_history()  ?? [];
+
         $data = [
-            'user' => $this->user,
+            'user'    => $this->user,
+            'tasks'   => $tasks,
+            'history' => $history,
         ];
 
         $this->view('pages/service_agent/reports', $data, 'dashboard');

@@ -33,8 +33,16 @@ foreach ($rawTasks as $t) {
     <!-- Page Header -->
     <?php
     $config = [
-        'title' => 'My Tasks',
+        'title'       => 'My Tasks',
         'description' => 'Manage and track your assigned service tasks',
+        'buttons'     => [
+            [
+                'label'   => 'Download PDF',
+                'icon'    => 'fas fa-file-pdf',
+                'class'   => 'btn-outline-primary btn-md',
+                'onclick' => 'onclick="buildAndDownloadTasksPdf(this)"'
+            ]
+        ]
     ];
     include __DIR__ . '/../../inc/components/page_header.php';
     ?>
@@ -110,6 +118,21 @@ foreach ($rawTasks as $t) {
 
     <!-- Task List -->
     <div id="taskList"></div>
+
+    <!-- Hidden export table for PDF -->
+    <table id="tasksExportTable" style="display:none;">
+        <thead><tr><th>Task</th><th>Customer</th><th>Date</th><th>Status</th></tr></thead>
+        <tbody>
+            <?php foreach ($mappedTasks as $t): ?>
+            <tr>
+                <td><?php echo htmlspecialchars($t['title']) ?></td>
+                <td><?php echo htmlspecialchars($t['customer']) ?></td>
+                <td><?php echo htmlspecialchars($t['date']) ?></td>
+                <td><?php echo ucfirst(str_replace('-', ' ', $t['status'])) ?></td>
+            </tr>
+            <?php endforeach ?>
+        </tbody>
+    </table>
 
     <!-- Empty State -->
     <div id="emptyState" class="card shadow-sm rounded-xl" style="display: none;">
@@ -694,4 +717,15 @@ window.addEventListener("click", (e) => {
 updateStatCards();
 renderTasks();
 
+function buildAndDownloadTasksPdf(btn) {
+    SolarSenseReport.download({
+        tableSelector: '#tasksExportTable',
+        title: 'My Tasks Report',
+        subtitle: 'Assigned service tasks',
+        columns: ['Task', 'Customer', 'Date', 'Status']
+    }, btn);
+}
+
 </script>
+
+<?php require APPROOT . '/views/inc/components/report_downloader.php'; ?>
