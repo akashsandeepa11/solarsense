@@ -252,27 +252,18 @@ class M_inventory
     public function get_all_orders()
     {
         $this->db->query("
-            SELECT o.order_id, o.user_id, o.total_amount, o.status, o.date,
-                   COUNT(oi.order_item_id) as item_count
-            FROM orders o
-            LEFT JOIN order_item oi ON oi.order_id = o.order_id
-            GROUP BY o.order_id, o.user_id, o.total_amount, o.status, o.date
-            ORDER BY o.date DESC, o.order_id DESC
-        ");
+        SELECT o.order_id, o.user_id, o.agent_id, o.total_amount, o.status, o.date,
+               u1.full_name AS customer_name,
+               u2.full_name AS agent_name,
+               COUNT(oi.order_item_id) as item_count
+        FROM orders o
+        JOIN user u1 ON o.user_id = u1.user_id
+        LEFT JOIN user u2 ON o.agent_id = u2.user_id
+        LEFT JOIN order_item oi ON oi.order_id = o.order_id
+        GROUP BY o.order_id, u1.full_name, u2.full_name, o.agent_id, o.total_amount, o.status, o.date
+        ORDER BY o.date DESC
+    ");
         return $this->db->resultSet();
-    }
-
-    public function get_order_stats()
-    {
-        $this->db->query("
-            SELECT
-                COUNT(*) as total_orders,
-                SUM(CASE WHEN status = 'pending'   THEN 1 ELSE 0 END) as pending_count,
-                SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_count,
-                SUM(total_amount) as total_value
-            FROM orders
-        ");
-        return $this->db->single();
     }
 
     public function get_orders_by_status($status)
@@ -288,6 +279,37 @@ class M_inventory
         ");
         $this->db->bind(':status', $status);
         return $this->db->resultSet();
+    }
+
+    public function assign_agent($orderId, $agentId)
+    {
+        try {
+            // Updated table name to 'orders'
+            $this->db->query("
+            UPDATE orders
+            SET agent_id = :agent_id,
+                status   = 'pending'
+            WHERE order_id = :order_id
+        ");
+            $this->db->bind(':agent_id', $agentId);
+            $this->db->bind(':order_id', $orderId);
+            return $this->db->execute();
+        } catch (Exception $e) {
+            error_log('assign_agent for orders failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+    public function get_order_stats()
+    {
+        $this->db->query("
+            SELECT
+                COUNT(*) as total_orders,
+                SUM(CASE WHEN status = 'pending'   THEN 1 ELSE 0 END) as pending_count,
+                SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_count,
+                SUM(total_amount) as total_value
+            FROM orders
+        ");
+        return $this->db->single();
     }
 
     public function create_order($order, $cartItems)

@@ -9,6 +9,7 @@ class OperationManager extends Controller
     private $inventoryModel;
     private $notificationModel;
     private $notifications = [];
+    private $reportModel;
 
     private $user = [
         'role' => ROLE_OPERATION_MANAGER,
@@ -21,6 +22,7 @@ class OperationManager extends Controller
         $this->taskModel         = $this->model('M_maintenance_task');
         $this->inventoryModel    = $this->model('M_inventory');
         $this->notificationModel = $this->model('M_Notification');
+        $this->reportModel       = $this->model('M_maintenance_report');
 
         // Pre-load notifications for the topnavbar bell on every page
         $userId = (int) ($_SESSION['user_id'] ?? 0);
@@ -272,6 +274,17 @@ class OperationManager extends Controller
                 // Redirect back to the task tab
                 redirect('operationmanager/maintenance/tasks');
                 return;
+            } else {
+                if ($id === 'assign' && $action) {
+                    $agentId = $_POST['agent_id'] ?? null;
+                    if ($agentId && $this->inventoryModel->assign_agent($action, $agentId)) {
+                        setToast('Agent assigned successfully.', 'success');
+                    } else {
+                        setToast('Cannot assign agent.', 'error');
+                    }
+                }
+                redirect('operationmanager/maintenance/purchases/all');
+                return;
             }
         }
 
@@ -283,15 +296,31 @@ class OperationManager extends Controller
         ];
 
         if ($tab === 'purchases') {
-            // Handle Purchase Orders (reusing common purchases view logic)
             $statusFilter = $id; // In purchase tab, the second parameter acts as the status filter
             $data['orders'] = ($statusFilter !== 'all')
                 ? $this->inventoryModel->get_orders_by_status($statusFilter)
                 : $this->inventoryModel->get_all_orders();
             $data['stats'] = $this->inventoryModel->get_order_stats();
+            $data['agents'] = $this->taskModel->get_active_agents($companyId);
+            $data['customers'] = $this->fleetModel->get_customer_stats($companyId);
             $data['status_filter'] = $statusFilter;
 
             $this->view('pages/common/purchases', $data, layout: 'dashboard');
+        } elseif ($tab === 'reports') {
+            // Handle "View Detail" sub-routing: maintenance/reports/view/{report_id}
+            if ($id === 'view' && $action) {
+                $report = $this->reportModel->get_report_details($action);
+                if (!$report) {
+                    setToast('Report not found.', 'error');
+                    redirect('operationmanager/maintenance/reports');
+                }
+                $data['report'] = $report;
+                return $this->view('pages/operation_manager/view_report', $data, layout: 'dashboard');
+            }
+
+            // Default List View for Reports
+            $data['reports'] = $this->reportModel->get_reports_by_company($companyId);
+            $this->view('pages/operation_manager/reports_list', $data, layout: 'dashboard');
         } else {
             // Handle Maintenance Tasks
             $data['tasks'] = $this->taskModel->get_tasks_by_company($companyId);
@@ -303,16 +332,6 @@ class OperationManager extends Controller
             $this->view('pages/operation_manager/maintenance', $data, layout: 'dashboard');
         }
     }
-
-    // --- Create Purchase Order ---
-    public function create_purchase()
-    {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            // TODO: Implement create purchase logic
-        }
-        redirect('operationsmanager/purchases');
-    }
-
 
     public function reports()
     {

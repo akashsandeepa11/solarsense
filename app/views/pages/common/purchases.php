@@ -2,6 +2,9 @@
 /**
  * Purchases Page — wired to real orders + order_item tables
  */
+$agents = $data['agents'] ?? [];
+$customers = $data['customers'] ?? [];
+
 
 $orders = $data['orders'] ?? [];
 $stats = $data['stats'] ?? null;
@@ -23,7 +26,7 @@ $purchase_stats = [
 $orderRows = array_map(function ($o) {
     return [
         'id' => $o->order_id ?? 0,
-        'order_id' => '#' . ($o->order_id ?? ''),
+        'order_id' => ($o->order_id ?? ''),
         'item_count' => $o->item_count ?? 0,
         'total' => 'LKR ' . number_format($o->total_amount ?? 0, 2),
         'date' => $o->date ?? '—',
@@ -60,13 +63,17 @@ $orderRows = array_map(function ($o) {
                 <a href="<?php echo URLROOT; ?>/operationmanager/maintenance/tasks"
                     class="tab-item <?php echo ($data['active_tab'] === 'tasks') ? 'active' : ''; ?>">
                     <i class="fas fa-tools"></i>
-                    <span>Maintenance Tasks</span>
+                    <span>Tasks</span>
                 </a>
 
                 <a href="<?php echo URLROOT; ?>/operationmanager/maintenance/purchases/all"
                     class="tab-item <?php echo ($data['active_tab'] === 'purchases') ? 'active' : ''; ?>">
                     <i class="fas fa-shopping-cart"></i>
-                    <span>Purchase Orders</span>
+                    <span>Purchases</span>
+                </a>
+                <a href="<?php echo URLROOT; ?>/operationmanager/maintenance/reports"
+                    class="tab-item <?php echo ($data['active_tab'] === 'reports') ? 'active' : ''; ?>">
+                    <i class="fas fa-file-contract"></i><span>Service Reports</span>
                 </a>
             </div>
         </div>
@@ -99,99 +106,159 @@ $orderRows = array_map(function ($o) {
     </div>
 
     <!-- Orders Table -->
-    <?php
-    $config = [
-        'headers' => [
-            ['key' => 'order_id', 'label' => 'Order #'],
-            ['key' => 'item_count', 'label' => 'Items'],
-            ['key' => 'total', 'label' => 'Total'],
-            ['key' => 'date', 'label' => 'Date'],
-            ['key' => 'status', 'label' => 'Status'],
-        ],
-        'rows' => $orderRows,
-        'columns' => [
-            [
-                'key' => 'order_id',
-                'render' => function ($row) {
-                    return '<span class="font-medium text-primary">' . htmlspecialchars($row['order_id']) . '</span>';
-                }
+    <div class="container-fluid p-8">
+        <?php
+        $config = [
+            'headers' => [
+                ['key' => 'order_id', 'label' => 'Order #'],
+                ['key' => 'customer_name', 'label' => 'Customer'],
+                ['key' => 'item_count', 'label' => 'Items'],
+                ['key' => 'total', 'label' => 'Total'],
+                ['key' => 'date', 'label' => 'Date'],
+                ['key' => 'agent', 'label' => 'Assigned Agent'],
+                ['key' => 'status', 'label' => 'Status'],
             ],
-            [
-                'key' => 'item_count',
-                'render' => function ($row) {
-                    return $row['item_count'] . ' item' . ($row['item_count'] != 1 ? 's' : '');
-                }
+            'rows' => $orders,
+            'columns' => [
+                [
+                    'key' => 'order_id',
+                    'render' => function ($row) {
+                        return '<span class="font-semibold">#' . htmlspecialchars($row->order_id) . '</span>';
+                    }
+                ],
+                [
+                    'key' => 'customer_name',
+                    'render' => function ($row) {
+                        return '<span class="customer-name">' . htmlspecialchars($row->customer_name) . '</span>';
+                    }
+                ],
+                [
+                    'key' => 'item_count',
+                    'render' => function ($row) {
+                        $count = $row->item_count ?? 0;
+                        return $count . ' item' . ($count != 1 ? 's' : '');
+                    }
+                ],
+                [
+                    'key' => 'total',
+                    'render' => function ($row) {
+                        return '<span class="font-semibold">LKR ' . number_format($row->total_amount ?? 0, 2) . '</span>';
+                    }
+                ],
+                [
+                    'key' => 'agent',
+                    'render' => function ($row) {
+                        if (!empty($row->agent_id)) {
+                            return '<div data-filter="assigned" data-filter-value="yes">
+                                    <span class="text-success font-semibold">'
+                                . htmlspecialchars($row->agent_name) .
+                                '</span><br>
+                                    <small class="text-success">Assigned</small>
+                                </div>';
+                        } else {
+                            return '<span class="text-warning" data-filter="assigned" data-filter-value="no">Unassigned</span>';
+                        }
+                    }
+                ],
+                [
+                    'key' => 'status',
+                    'render' => function ($row) {
+                        $status = strtolower($row->status ?? 'pending');
+                        $map = [
+                            'pending' => ['bg-warning', 'Pending'],
+                            'completed' => ['bg-success', 'Completed'],
+                            'cancelled' => ['bg-error', 'Cancelled'],
+                        ];
+                        [$cls, $lbl] = $map[$status] ?? ['bg-secondary', ucfirst($status)];
+                        return '<span class="badge ' . $cls . ' text-surface px-3 py-1 rounded-full text-xs">' . $lbl . '</span>';
+                    }
+                ],
             ],
-            [
-                'key' => 'total',
-                'render' => function ($row) {
-                    return '<span class="font-semibold">' . htmlspecialchars($row['total']) . '</span>';
-                }
-            ],
-            [
-                'key' => 'status',
-                'render' => function ($row) {
-                    $map = [
-                        'pending' => ['bg-warning', 'Pending'],
-                        'completed' => ['bg-success', 'Completed'],
-                        'cancelled' => ['bg-error', 'Cancelled'],
-                    ];
-                    [$cls, $lbl] = $map[$row['status']] ?? ['bg-secondary', ucfirst($row['status'])];
-                    return '<span class="badge ' . $cls . ' text-surface px-3 py-1 rounded-full text-xs">' . $lbl . '</span>';
-                }
-            ],
-        ],
-        'empty_message' => 'No orders found.',
-    ];
-
-    // ONLY ALLOW OPERATION MANAGER TO SEE ACTIONS
-    if ($data['user']['role'] === ROLE_OPERATION_MANAGER) {
-        $config['actions'] = [
-            [
-                'label' => 'Assign',
-                'icon' => 'fas fa-user-plus',
-                'class' => 'btn-sm btn-success',
-                'onclick' => 'onclick="openAssignModal(\'{task_id}\', \'{agent_id}\', \'{service_type}\', \'{customer_name}\')"'
-            ],
-            [
-                'label' => 'Delete',
-                'icon' => 'fas fa-trash',
-                'class' => 'btn-icon-danger',
-                'onclick' => 'onclick="openDeleteModal(\'{task_id}\', \'{service_type}\', \'{customer_name}\')"'
-            ]
+            'empty_message' => 'No orders found.',
         ];
-    }
 
-    include __DIR__ . '/../../inc/components/data_table.php';
-    ?>
-</div>
+        // ONLY ALLOW OPERATION MANAGER TO SEE ACTIONS
+        if ($data['user']['role'] === ROLE_OPERATION_MANAGER) {
+            $config['actions'] = [
+                [
+                    'label' => 'Assign',
+                    'icon' => 'fas fa-user-plus',
+                    'class' => 'btn-sm btn-success',
+                    'onclick' => 'onclick="openAssignModal(\'{order_id}\', \'{customer_name}\', \'{agent_id}\')"'
+                ],
+                // [
+                //     'label' => 'Delete',
+                //     'icon' => 'fas fa-trash',
+                //     'class' => 'btn-icon-danger',
+                //     'onclick' => 'onclick="openDeleteModal(\'{task_id}\', \'{service_type}\', \'{customer_name}\')"'
+                // ]
+            ];
+        }
 
-<script>
-    // Client-side search by order #
-    document.getElementById('searchInput').addEventListener('input', function () {
-        const q = this.value.toLowerCase();
-        document.querySelectorAll('tbody tr').forEach(row => {
-            const text = row.querySelector('td')?.textContent?.toLowerCase() ?? '';
-            row.style.display = text.includes(q) ? '' : 'none';
+        include __DIR__ . '/../../inc/components/data_table.php';
+        ?>
+    </div>
+
+    <!-- Assign Modal -->
+    <div id="assignModal" class="modal" hidden>
+        <div class="modal-content">
+            <h3 class="text-2xl font-semibold mb-4">Assign Purchase</h3>
+
+            <form id="assignForm" method="POST">
+
+                <p id="assignTaskInfo" class="mb-4 text-secondary"></p>
+
+                <select name="agent_id" id="assignAgentSelect" class="form-control mb-3" required>
+                    <option value="">Select Agent</option>
+                    <?php foreach ($agents as $agent): ?>
+                        <option value="<?= $agent->user_id ?>">
+                            <?= htmlspecialchars($agent->full_name) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+
+                <div class="modal-buttons">
+                    <button class="btn btn-success btn-sm">Assign</button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="closeAssignModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const BASE = "<?= URLROOT ?>";
+        // Client-side search by order #
+        document.getElementById('searchInput').addEventListener('input', function () {
+            const q = this.value.toLowerCase();
+            document.querySelectorAll('tbody tr').forEach(row => {
+                const text = row.querySelector('td')?.textContent?.toLowerCase() ?? '';
+                row.style.display = text.includes(q) ? '' : 'none';
+            });
         });
-    });
 
-    function closeAssignModal() { $('assignModal').classList.remove('show'); }
-    function closeDeleteModal() { $('deleteModal').classList.remove('show'); }
+        function closeDeleteModal() { $('deleteModal').classList.remove('show'); }
 
-    function openAssignModal(taskId, currentAgentId, type, customer) {
-        $('assignTaskInfo').innerText = `Task: "${type}" for ${customer}`;
-        $('assignForm').action = `${BASE}/operationmanager/purchases/assign/${taskId}`;
-        $('assignAgentSelect').value = currentAgentId === 'null' ? '' : currentAgentId;
-        $('assignModal').classList.add('show');
-    }
+        function openAssignModal(orderId, customer, currentAgentId = '') {
+            document.getElementById("assignTaskInfo").innerText =
+                `Purchase ID: "${orderId}" for ${customer}`;
 
-    function openDeleteModal(taskId, type, customer) {
-        $('deleteMessage').innerText = `Delete "${type}" task for ${customer}? This cannot be undone.`;
-        $('deleteForm').action = `${BASE}/operationmanager/purchases/delete/${taskId}`;
-        $('deleteModal').classList.add('show');
-    }
+            document.getElementById("assignForm").action =
+                `${BASE}/operationmanager/maintenance/purchases/assign/${orderId}`;
 
-</script>
+            document.getElementById("assignAgentSelect").value =
+                currentAgentId || "";
+
+            const assignModal = document.getElementById("assignModal");
+            assignModal.hidden = false;
+            assignModal.classList.add("show");
+        }
+
+        function closeAssignModal() {
+            const assignModal = document.getElementById("assignModal");
+            assignModal.classList.remove("show");
+            assignModal.hidden = true;
+        }
+
+    </script>
 
 <?php require APPROOT . '/views/inc/components/report_downloader.php'; ?>

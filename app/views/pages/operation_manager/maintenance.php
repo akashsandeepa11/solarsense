@@ -26,7 +26,7 @@ function getMaintenanceStatusClass($status)
 ?>
 
 <link rel="stylesheet" href="<?php echo URLROOT ?>/public/css/components.css">
-<link rel="stylesheet" href="<?php echo URLROOT?>/css/pages/installer_admin/managers.css">
+<link rel="stylesheet" href="<?php echo URLROOT ?>/css/pages/installer_admin/managers.css">
 
 <link rel="stylesheet" href="<?php echo URLROOT ?>/public/css/pages/installer/dashboard.css">
 <link rel="stylesheet" href="<?php echo URLROOT ?>/public/css/pages/operation_manager/maintenance.css">
@@ -65,20 +65,39 @@ function getMaintenanceStatusClass($status)
         font-weight: 600;
     }
 
-   /* table {
+    /* table {
         table-layout: fixed;
         width: 100%;
     } */
 
-      
-    td:nth-child(1) { width: 5%; }   
-    td:nth-child(2) { width: 10%; } 
-    td:nth-child(3) { width: 20%; } 
-    td:nth-child(4) { width: 30%; }  
-    td:nth-child(5) { width: 15%; }  
-    td:nth-child(6) { width: 10%; }  
-    td:nth-child(7) { width: 5%; }   
 
+    td:nth-child(1) {
+        width: 5%;
+    }
+
+    td:nth-child(2) {
+        width: 10%;
+    }
+
+    td:nth-child(3) {
+        width: 20%;
+    }
+
+    td:nth-child(4) {
+        width: 30%;
+    }
+
+    td:nth-child(5) {
+        width: 15%;
+    }
+
+    td:nth-child(6) {
+        width: 10%;
+    }
+
+    td:nth-child(7) {
+        width: 5%;
+    }
 </style>
 
 <div class="container-fluid p-8">
@@ -109,14 +128,15 @@ function getMaintenanceStatusClass($status)
         <div class="tabs-container">
             <a href="<?php echo URLROOT; ?>/operationmanager/maintenance/tasks"
                 class="tab-item <?php echo ($data['active_tab'] === 'tasks') ? 'active' : ''; ?>">
-                <i class="fas fa-tools"></i>
-                <span>Maintenance Tasks</span>
+                <i class="fas fa-tools"></i><span>Tasks</span>
             </a>
-
             <a href="<?php echo URLROOT; ?>/operationmanager/maintenance/purchases/all"
                 class="tab-item <?php echo ($data['active_tab'] === 'purchases') ? 'active' : ''; ?>">
-                <i class="fas fa-shopping-cart"></i>
-                <span>Purchase Orders</span>
+                <i class="fas fa-shopping-cart"></i><span>Purchases</span>
+            </a>
+            <a href="<?php echo URLROOT; ?>/operationmanager/maintenance/reports"
+                class="tab-item <?php echo ($data['active_tab'] === 'reports') ? 'active' : ''; ?>">
+                <i class="fas fa-file-contract"></i><span>Service Reports</span>
             </a>
         </div>
     </div>
@@ -217,8 +237,8 @@ function getMaintenanceStatusClass($status)
                     if (!empty($row->agent_id)) {
                         return '<div data-filter="assigned" data-filter-value="yes">
                                     <span class="text-success font-semibold">'
-                                    . htmlspecialchars($row->agent_name) .
-                                '</span><br>
+                            . htmlspecialchars($row->agent_name) .
+                            '</span><br>
                                     <small class="text-success">Assigned</small>
                                 </div>';
                     } else {
@@ -237,20 +257,20 @@ function getMaintenanceStatusClass($status)
                 }
             ]
         ],
-       'actions' => [
-    [
-        'label' => 'Assign',
-        'icon' => 'fas fa-user-plus',
-        'class' => 'btn-sm btn-success',
-            'onclick' => 'onclick="openAssignModal(&quot;{task_id}&quot;, &quot;{service_type}&quot;, &quot;{customer_name}&quot;, &quot;{agent_id}&quot;)"'
-    ],
-    [
-        'label' => 'Delete',
-        'icon' => 'fas fa-trash',
-        'class' => 'btn-icon-danger',
-        'onclick' => 'onclick="openDeleteModal(&quot;{task_id}&quot;, &quot;{service_type}&quot;, &quot;{customer_name}&quot;)"'
-    ]
-],
+        'actions' => [
+            [
+                'label' => 'Assign',
+                'icon' => 'fas fa-user-plus',
+                'class' => 'btn-sm btn-success',
+                'onclick' => 'onclick="openAssignModal(&quot;{task_id}&quot;, &quot;{service_type}&quot;, &quot;{customer_name}&quot;, &quot;{agent_id}&quot;)"'
+            ],
+            [
+                'label' => 'Delete',
+                'icon' => 'fas fa-trash',
+                'class' => 'btn-icon-danger',
+                'onclick' => 'onclick="openDeleteModal(&quot;{task_id}&quot;, &quot;{service_type}&quot;, &quot;{customer_name}&quot;)"'
+            ]
+        ],
         'empty_message' => 'No maintenance tasks found.'
     ];
     include __DIR__ . '/../../inc/components/data_table.php';
@@ -294,17 +314,17 @@ function getMaintenanceStatusClass($status)
 
             <select name="agent_id" id="assignAgentSelect" class="form-control mb-3" required>
                 <option value="">Select Agent</option>
-               
+
                 <?php foreach ($agents as $agent): ?>
                     <option value="<?= $agent->user_id ?>">
-                        <?= htmlspecialchars($agent->user_id) ?>
+                        <?= htmlspecialchars($agent->full_name) ?>
                     </option>
                 <?php endforeach; ?>
 
             </select>
 
             <div class="modal-buttons">
-                <button class="btn btn-success btn-sm" >Assign</button>
+                <button class="btn btn-success btn-sm">Assign</button>
                 <button type="button" class="btn btn-secondary btn-sm" onclick="closeAssignModal()">Cancel</button>
             </div>
         </form>
@@ -328,66 +348,66 @@ function getMaintenanceStatusClass($status)
 </div>
 
 <script>
-   const BASE = "<?= URLROOT ?>";
+    const BASE = "<?= URLROOT ?>";
 
-// ---------- OPEN MODALS ----------
-function showAddModal() {
-    const addModal = document.getElementById("addModal");
-    addModal.hidden = false;
-    addModal.classList.add("show");
-}
+    // ---------- OPEN MODALS ----------
+    function showAddModal() {
+        const addModal = document.getElementById("addModal");
+        addModal.hidden = false;
+        addModal.classList.add("show");
+    }
 
-function closeAddModal() {
-    const addModal = document.getElementById("addModal");
-    addModal.classList.remove("show");
-    addModal.hidden = true;
-}
+    function closeAddModal() {
+        const addModal = document.getElementById("addModal");
+        addModal.classList.remove("show");
+        addModal.hidden = true;
+    }
 
-function openAssignModal(taskId, type, customer, currentAgentId = '') {
-    document.getElementById("assignTaskInfo").innerText =
-        `Task: "${type}" for ${customer}`;
+    function openAssignModal(taskId, type, customer, currentAgentId = '') {
+        document.getElementById("assignTaskInfo").innerText =
+            `Task: "${type}" for ${customer}`;
 
-    document.getElementById("assignForm").action =
-    `${BASE}/operationmanager/maintenance/tasks/assign/${taskId}`;
-    
-    document.getElementById("assignAgentSelect").value =
-        currentAgentId || "";
+        document.getElementById("assignForm").action =
+            `${BASE}/operationmanager/maintenance/tasks/assign/${taskId}`;
 
-    const assignModal = document.getElementById("assignModal");
-    assignModal.hidden = false;
-    assignModal.classList.add("show");
-}
+        document.getElementById("assignAgentSelect").value =
+            currentAgentId || "";
 
-function closeAssignModal() {
-    const assignModal = document.getElementById("assignModal");
-    assignModal.classList.remove("show");
-    assignModal.hidden = true;
-}
+        const assignModal = document.getElementById("assignModal");
+        assignModal.hidden = false;
+        assignModal.classList.add("show");
+    }
 
-function openDeleteModal(taskId, type, customer) {
-    document.getElementById("deleteMessage").innerText =
-        `Delete "${type}" task for ${customer}? This cannot be undone.`;
+    function closeAssignModal() {
+        const assignModal = document.getElementById("assignModal");
+        assignModal.classList.remove("show");
+        assignModal.hidden = true;
+    }
 
-    document.getElementById("deleteForm").action =
-        `${BASE}/operationmanager/maintenance/delete/${taskId}`;
+    function openDeleteModal(taskId, type, customer) {
+        document.getElementById("deleteMessage").innerText =
+            `Delete "${type}" task for ${customer}? This cannot be undone.`;
 
-    const deleteModal = document.getElementById("deleteModal");
-    deleteModal.hidden = false;
-    deleteModal.classList.add("show");
-}
+        document.getElementById("deleteForm").action =
+            `${BASE}/operationmanager/maintenance/delete/${taskId}`;
 
-function closeDeleteModal() {
-    const deleteModal = document.getElementById("deleteModal");
-    deleteModal.classList.remove("show");
-    deleteModal.hidden = true;
-}
+        const deleteModal = document.getElementById("deleteModal");
+        deleteModal.hidden = false;
+        deleteModal.classList.add("show");
+    }
 
-// Close on outside click
-window.addEventListener("click", function (e) {
-    if (e.target.id === "addModal") closeAddModal();
-    if (e.target.id === "assignModal") closeAssignModal();
-    if (e.target.id === "deleteModal") closeDeleteModal();
-});
+    function closeDeleteModal() {
+        const deleteModal = document.getElementById("deleteModal");
+        deleteModal.classList.remove("show");
+        deleteModal.hidden = true;
+    }
+
+    // Close on outside click
+    window.addEventListener("click", function (e) {
+        if (e.target.id === "addModal") closeAddModal();
+        if (e.target.id === "assignModal") closeAssignModal();
+        if (e.target.id === "deleteModal") closeDeleteModal();
+    });
 </script>
 
 <?php require APPROOT . '/views/inc/components/report_downloader.php'; ?>
