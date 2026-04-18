@@ -104,4 +104,23 @@ class M_Profile
 
         return $this->db->single_assoc();
     }
+
+    public function getOperationManagerProfile($user_id, $company_id)
+    {
+        $this->db->query("
+        SELECT op.user_id, op.company_id, op.address, op.contact, op.district, op.register_date,
+               op.status,
+               u.full_name, u.email,
+               ic.company_name
+        FROM operation_manager op
+        JOIN user u ON u.user_id = op.user_id
+        JOIN installer_company ic ON ic.company_id = op.company_id
+        WHERE op.user_id = :user_id AND op.company_id = :company_id 
+    ");
+
+        $this->db->bind(':user_id', $user_id);
+        $this->db->bind(':company_id', $company_id);
+
+        return $this->db->single_assoc();
+    }
 }

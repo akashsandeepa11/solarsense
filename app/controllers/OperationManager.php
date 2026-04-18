@@ -9,6 +9,7 @@ class OperationManager extends Controller
     private $inventoryModel;
     private $notificationModel;
     private $notifications = [];
+    private $profileModel;
 
     private $user = [
         'role' => ROLE_OPERATION_MANAGER,
@@ -21,6 +22,7 @@ class OperationManager extends Controller
         $this->taskModel         = $this->model('M_maintenance_task');
         $this->inventoryModel    = $this->model('M_inventory');
         $this->notificationModel = $this->model('M_Notification');
+        $this->profileModel      = $this->model('M_Profile');
 
         // Pre-load notifications for the topnavbar bell on every page
         $userId = (int) ($_SESSION['user_id'] ?? 0);
@@ -326,9 +328,13 @@ class OperationManager extends Controller
 
     public function profile()
     {
+        $userId = $_SESSION['user_id'] ?? 0;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
+        $profileData = $this->profileModel->getOperationManagerProfile($userId, $companyId);
         $data = [
             'user'          => $this->user,
             'notifications' => $this->notifications,
+            'profileData'   => $profileData
         ];
 
         $this->view('pages/operation_manager/profile', $data, layout: 'dashboard');

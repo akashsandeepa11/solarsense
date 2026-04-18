@@ -157,9 +157,9 @@
           <!-- Profile Info -->
           <div class="text-center">
             <img src="<?php echo htmlspecialchars(getAvatarUrl('Alexa Rawles', 140)); ?>" alt="Profile" style="object-fit:cover;">
-            <h5 class="mb-1 fw-bold" id="summary-name">Alexa Rawles</h5>
-            <p class="text-muted small mb-1" id="summary-email">alexarawles@gmail.com</p>
-            <p class="text-muted small mb-3" id="summary-location">Colombo 07, Sri Lanka</p>
+            <h5 class="mb-1 fw-bold" id="summary-name"><?php echo htmlspecialchars($profile_data['full_name']); ?></h5>
+            <p class="text-muted small mb-1" id="summary-email"><?php echo htmlspecialchars($profile_data['email']); ?></p>
+            <p class="text-muted small mb-3" id="summary-location"><?php echo htmlspecialchars($profile_data['address']); ?></p>
           </div>
 
           <!-- Rating -->
@@ -178,7 +178,7 @@
           <div class="row text-center">
             <div class="col-12">
               <div class="mb-3">
-                <h6 class="fw-bold mb-1" id="summary-specialization">Specialization</h6>
+                <h6 class="fw-bold mb-1" id="summary-specialization"><?php echo htmlspecialchars($profile_data['specialization']); ?></h6>
                 <small class="text-muted">Specialization</small>
               </div>
             </div>
