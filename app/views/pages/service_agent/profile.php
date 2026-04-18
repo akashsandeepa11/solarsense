@@ -8,6 +8,9 @@
   include __DIR__ . '/../../inc/components/page_header.php';
   ?>
 
+  <?php
+  $profile_data = $data['profileData'];
+  ?>
   <div class="row">
     <!-- Left Column -->
     <div class="col-lg-8">
@@ -20,7 +23,7 @@
                   [
                       'id' => 'full-name',
                       'label' => 'Full Name',
-                      'value' => 'Alexa Rawles Rogdrigo',
+                      'value' =>  $profile_data['full_name'],
                       'type' => 'text',
                       'editable' => true,
                       'required' => true,
@@ -29,16 +32,16 @@
                   [
                       'id' => 'email',
                       'label' => 'Email',
-                      'value' => 'alexarawles@gmail.com',
+                      'value' => $profile_data['email'],
                       'type' => 'email',
-                      'editable' => true,
+                      'editable' => false,
                       'required' => true,
                       'summaryTarget' => 'summary-email'
                   ],
                   [
                       'id' => 'phone',
                       'label' => 'Phone number',
-                      'value' => '+54 548 654 65',
+                      'value' => $profile_data['contact'],
                       'type' => 'tel',
                       'editable' => true,
                       'required' => false,
@@ -47,7 +50,7 @@
                   [
                       'id' => 'address',
                       'label' => 'Address',
-                      'value' => 'No. 47, Lakeview Lane, Colombo 07, Sri Lanka',
+                      'value' => $profile_data['address'],
                       'type' => 'text',
                       'editable' => true,
                       'required' => true,
@@ -56,44 +59,51 @@
                   [
                       'id' => 'district',
                       'label' => 'District',
-                      'value' => 'Colombo',
+                      'value' => $profile_data['district'],
                       'type' => 'text',
                       'editable' => false
                   ]
               ]
           ],
           [
-              'title' => 'Work Details',
+              'title' => 'Company Details',
               'fields' => [
                   [
                       'id' => 'agent-id',
                       'label' => 'Agent ID',
-                      'value' => 'CMB23039D',
+                      'value' => $profile_data['user_id'],
                       'type' => 'text',
                       'editable' => false
                   ],
                   [
-                      'id' => 'work-since',
-                      'label' => 'Work Since',
-                      'value' => '03/04/2020',
-                      'type' => 'date',
+                      'id' => 'company-name',
+                      'label' => 'Company Name',
+                      'value' => $profile_data['company_name'],
+                      'type' => 'text',
                       'editable' => false
                   ],
                   [
-                      'id' => 'experience',
-                      'label' => 'Experience',
-                      'value' => '10 Years',
+                      'id' => 'register-date',
+                      'label' => 'Registered on',
+                      'value' => $profile_data['register_date'],
                       'type' => 'text',
-                      'editable' => false,
-                      'summaryTarget' => 'summary-experience'
+                      'editable' => false
                   ],
                   [
-                      'id' => 'total-works',
-                      'label' => 'Total Works',
-                      'value' => '46',
-                      'type' => 'number',
+                      'id' => 'specialization',
+                      'label' => 'Specialization',
+                      'value' => $profile_data['specialization'],
+                      'type' => 'text',
                       'editable' => false,
-                      'summaryTarget' => 'summary-works'
+                      'summaryTarget' => 'summary-specialization'
+                  ],
+                  [
+                      'id' => 'status',
+                      'label' => 'Status',
+                      'value' => $profile_data['status'],
+                      'type' => 'text',
+                      'editable' => true,
+                      'summaryTarget' => 'summary-status'
                   ]
               ]
           ]
@@ -153,29 +163,23 @@
           </div>
 
           <!-- Rating -->
-          <div class="d-flex justify-content-center gap-1 mb-4">
+          <!-- <div class="d-flex justify-content-center gap-1 mb-4">
             <i class="fas fa-star" style="color: #fbbf24;"></i>
             <i class="fas fa-star" style="color: #fbbf24;"></i>
             <i class="fas fa-star" style="color: #fbbf24;"></i>
             <i class="fas fa-star" style="color: #fbbf24;"></i>
             <i class="fas fa-star" style="color: #d1d5db;"></i>
-          </div>
+          </div> -->
 
           <!-- Divider -->
           <hr>
 
           <!-- Stats -->
           <div class="row text-center">
-            <div class="col-6">
+            <div class="col-12">
               <div class="mb-3">
-                <h6 class="fw-bold mb-1" id="summary-experience">10 Years</h6>
-                <small class="text-muted">Experience</small>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="mb-3">
-                <h6 class="fw-bold mb-1" id="summary-works">46</h6>
-                <small class="text-muted">Total Works</small>
+                <h6 class="fw-bold mb-1" id="summary-specialization">Specialization</h6>
+                <small class="text-muted">Specialization</small>
               </div>
             </div>
           </div>
@@ -194,8 +198,8 @@ document.querySelectorAll('.update-summary').forEach(input => {
     'email': 'summary-email',
     'phone': 'summary-phone',
     'address': 'summary-location',
-    'experience': 'summary-experience',
-    'total-works': 'summary-works'
+    'experience': 'summary-specialization',
+    'total-works': 'summary-status'
   };
   
   if (summaryMap[id]) {

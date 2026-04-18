@@ -85,4 +85,23 @@ class M_Profile
         $this->db->bind(':company_id', $company_id);
         return $this->db->single();
     }
+
+    public function getServiceAgentProfile($user_id, $company_id)
+    {
+        $this->db->query("
+        SELECT sa.user_id, sa.company_id, sa.address, sa.contact, sa.district, sa.register_date,
+               sa.specialization, sa.status,
+               u.full_name, u.email,
+               ic.company_name
+        FROM service_agent sa
+        JOIN user u ON u.user_id = sa.user_id
+        JOIN installer_company ic ON ic.company_id = sa.company_id
+        WHERE sa.user_id = :user_id AND sa.company_id = :company_id 
+    ");
+
+        $this->db->bind(':user_id', $user_id);
+        $this->db->bind(':company_id', $company_id);
+
+        return $this->db->single_assoc();
+    }
 }
