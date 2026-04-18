@@ -63,6 +63,10 @@ $orderRows = array_map(function ($o) {
                     <i class="fas fa-shopping-cart"></i>
                     <span>Purchase Orders</span>
                 </a>
+                <a href="<?php echo URLROOT; ?>/operationmanager/maintenance/reports"
+                    class="tab-item <?php echo ($data['active_tab'] === 'reports') ? 'active' : ''; ?>">
+                    <i class="fas fa-file-contract"></i><span>Service Reports</span>
+                </a>
             </div>
         </div>
     <?php endif; ?>
@@ -106,7 +110,7 @@ $orderRows = array_map(function ($o) {
                 ['key' => 'agent', 'label' => 'Assigned Agent'],
                 ['key' => 'status', 'label' => 'Status'],
             ],
-            'rows' => $orders, 
+            'rows' => $orders,
             'columns' => [
                 [
                     'key' => 'order_id',
@@ -134,19 +138,19 @@ $orderRows = array_map(function ($o) {
                     }
                 ],
                 [
-                'key' => 'agent',
-                'render' => function ($row) {
-                    if (!empty($row->agent_id)) {
-                        return '<div data-filter="assigned" data-filter-value="yes">
+                    'key' => 'agent',
+                    'render' => function ($row) {
+                        if (!empty($row->agent_id)) {
+                            return '<div data-filter="assigned" data-filter-value="yes">
                                     <span class="text-success font-semibold">'
-                                    . htmlspecialchars($row->agent_name) .
+                                . htmlspecialchars($row->agent_name) .
                                 '</span><br>
                                     <small class="text-success">Assigned</small>
                                 </div>';
-                    } else {
-                        return '<span class="text-warning" data-filter="assigned" data-filter-value="no">Unassigned</span>';
+                        } else {
+                            return '<span class="text-warning" data-filter="assigned" data-filter-value="no">Unassigned</span>';
+                        }
                     }
-                }
                 ],
                 [
                     'key' => 'status',

@@ -7,6 +7,7 @@ class OperationManager extends Controller
     private $teamModel;
     private $taskModel;
     private $inventoryModel;
+    private $reportModel;
 
     private $user = [
         'role' => ROLE_OPERATION_MANAGER,
@@ -18,6 +19,7 @@ class OperationManager extends Controller
         $this->teamModel = $this->model('M_Team');
         $this->taskModel = $this->model('M_maintenance_task');
         $this->inventoryModel = $this->model('M_inventory');
+        $this->reportModel = $this->model('M_maintenance_report');
     }
 
     // --- Admin-Specific Pages ---
@@ -229,13 +231,12 @@ class OperationManager extends Controller
                 // Redirect back to the task tab
                 redirect('operationmanager/maintenance/tasks');
                 return;
-            }
-            else{
+            } else {
                 if ($id === 'assign' && $action) {
                     $agentId = $_POST['agent_id'] ?? null;
                     if ($agentId && $this->inventoryModel->assign_agent($action, $agentId)) {
                         setToast('Agent assigned successfully.', 'success');
-                    }else{
+                    } else {
                         setToast('Cannot assign agent.', 'error');
                     }
                 }
@@ -261,6 +262,21 @@ class OperationManager extends Controller
             $data['status_filter'] = $statusFilter;
 
             $this->view('pages/common/purchases', $data, layout: 'dashboard');
+        } elseif ($tab === 'reports') {
+            // Handle "View Detail" sub-routing: maintenance/reports/view/{report_id}
+            if ($id === 'view' && $action) {
+                $report = $this->reportModel->get_report_details($action);
+                if (!$report) {
+                    setToast('Report not found.', 'error');
+                    redirect('operationmanager/maintenance/reports');
+                }
+                $data['report'] = $report;
+                return $this->view('pages/operation_manager/view_report', $data, layout: 'dashboard');
+            }
+
+            // Default List View for Reports
+            $data['reports'] = $this->reportModel->get_reports_by_company($companyId);
+            $this->view('pages/operation_manager/reports_list', $data, layout: 'dashboard');
         } else {
             // Handle Maintenance Tasks
             $data['tasks'] = $this->taskModel->get_tasks_by_company($companyId);
