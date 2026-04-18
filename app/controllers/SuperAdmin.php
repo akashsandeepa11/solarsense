@@ -218,13 +218,14 @@ class SuperAdmin extends Controller
     public function reports()
     {
         $data = [
-            'user' => $this->user,
+            'user'        => $this->user,
             'report_data' => [
-                'platform_overview' => $this->dashboardModel->getStats(),
-                'user_role_data' => $this->dashboardModel->getUserByType(),
-                'company_growth' => $this->dashboardModel->getCompanyGrowthByYear(),
-                'company_district' => $this->dashboardModel->getCompanyByDistrict(),
-                'companies_report' => $this->installerAdminDashboard->getAllCompaniesWithStats()
+                'platform_overview'  => $this->dashboardModel->getStats(),
+                'user_role_data'     => $this->dashboardModel->getUserByType(),
+                'company_growth'     => $this->dashboardModel->getCompanyGrowthByYear(),
+                'company_district'   => $this->dashboardModel->getCompanyByDistrict(),
+                'companies_report'   => $this->installerAdminDashboard->getAllCompaniesWithStats(),
+                'verifications'      => $this->fleetModel->get_verifications(),
             ]
         ];
 

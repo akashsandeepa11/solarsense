@@ -23,6 +23,15 @@ foreach ($rawTasks as $t) {
     $config = [
         'title' => 'Task History',
         'description' => 'View your completed service tasks',
+        'buttons' => [
+            [
+                'label'   => 'Download PDF',
+                'url'     => 'javascript:void(0)',
+                'icon'    => 'fas fa-file-pdf',
+                'class'   => 'btn-outline-primary btn-md',
+                'onclick' => 'onclick="downloadHistoryReport(this)"'
+            ]
+        ]
     ];
     include __DIR__ . '/../../inc/components/page_header.php';
     ?>
@@ -260,4 +269,50 @@ searchBar.addEventListener("input", renderTasks);
 
 // Initial render
 renderTasks();
+
+// ── Hidden table for PDF export ─────────────────────────────
+function buildHistoryTable() {
+    var tbl = document.getElementById('historyExportTable');
+    if (!tbl) return;
+    var tbody = tbl.querySelector('tbody');
+    tbody.innerHTML = '';
+    var filtered = tasks.filter(function(t) { return t.status === 'done'; });
+    filtered.forEach(function(task) {
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+            '<td>' + (task.title        || '') + '</td>' +
+            '<td>' + (task.customer     || '') + '</td>' +
+            '<td>' + (task.address      || '') + '</td>' +
+            '<td>' + (task.completedDate|| '') + '</td>' +
+            '<td>Completed</td>';
+        tbody.appendChild(tr);
+    });
+}
+buildHistoryTable();
+
+function downloadHistoryReport(btnEl) {
+    buildHistoryTable(); // rebuild with current filter if needed
+    SolarSenseReport.download({
+        tableSelector: '#historyExportTable',
+        title:         'Task History Report',
+        subtitle:      'A complete record of completed service tasks',
+        columns:       ['Task Title', 'Customer', 'Address', 'Completed Date', 'Status']
+    }, btnEl);
+}
 </script>
+
+<!-- Hidden export table (never visible to users) -->
+<table id="historyExportTable" style="display:none;" aria-hidden="true">
+    <thead>
+        <tr>
+            <th>Task Title</th>
+            <th>Customer</th>
+            <th>Address</th>
+            <th>Completed Date</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<?php require APPROOT . '/views/inc/components/report_downloader.php'; ?>

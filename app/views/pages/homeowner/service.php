@@ -123,10 +123,22 @@ $history = $data['serviceHistory'];
         <div class="col-12">
             <div class="card shadow-lg rounded-xl">
                 <div class="card-body">
-                    <h3 class="card-title text-2xl font-semibold mb-6">Service History</h3>
+                    <div class="d-flex align-center justify-between mb-6">
+                        <h3 class="card-title text-2xl font-semibold mb-0">Service History</h3>
+                        <?php
+                        $config = [
+                            'table_selector' => '.service-history-table',
+                            'report_title'   => 'Service History',
+                            'report_subtitle'=> 'A complete record of your solar system service requests',
+                            'columns'        => ['Service ID', 'Request Date', 'Service Type', 'Technician', 'Status'],
+                            'btn_id'         => 'btn-download-service-report',
+                        ];
+                        require APPROOT . '/views/inc/components/download_report_btn.php';
+                        ?>
+                    </div>
 
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
+                        <table class="table table-hover mb-0 service-history-table">
                             <thead class="table-light">
                                 <tr>
                                     <th class="text-sm font-semibold text-secondary">Service ID</th>
@@ -174,3 +186,5 @@ $history = $data['serviceHistory'];
         </div>
     </div> 
 </div>
+
+<?php require APPROOT . '/views/inc/components/report_downloader.php'; ?>

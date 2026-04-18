@@ -88,11 +88,24 @@
         <div class="col-12">
             <div class="card shadow-lg rounded-xl">
                 <div class="card-body">
-                    <h3 class="card-title text-2xl font-semibold mb-4">Recent Uploads</h3>
+                    <div class="d-flex align-center justify-between mb-4">
+                        <h3 class="card-title text-2xl font-semibold mb-0">Recent Uploads</h3>
+                        
+                        <?php
+                        $config = [
+                            'table_selector' => '.recent-uploads-table',
+                            'report_title'   => 'CEB SMS Upload History',
+                            'report_subtitle'=> 'A complete record of your uploaded CEB electricity bill messages',
+                            'columns'        => ['Reading Date','Export Reading','Import Reading','Consumption (Units)','Bill Amount (Rs.)'],
+                            'btn_id'         => 'btn-download-pdf',
+                        ];
+                        require APPROOT . '/views/inc/components/download_report_btn.php';
+                        ?>
+                    </div>
 
                     <?php if (!empty($data['recentUploads'])): ?>
                         <div class="table-responsive">
-                            <table class="table table-hover mb-0">
+                            <table class="table table-hover mb-0 recent-uploads-table">
                                 <thead class="table-light">
                                     <tr>
                                         <th class="text-sm font-semibold text-secondary">Reading Date</th>
@@ -139,3 +152,5 @@
         </div>
     </div>
 </div>
+
+<?php require APPROOT . '/views/inc/components/report_downloader.php'; ?>

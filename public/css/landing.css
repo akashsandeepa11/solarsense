@@ -1977,3 +1977,34 @@ input.form-control {
     grid-template-columns: 1fr;
   }
 }
+
+/* Container to handle the scroll */
+.installer-options-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    padding: 1rem 0;
+    scrollbar-width: thin;
+    scrollbar-color: #fe9630 #f1f5f9;
+}
+
+.installer-options {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0.5rem;
+    min-width: max-content; /* Ensures cards don't shrink */
+}
+
+/* Base card width to ensure 4 fit comfortably on large screens */
+.installer-option {
+    flex: 0 0 260px; /* Fixed width for consistent scrolling */
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.35rem;
+    transition: all 0.25s ease;
+}
+
+.installer-option.selected {
+    border-color: #fe9630;
+    background: rgba(254, 150, 48, 0.05);
+}

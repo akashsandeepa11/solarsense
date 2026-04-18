@@ -78,6 +78,16 @@ class InstallerAdmin extends Controller
             'user' => $this->user,
             'items'=>$res,
             'hehe'=>$hehe
+        $userId    = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
+
+        $customers = $companyId ? $this->fleetModel->get_customer_stats($companyId)      : [];
+        $agents    = $companyId ? $this->teamModel->get_service_agent_stats($companyId)  : [];
+
+        $data = [
+            'user'      => $this->user,
+            'customers' => $customers,
+            'agents'    => $agents,
         ];
 
 
@@ -237,7 +247,7 @@ class InstallerAdmin extends Controller
             if (empty($data['contactNumber']) || !preg_match('/^[0-9\-\+\s\(\)]+$/', $data['contactNumber'])) {
                 $data['contactNumber_err'] = "Please enter a valid contact number";
             }
-            
+
             if (empty($data['phoneSecondary']) || !preg_match('/^[0-9\-\+\s\(\)]+$/', $data['phoneSecondary'])) {
                 $data['phoneSecondary_err'] = "Please enter a valid contact number";
             }

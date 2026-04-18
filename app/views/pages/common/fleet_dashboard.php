@@ -109,21 +109,26 @@ function getStatusClass($health)
 
     <!-- Page Header -->
     <?php
-    // Build buttons array based on role
     $buttons = [];
     if ($data['user']['role'] === ROLE_INSTALLER_ADMIN) {
         $buttons[] = [
-            'label' => 'Add Customer',
-            'url' => URLROOT . '/installeradmin/fleet/add_customer',
-            'icon' => 'fas fa-plus',
-            'class' => 'btn-primary btn-md'
+            'label'   => 'Add Customer',
+            'url'     => URLROOT . '/installeradmin/fleet/add_customer',
+            'icon'    => 'fas fa-plus',
+            'class'   => 'btn-primary btn-md'
         ];
     }
+    $buttons[] = [
+        'label'   => 'Download PDF',
+        'icon'    => 'fas fa-file-pdf',
+        'class'   => 'btn-outline-primary btn-md',
+        'onclick' => 'onclick="SolarSenseReport.download({tableSelector:\'.data-table\',title:\'Fleet Dashboard Report\',subtitle:\'Client systems overview\',columns:[\'Client Name\',\'Location\',\'System Size\',\'Health\',\'Performance\',\'Last SMS Upload\']},this)"'
+    ];
 
     $config = [
-        'title' => 'Fleet Dashboard',
+        'title'       => 'Fleet Dashboard',
         'description' => 'Overview of your client systems.',
-        'buttons' => $buttons
+        'buttons'     => $buttons
     ];
     include __DIR__ . '/../../inc/components/page_header.php';
     ?>
@@ -286,14 +291,14 @@ function getStatusClass($health)
     <!-- Dynamic Delete Modal Handler -->
     <script>
         function openDeleteModal(customerId) {
-            // Get the form inside the modal and update its action
             const modal = document.getElementById('deletefleetModal');
             const form = modal.querySelector('form');
             if (form) {
                 form.action = '<?php echo URLROOT; ?>/installeradmin/fleet/delete_customer/' + customerId;
             }
-            // Show the modal
             showConfirmationModal('deletefleetModal');
         }
     </script>
+
+    <?php require APPROOT . '/views/inc/components/report_downloader.php'; ?>
 </div>

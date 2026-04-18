@@ -72,12 +72,12 @@ function canAccessController($controller) {
  */
 function getRoleDefaultRoute($role) {
     $routes = [
-        ROLE_SUPER_ADMIN => URLROOT . '/SuperAdmin/dashboard',
-        ROLE_INSTALLER_ADMIN => URLROOT . '/InstallerAdmin/dashboard',
-        ROLE_OPERATION_MANAGER => URLROOT . '/OperationManager/dashboard',
-        ROLE_INVENTORY_MANAGER => URLROOT . '/InventoryManager/inventory',
-        ROLE_SERVICE_AGENT => URLROOT . '/ServiceAgent/tasks',
-        ROLE_HOMEOWNER => URLROOT . '/HomeOwner/dashboard',
+        ROLE_SUPER_ADMIN => URLROOT . '/superadmin/dashboard',
+        ROLE_INSTALLER_ADMIN => URLROOT . '/installeradmin/dashboard',
+        ROLE_OPERATION_MANAGER => URLROOT . '/operationmanager/dashboard',
+        ROLE_INVENTORY_MANAGER => URLROOT . '/inventorymanager/inventory',
+        ROLE_SERVICE_AGENT => URLROOT . '/serviceagent/tasks',
+        ROLE_HOMEOWNER => URLROOT . '/homeowner/dashboard',
     ];
     
     return $routes[$role] ?? URLROOT . '/pages/index';

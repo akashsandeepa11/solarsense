@@ -8,6 +8,7 @@ class HomeOwner extends Controller
     private $inventoryModel;
     private $profileModel;
     private $notificationModel;
+    private $managerModel;
 
     
 
@@ -24,6 +25,7 @@ class HomeOwner extends Controller
         $this->inventoryModel    = $this->model('M_inventory');
         $this->profileModel      = $this->model('M_Profile');
         $this->notificationModel = $this->model('M_Notification');
+        $this->managerModel      = $this->model('M_Manager');
     }
 
 
@@ -292,6 +294,30 @@ class HomeOwner extends Controller
         ];
 
         if ($this->serviceModel->add_service_request($modelData)) {
+
+            // --- Service request notification (same pattern as SMS health alerts) ---
+            // Get the homeowner's company, then notify all operation managers in it.
+            $userId    = (int) $_SESSION['user_id'];
+            $companyId = $this->inventoryModel->getCompanyIdForHomeowner($userId);
+
+            if ($companyId) {
+                $serviceTypeName = $this->serviceTypes[$data['service_type']] ?? 'Service Request';
+                $managers = $this->managerModel->get_operation_manager_by_company_id($companyId);
+
+                foreach ($managers as $manager) {
+                    $this->notificationModel->add(
+                        (int) $manager->user_id,
+                        'info',
+                        'New Service Request',
+                        sprintf(
+                            'A homeowner has submitted a new "%s" service request. Please assign a service agent.',
+                            $serviceTypeName
+                        )
+                    );
+                }
+            }
+            // -----------------------------------------------------------------------
+
             setToast('Request submitted successfully!', 'success');
             redirect('homeowner/service');
         } else {
@@ -367,11 +393,24 @@ class HomeOwner extends Controller
 
     public function reports()
     {
-        $data = [
-            'user' => $this->user,
-        ];
+        $userId      = (int) $_SESSION['user_id'];
+        $availYears  = $this->smsModel->get_available_years($userId);
+        $selectedYear = isset($_GET['year']) && in_array((int)$_GET['year'], $availYears)
+            ? (int)$_GET['year']
+            : ($availYears[0] ?? (int)date('Y'));
 
-        $this->calculateExpectedGeneration('2025-02-05');
+        $chartData    = $this->smsModel->get_chart_data($userId, 12, $selectedYear);
+        $smsHistory   = $this->smsModel->sms_history();
+        $serviceHistory = $this->serviceModel->get_service_history();
+
+        $data = [
+            'user'          => $this->user,
+            'chart_data'    => $chartData,
+            'sms_history'   => $smsHistory,
+            'service_history' => $serviceHistory,
+            'selected_year' => $selectedYear,
+            'available_years' => $availYears ?: [(int)date('Y')],
+        ];
 
         $this->view('pages/homeowner/reports', $data, 'dashboard');
     }

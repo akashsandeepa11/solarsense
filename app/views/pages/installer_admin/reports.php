@@ -1,237 +1,25 @@
 <?php
-// InstallerAdmin Reports Page
+$customers = $data['customers'] ?? [];
+$agents    = $data['agents']    ?? [];
 
-require_once APPROOT . '/config/constants.php';
-require_once APPROOT . '/helpers/ReportData_Helper.php';
-
-$role = ROLE_INSTALLER_ADMIN;
-$report_data = getReportDataByRole($role) ?? [];
+$totalCustomers    = count($customers);
+$totalAgents       = count($agents);
+$activeAgents      = count(array_filter($agents, fn($a) => strtolower($a->agent_status ?? '') === 'active'));
+$totalAssigned     = array_sum(array_map(fn($a) => (int)($a->assigned_tasks  ?? 0), $agents));
+$totalCompleted    = array_sum(array_map(fn($a) => (int)($a->completed_tasks ?? 0), $agents));
 ?>
 
-<link rel="stylesheet" href="<?php echo URLROOT ?>/public/css/components.css">
+<link rel="stylesheet" href="<?php echo URLROOT ?>/css/pages/homeowner/service.css">
+<link rel="stylesheet" href="<?php echo URLROOT ?>/css/pages/homeowner/reports.css">
 
-<style>
-    :root {
-        --primary: #fe9630;
-        --success: #22c55e;
-        --warning: #f59e0b;
-        --error: #ef4444;
-        --info: #3b82f6;
-        --accent: #06b6d4;
-        --purple: #8b5cf6;
-        --yellow: #eab308;
-        --bg-light: #f9fafb;
-        --border: #e5e7eb;
-        --text-dark: #212121;
-        --text-muted: #6b7280;
-    }
+<div class="content-area">
 
-    .reports-container {
-        background: var(--bg-light);
-        min-height: 100vh;
-        padding: 2rem;
-    }
-
-    .report-section {
-        margin-bottom: 3rem;
-    }
-
-    .report-section-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--text-dark);
-        margin: 0 0 1.5rem 0;
-        padding-bottom: 1rem;
-        border-bottom: 2px solid var(--primary);
-        display: inline-block;
-    }
-
-    .filter-bar {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 0.75rem;
-        border: 1px solid var(--border);
-        margin-bottom: 2rem;
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-        align-items: center;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    }
-
-    .filter-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .filter-label {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: var(--text-dark);
-    }
-
-    .filter-select {
-        padding: 0.5rem 0.75rem;
-        border: 1px solid var(--border);
-        border-radius: 0.375rem;
-        font-size: 0.875rem;
-        background: white;
-        cursor: pointer;
-        min-width: 200px;
-        transition: all 0.2s ease;
-    }
-
-    .filter-select:focus {
-        outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(254, 150, 48, 0.1);
-    }
-
-    .download-buttons {
-        display: flex;
-        gap: 0.75rem;
-        margin-left: auto;
-    }
-
-    .btn-download {
-        padding: 0.5rem 1rem;
-        background: var(--primary);
-        color: white;
-        border: none;
-        border-radius: 0.375rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.875rem;
-    }
-
-    .btn-download:hover {
-        background: #fd7e14;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(254, 150, 48, 0.3);
-    }
-
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .stat-box {
-        background: white;
-        border: 1px solid var(--border);
-        border-radius: 0.75rem;
-        padding: 1.5rem;
-        text-align: center;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    }
-
-    .stat-value {
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--primary);
-        margin-bottom: 0.5rem;
-    }
-
-    .stat-label {
-        font-size: 0.875rem;
-        color: var(--text-muted);
-    }
-
-    .data-table {
-        background: white;
-        border: 1px solid var(--border);
-        border-radius: 0.75rem;
-        overflow: hidden;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    }
-
-    .data-table table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .data-table th {
-        background: var(--primary);
-        color: white;
-        padding: 1rem;
-        text-align: left;
-        font-weight: 600;
-        font-size: 0.875rem;
-    }
-
-    .data-table td {
-        padding: 1rem;
-        border-bottom: 1px solid var(--border);
-        font-size: 0.875rem;
-    }
-
-    .data-table tr:hover {
-        background: var(--bg-light);
-    }
-
-    .status-badge {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
-
-    .status-excellent, .status-good, .status-active {
-        background: rgba(34, 197, 94, 0.1);
-        color: var(--success);
-    }
-
-    .status-warning {
-        background: rgba(245, 158, 11, 0.1);
-        color: var(--warning);
-    }
-
-    .status-critical, .status-error, .status-offline {
-        background: rgba(239, 68, 68, 0.1);
-        color: var(--error);
-    }
-
-    @media (max-width: 768px) {
-        .reports-container {
-            padding: 1rem;
-        }
-
-        .filter-bar {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .download-buttons {
-            margin-left: 0;
-            flex-direction: column;
-        }
-
-        .btn-download {
-            justify-content: center;
-        }
-
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-</style>
-
-<div class="reports-container">
-    <!-- Page Header -->
     <?php
     $config = [
-        'title' => 'Reports',
-        'description' => 'View and download your installation company reports',
-        'show_back' => false
+        'title'       => 'Reports',
+        'description' => 'Customer fleet and service team reports',
     ];
-    include __DIR__ . '/../../inc/components/page_header.php';
+    require APPROOT . '/views/inc/components/page_header.php';
     ?>
 
     <table border=1>
@@ -272,134 +60,138 @@ $report_data = getReportDataByRole($role) ?? [];
                 <option value="yearly">This Year</option>
                 <option value="all_time">All Time</option>
             </select>
+    <!-- ── SECTION 1 : Customer Fleet ────────────────────────────── -->
+    <div class="rp-section-header mb-4">
+        <div>
+            <h2 class="rp-section-title">Customer Fleet</h2>
+            <p class="rp-section-sub">
+                <?php echo $totalCustomers ?> registered customer<?php echo $totalCustomers != 1 ? 's' : '' ?>
+            </p>
         </div>
-        <div class="filter-group">
-            <label class="filter-label">Format</label>
-            <select class="filter-select" id="format-filter">
-                <option value="pdf">PDF</option>
-                <option value="excel">Excel</option>
-                <option value="csv">CSV</option>
-            </select>
-        </div>
-        <div class="download-buttons">
-            <button class="btn-download" onclick="downloadAllReports()">
-                <i class="fas fa-download"></i> Download All
-            </button>
-            <button class="btn-download" onclick="window.print()" style="background: #6b7280;">
-                <i class="fas fa-print"></i> Print
-            </button>
+        <?php
+        $config = [
+            'table_selector' => '.customers-report-table',
+            'report_title'   => 'Customer Fleet Report',
+            'report_subtitle'=> 'All customers with system and last reading info',
+            'columns'        => ['Customer', 'District', 'Capacity (kW)', 'Last SMS Upload'],
+            'btn_id'         => 'btn-customers-pdf',
+        ];
+        require APPROOT . '/views/inc/components/download_report_btn.php';
+        ?>
+    </div>
+
+    <div class="card shadow-lg rounded-xl mb-6">
+        <div class="card-body p-0">
+            <?php if (!empty($customers)): ?>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 customers-report-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Customer</th>
+                                <th>District</th>
+                                <th>Capacity (kW)</th>
+                                <th>Last SMS Upload</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($customers as $c): ?>
+                            <tr>
+                                <td class="font-semibold"><?php echo htmlspecialchars($c['name'] ?? '—') ?></td>
+                                <td><?php echo htmlspecialchars($c['location'] ?? '—') ?></td>
+                                <td><?php echo htmlspecialchars($c['size'] ?? '—') ?></td>
+                                <td>
+                                    <?php
+                                    $upload = $c['last_upload'] ?? 'No readings yet';
+                                    echo $upload === 'No readings yet'
+                                        ? '<span class="text-secondary text-sm">' . $upload . '</span>'
+                                        : htmlspecialchars($upload);
+                                    ?>
+                                </td>
+                            </tr>
+                            <?php endforeach ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php else: ?>
+                <div class="text-center py-8">
+                    <i class="fas fa-users text-4xl text-secondary opacity-50 mb-3 d-block"></i>
+                    <p class="text-secondary">No customers found.</p>
+                </div>
+            <?php endif ?>
         </div>
     </div>
 
-    <!-- Fleet Status -->
-    <div class="report-section">
-        <h2 class="report-section-title">Fleet Status Overview</h2>
-        <div class="stats-grid">
-            <div class="stat-box">
-                <div class="stat-value"><?php echo $report_data['fleet_status']['total_systems'] ?? '0'; ?></div>
-                <div class="stat-label">Total Systems</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value"><?php echo $report_data['fleet_status']['excellent'] ?? '0'; ?></div>
-                <div class="stat-label">Excellent</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value"><?php echo $report_data['fleet_status']['good'] ?? '0'; ?></div>
-                <div class="stat-label">Good</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value"><?php echo $report_data['fleet_status']['warning'] ?? '0'; ?></div>
-                <div class="stat-label">Warnings</div>
-            </div>
+    <!-- ── SECTION 2 : Service Team ──────────────────────────────── -->
+    <div class="rp-section-header mb-4 mt-6">
+        <div>
+            <h2 class="rp-section-title">Service Team</h2>
+            <p class="rp-section-sub">
+                <?php echo $totalAgents ?> agent<?php echo $totalAgents != 1 ? 's' : '' ?> &bull;
+                Active: <?php echo $activeAgents ?> &bull;
+                Tasks assigned: <?php echo $totalAssigned ?> &bull;
+                Completed: <?php echo $totalCompleted ?>
+            </p>
+        </div>
+        <?php
+        $config = [
+            'table_selector' => '.agents-report-table',
+            'report_title'   => 'Service Team Report',
+            'report_subtitle'=> 'Agent performance and task summary',
+            'columns'        => ['Agent', 'Email', 'Contact', 'Status', 'Assigned', 'Completed', 'Pending'],
+            'btn_id'         => 'btn-agents-pdf',
+        ];
+        require APPROOT . '/views/inc/components/download_report_btn.php';
+        ?>
+    </div>
+
+    <div class="card shadow-lg rounded-xl mb-6">
+        <div class="card-body p-0">
+            <?php if (!empty($agents)): ?>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 agents-report-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Agent</th>
+                                <th>Email</th>
+                                <th>Contact</th>
+                                <th>Status</th>
+                                <th>Assigned</th>
+                                <th>Completed</th>
+                                <th>Pending</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($agents as $a): ?>
+                            <?php
+                            $status      = $a->agent_status ?? 'unknown';
+                            $statusClass = strtolower($status) === 'active' ? 'badge-success' : 'badge-warning';
+                            ?>
+                            <tr>
+                                <td class="font-semibold"><?php echo htmlspecialchars($a->full_name ?? '—') ?></td>
+                                <td><?php echo htmlspecialchars($a->email ?? '—') ?></td>
+                                <td><?php echo htmlspecialchars($a->contact ?? '—') ?></td>
+                                <td>
+                                    <span class="badge <?php echo $statusClass ?>">
+                                        <?php echo htmlspecialchars(ucfirst($status)) ?>
+                                    </span>
+                                </td>
+                                <td><?php echo (int)($a->assigned_tasks  ?? 0) ?></td>
+                                <td><?php echo (int)($a->completed_tasks ?? 0) ?></td>
+                                <td><?php echo (int)($a->pending_tasks   ?? 0) ?></td>
+                            </tr>
+                            <?php endforeach ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php else: ?>
+                <div class="text-center py-8">
+                    <i class="fas fa-hard-hat text-4xl text-secondary opacity-50 mb-3 d-block"></i>
+                    <p class="text-secondary">No service agents found.</p>
+                </div>
+            <?php endif ?>
         </div>
     </div>
 
-    <!-- Systems List -->
-    <div class="report-section">
-        <h2 class="report-section-title">Installed Systems</h2>
-        <div class="data-table">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Customer Name</th>
-                        <th>Location</th>
-                        <th>Capacity</th>
-                        <th>Status</th>
-                        <th>Performance</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($report_data['systems_list'] ?? [] as $system): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($system['name']); ?></td>
-                        <td><?php echo htmlspecialchars($system['location']); ?></td>
-                        <td><?php echo $system['capacity']; ?></td>
-                        <td><span class="status-badge status-<?php echo strtolower($system['status']); ?>"><?php echo $system['status']; ?></span></td>
-                        <td><?php echo $system['performance']; ?>%</td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Team Members -->
-    <div class="report-section">
-        <h2 class="report-section-title">Team Performance</h2>
-        <div class="data-table">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Team Member</th>
-                        <th>Role</th>
-                        <th>Tasks Completed</th>
-                        <th>Pending Tasks</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($report_data['team_members'] ?? [] as $member): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($member['name']); ?></td>
-                        <td><?php echo htmlspecialchars($member['role']); ?></td>
-                        <td><?php echo $member['tasks_completed']; ?></td>
-                        <td><?php echo $member['tasks_pending']; ?></td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Financial & Operational Metrics -->
-    <div class="report-section">
-        <h2 class="report-section-title">Financial & Operational Metrics</h2>
-        <div class="stats-grid">
-            <div class="stat-box">
-                <div class="stat-value"><?php echo $report_data['revenue_metrics']['total_revenue'] ?? 'N/A'; ?></div>
-                <div class="stat-label">Total Revenue</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value"><?php echo $report_data['revenue_metrics']['monthly_revenue'] ?? 'N/A'; ?></div>
-                <div class="stat-label">Monthly Revenue</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value"><?php echo $report_data['maintenance_metrics']['completed'] ?? '0'; ?></div>
-                <div class="stat-label">Maintenance Completed</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value"><?php echo $report_data['maintenance_metrics']['scheduled'] ?? '0'; ?></div>
-                <div class="stat-label">Scheduled</div>
-            </div>
-        </div>
-    </div>
 </div>
 
-<script>
-function downloadAllReports() {
-    const period = document.getElementById('period-filter')?.value || '';
-    const format = document.getElementById('format-filter')?.value || 'pdf';
-    
-    console.log(`Downloading InstallerAdmin reports as ${format} for period: ${period || 'All Periods'}`);
-    alert(`✓ Generating InstallerAdmin Report\nFormat: ${format.toUpperCase()}\nPeriod: ${period || 'All Periods'}\n\nReport will be downloaded shortly...`);
-}
-</script>
+<?php require APPROOT . '/views/inc/components/report_downloader.php'; ?>
