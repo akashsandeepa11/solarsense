@@ -58,8 +58,16 @@ function getStatusClass($status)
 <div class="container-fluid p-8">
     <?php
     $config = [
-        'title' => 'Quotation Management',
+        'title'       => 'Quotation Management',
         'description' => 'Manage system quotations for your clients.',
+        'buttons'     => [
+            [
+                'label'   => 'Download PDF',
+                'icon'    => 'fas fa-file-pdf',
+                'class'   => 'btn-outline-primary btn-md',
+                'onclick' => 'onclick="SolarSenseReport.download({tableSelector:\'.data-table\',title:\'Quotation Management Report\',subtitle:\'Client quotations overview\',columns:[\'Customer Name\',\'Email\',\'Date\',\'Contact\',\'Address\',\'Status\']},this)"'
+            ]
+        ]
     ];
     include __DIR__ . '/../../inc/components/page_header.php';
     ?>
@@ -256,3 +264,5 @@ function getStatusClass($status)
         return token.toString().replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
 </script>
+
+<?php require APPROOT . '/views/inc/components/report_downloader.php'; ?>

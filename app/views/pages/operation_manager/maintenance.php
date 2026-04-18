@@ -84,15 +84,21 @@ function getMaintenanceStatusClass($status)
 <div class="container-fluid p-8">
     <?php
     $config = [
-        'title' => 'Maintenance Management',
+        'title'       => 'Maintenance Management',
         'description' => 'Create, assign and track solar service requests.',
-        'buttons' => [
+        'buttons'     => [
             [
-                'label' => 'Create New Task',
-                'url' => 'javascript:showAddModal()',
-                'icon' => 'fas fa-plus',
-                'class' => 'btn-primary btn-md',
+                'label'   => 'Create New Task',
+                'url'     => 'javascript:showAddModal()',
+                'icon'    => 'fas fa-plus',
+                'class'   => 'btn-primary btn-md',
                 'onclick' => 'onclick="showAddModal()"'
+            ],
+            [
+                'label'   => 'Download PDF',
+                'icon'    => 'fas fa-file-pdf',
+                'class'   => 'btn-outline-primary btn-md',
+                'onclick' => 'onclick="SolarSenseReport.download({tableSelector:\'.data-table\',title:\'Maintenance Tasks Report\',subtitle:\'Service task assignments and status\',columns:[\'#\',\'Service Type\',\'Customer\',\'Description\',\'Date\',\'Agent\',\'Status\']},this)"'
             ]
         ]
     ];
@@ -383,3 +389,5 @@ window.addEventListener("click", function (e) {
     if (e.target.id === "deleteModal") closeDeleteModal();
 });
 </script>
+
+<?php require APPROOT . '/views/inc/components/report_downloader.php'; ?>
