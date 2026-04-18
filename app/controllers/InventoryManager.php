@@ -380,9 +380,16 @@ class InventoryManager extends Controller
 
     public function reports()
     {
+        $items  = $this->inventoryModel->get_all_items($this->company_id) ?? [];
+        $orders = $this->inventoryModel->get_all_orders() ?? [];
+        $stats  = $this->inventoryModel->get_order_stats();
+
         $data = [
             'user'          => $this->user,
             'notifications' => $this->notifications,
+            'items'         => $items,
+            'orders'        => $orders,
+            'order_stats'   => $stats,
         ];
 
         $this->view('pages/inventory_manager/reports', $data, layout: 'dashboard');

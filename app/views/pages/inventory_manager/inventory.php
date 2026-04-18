@@ -37,10 +37,13 @@ $categories = $data['categories'] ?? [];
         </div>
     </div>
 
-    <!-- Inventory Table Header -->
     <div class="d-flex justify-between align-center mb-4">
         <h3 class="text-xl font-semibold">Inventory Items</h3>
         <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-outline-primary rounded-lg d-flex align-center gap-2"
+                    onclick="downloadInventoryReport(this)">
+                <i class="fas fa-file-pdf"></i> Download PDF
+            </button>
             <button class="btn btn-secondary rounded-lg" onclick="showCategoryModal()">
                 <i class="fas fa-tags mr-2"></i>Add Category
             </button>
@@ -577,4 +580,46 @@ if (addImageBox) {
 // ---------- Init ----------
 populateFilters();
 renderTable(items);
+
+function buildInventoryExportTable() {
+    var tbody = document.querySelector('#inventoryExportTable tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    items.forEach(function(item) {
+        var status = item.qty <= 5 ? 'Low Stock' : 'In Stock';
+        var total  = (item.qty * item.price).toFixed(2);
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+            '<td>' + item.id + '</td>' +
+            '<td>' + item.name + '</td>' +
+            '<td>' + (item.category_name || '—') + '</td>' +
+            '<td>' + item.qty + '</td>' +
+            '<td>' + parseFloat(item.price).toFixed(2) + '</td>' +
+            '<td>' + total + '</td>' +
+            '<td>' + status + '</td>';
+        tbody.appendChild(tr);
+    });
+}
+
+function downloadInventoryReport(btnEl) {
+    buildInventoryExportTable();
+    SolarSenseReport.download({
+        tableSelector: '#inventoryExportTable',
+        title:         'Inventory Report',
+        subtitle:      'Current stock levels and item details',
+        columns:       ['Item ID', 'Name', 'Category', 'Qty', 'Unit Price (Rs.)', 'Total Value (Rs.)', 'Status']
+    }, btnEl);
+}
 </script>
+
+<table id="inventoryExportTable" style="display:none;" aria-hidden="true">
+    <thead>
+        <tr>
+            <th>Item ID</th><th>Name</th><th>Category</th>
+            <th>Qty</th><th>Unit Price (Rs.)</th><th>Total Value (Rs.)</th><th>Status</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<?php require APPROOT . '/views/inc/components/report_downloader.php'; ?>

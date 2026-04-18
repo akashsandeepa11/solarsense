@@ -40,8 +40,16 @@ $orderRows = array_map(function ($o) {
     <!-- Page Header -->
     <?php
     $config = [
-        'title' => 'Purchase Orders',
+        'title'       => 'Purchase Orders',
         'description' => 'All customer orders from your store',
+        'buttons'     => [
+            [
+                'label'   => 'Download PDF',
+                'icon'    => 'fas fa-file-pdf',
+                'class'   => 'btn-outline-primary btn-md',
+                'onclick' => 'onclick="SolarSenseReport.download({tableSelector:\'.data-table\',title:\'Purchase Orders Report\',subtitle:\'All customer orders from the store\',columns:[\'Order #\',\'Items\',\'Total\',\'Date\',\'Status\']},this)"'
+            ]
+        ]
     ];
     include __DIR__ . '/../../inc/components/page_header.php';
     ?>
@@ -185,3 +193,5 @@ $orderRows = array_map(function ($o) {
     }
 
 </script>
+
+<?php require APPROOT . '/views/inc/components/report_downloader.php'; ?>
