@@ -19,21 +19,26 @@
 
     <!-- Page Header -->
     <?php
-    // Build buttons array based on role
     $buttons = [];
     if ($data['user']['role'] === ROLE_INSTALLER_ADMIN) {
         $buttons[] = [
             'label' => 'Add New Agent',
-            'url' => URLROOT . '/installeradmin/team/add_service_agent',
-            'icon' => 'fas fa-plus',
+            'url'   => URLROOT . '/installeradmin/team/add_service_agent',
+            'icon'  => 'fas fa-plus',
             'class' => 'btn-primary'
         ];
     }
+    $buttons[] = [
+        'label'   => 'Download PDF',
+        'icon'    => 'fas fa-file-pdf',
+        'class'   => 'btn-outline-primary',
+        'onclick' => 'onclick="SolarSenseReport.download({tableSelector:\'.data-table\',title:\'Service Agents Report\',subtitle:\'Agent performance and task summary\',columns:[\'Agent\',\'Contact\',\'Assigned Tasks\',\'Completed\',\'Pending\',\'Status\']},this)"'
+    ];
 
     $config = [
-        'title' => 'Service Agents',
+        'title'       => 'Service Agents',
         'description' => 'Manage your team of service agents and track their tasks',
-        'buttons' => $buttons
+        'buttons'     => $buttons
     ];
     include __DIR__ . '/../../inc/components/page_header.php';
 
@@ -239,14 +244,14 @@
     <!-- Dynamic Delete Modal Handler -->
     <script>
         function openDeleteModal(agentId) {
-            // Get the form inside the modal and update its action
             const modal = document.getElementById('deleteTeamModal');
             const form = modal.querySelector('form');
             if (form) {
                 form.action = '<?php echo URLROOT; ?>/installeradmin/team/delete_agent/' + agentId;
             }
-            // Show the modal
             showConfirmationModal('deleteTeamModal');
         }
     </script>
+
+    <?php require APPROOT . '/views/inc/components/report_downloader.php'; ?>
 </div>

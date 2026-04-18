@@ -60,16 +60,26 @@
         if($data['user']['role'] === ROLE_INSTALLER_ADMIN) {
             $buttons[] = [
                 'label' => ($managerType === 'operation_managers') ? 'Add Operation Manager' : 'Add Inventory Manager',
-                'url' => URLROOT . '/installeradmin/managers/' . $managerType . '/add',
-                'icon' => 'fas fa-plus',
+                'url'   => URLROOT . '/installeradmin/managers/' . $managerType . '/add',
+                'icon'  => 'fas fa-plus',
                 'class' => 'btn-primary btn-md'
             ];
         }
-        
+        $pdfTitle   = ($managerType === 'operation_managers') ? 'Operation Managers Report' : 'Inventory Managers Report';
+        $pdfColumns = ($managerType === 'operation_managers')
+            ? "['Manager Name','Specialization','District','Status','Pending Tasks']"
+            : "['Manager Name','Warehouse','Status','Items','Low Stock','Efficiency']";
+        $buttons[] = [
+            'label'   => 'Download PDF',
+            'icon'    => 'fas fa-file-pdf',
+            'class'   => 'btn-outline-primary btn-md',
+            'onclick' => "onclick=\"SolarSenseReport.download({tableSelector:'.data-table',title:'" . $pdfTitle . "',subtitle:'Manager list and status overview',columns:" . $pdfColumns . "},this)\""
+        ];
+
         $config = [
-            'title' => ($managerType === 'operation_managers') ? 'Operation Managers' : 'Inventory Managers',
+            'title'       => ($managerType === 'operation_managers') ? 'Operation Managers' : 'Inventory Managers',
             'description' => ($managerType === 'operation_managers') ? 'Manage your operation managers and their tasks.' : 'Manage your inventory managers and stock levels.',
-            'buttons' => $buttons
+            'buttons'     => $buttons
         ];
         include __DIR__ . '/../../inc/components/page_header.php';
         ?>
@@ -274,17 +284,16 @@
     include __DIR__ . '/../../inc/models/confirmation_modal.php';
     ?>
 
-    <!-- Dynamic Delete Modal Handler -->
     <script>
     function openDeleteModal(managerId) {
-        // Get the form inside the modal and update its action
         const modal = document.getElementById('deleteManagerModal');
         const form = modal.querySelector('form');
         if (form) {
             form.action = '<?php echo URLROOT; ?>/installeradmin/managers/<?php echo $managerType; ?>/delete/' + managerId;
         }
-        // Show the modal
         showConfirmationModal('deleteManagerModal');
     }
     </script>
+
+    <?php require APPROOT . '/views/inc/components/report_downloader.php'; ?>
     </div>

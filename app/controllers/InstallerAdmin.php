@@ -66,8 +66,16 @@ class InstallerAdmin extends Controller
     // --- Reports ---
     public function reports()
     {
+        $userId    = $_SESSION['user_id'] ?? null;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
+
+        $customers = $companyId ? $this->fleetModel->get_customer_stats($companyId)      : [];
+        $agents    = $companyId ? $this->teamModel->get_service_agent_stats($companyId)  : [];
+
         $data = [
-            'user' => $this->user,
+            'user'      => $this->user,
+            'customers' => $customers,
+            'agents'    => $agents,
         ];
 
         $this->view('pages/installer_admin/reports', $data, layout: 'dashboard');
