@@ -54,7 +54,7 @@ $inventory_manager_nav = [
         ['title' => 'Reports', 'url' => '/inventorymanager/reports', 'icon' => 'fa-solid fa-file-lines'],
     ],
     'PERSONAL' => [
-        ['title' => 'Settings', 'url' => '/inventorymanager/settings', 'icon' => 'fa-solid fa-gear'],
+        //['title' => 'Settings', 'url' => '/inventorymanager/settings', 'icon' => 'fa-solid fa-gear'],
         ['title' => 'Profile', 'url' => '/inventorymanager/profile', 'icon' => 'fa-solid fa-user-cog'],
         ['title' => 'Help', 'url' => '/inventorymanager/help', 'icon' => 'fa-solid fa-circle-question']
     ],

@@ -20,7 +20,7 @@
                   [
                       'id' => 'full-name',
                       'label' => 'Full Name',
-                      'value' => 'Jane Operation Manager',
+                      'value' => $profile_data['full_name'],
                       'editable' => true,
                       'required' => true,
                       'summaryTarget' => 'summary-name'
@@ -28,7 +28,7 @@
                   [
                       'id' => 'email',
                       'label' => 'Email',
-                      'value' => 'operations@solarsense.com',
+                      'value' => $profile_data['email'],
                       'type' => 'email',
                       'editable' => true,
                       'required' => true,
@@ -37,7 +37,7 @@
                   [
                       'id' => 'phone',
                       'label' => 'Phone number',
-                      'value' => '+94 112 345 679',
+                      'value' => $profile_data['contact'],
                       'editable' => true,
                       'required' => false,
                       'summaryTarget' => 'summary-phone'

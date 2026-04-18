@@ -123,4 +123,23 @@ class M_Profile
 
         return $this->db->single_assoc();
     }
+
+    public function getInventoryManagerProfile($user_id, $company_id)
+    {
+        $this->db->query("
+        SELECT im.user_id, im.company_id, im.address, im.contact, im.district, im.register_date,
+               im.status,
+               u.full_name, u.email,
+               ic.company_name
+        FROM inventory_manager im
+        JOIN user u ON u.user_id = im.user_id
+        JOIN installer_company ic ON ic.company_id = im.company_id
+        WHERE im.user_id = :user_id AND im.company_id = :company_id 
+    ");
+
+        $this->db->bind(':user_id', $user_id);
+        $this->db->bind(':company_id', $company_id);
+
+        return $this->db->single_assoc();
+    }
 }

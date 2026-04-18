@@ -11,12 +11,16 @@ class InventoryManager extends Controller
     private $notificationModel;
     private $notifications = [];
     private $company_id;
+    private $teamModel;
+    private $profileModel;
 
     public function __construct()
     {
         // Load models
         $this->inventoryModel    = $this->model('M_inventory');
         $this->notificationModel = $this->model('M_Notification');
+        $this->teamModel         = $this->model('M_Team');
+        $this->profileModel      = $this->model('M_Profile');
 
         // Resolve company_id and pre-load notifications for the topnavbar panel
         $userId = (int) ($_SESSION['user_id'] ?? 0);
@@ -397,9 +401,13 @@ class InventoryManager extends Controller
 
     public function profile()
     {
+        $userId = $_SESSION['user_id'] ?? 0;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
+        $profileData = $this->profileModel->getInventoryManagerProfile($userId, $companyId);
         $data = [
             'user'          => $this->user,
             'notifications' => $this->notifications,
+            'profileData'   => $profileData
         ];
 
         $this->view('pages/inventory_manager/profile', $data, layout: 'dashboard');
