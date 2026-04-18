@@ -3,7 +3,7 @@
     define('APP_DIR', __DIR__);
 
     // Load Composer autoloader (PHPMailer and other Composer packages)
-    require_once dirname(APP_DIR) . '/vendor/autoload.php';
+    // require_once dirname(APP_DIR) . '/vendor/autoload.php';
     
     // Load Helpers
     require_once APP_DIR . '/helpers/EnvLoader_Helper.php';

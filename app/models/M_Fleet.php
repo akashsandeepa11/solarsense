@@ -12,6 +12,7 @@ class M_Fleet
     //add customer
     public function add_customer($userData, $customerData, $panelData)
     {
+    
         $plainPassword = substr(bin2hex(random_bytes(6)), 0, 10);
         try {
             // Start transaction
@@ -61,7 +62,7 @@ class M_Fleet
             }
 
             // 2. Insert into `homeowner` table
-            $sqlHomeowner = 'INSERT INTO homeowner (user_id, company_id, address, contact, register_date, nic, district, ceb_account) VALUES (:user_id, :company_id, :address, :contact, :register_date, :nic, :district, :ceb_account)';
+            $sqlHomeowner = 'INSERT INTO homeowner (user_id, company_id, address, contact, register_date, nic, district, ceb_account,phone_secondary) VALUES (:user_id, :company_id, :address, :contact, :register_date, :nic, :district, :ceb_account, :phone_secondary)';
             // Log the SQL and the values we'll bind to help diagnose missing field issues
             error_log('M_Fleet::add_customer homeowner SQL: ' . $sqlHomeowner);
             $binds = [
@@ -102,6 +103,7 @@ class M_Fleet
             $this->db->bind(':losses_pct', $panelData['losses_pct']);
             $this->db->bind(':dc_ac_ratio', $panelData['dc_ac_ratio']);
             $this->db->bind(':inv_eff_pct', $panelData['inv_eff_pct']);
+            $this->db->bind(':phone_secondary', $customerData['phone_secondary']);
             $this->db->execute();
 
             // Commit the transaction

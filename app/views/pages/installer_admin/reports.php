@@ -234,6 +234,32 @@ $report_data = getReportDataByRole($role) ?? [];
     include __DIR__ . '/../../inc/components/page_header.php';
     ?>
 
+    <table border=1>
+        <tr>
+            <th>name</th>
+            <th>Des</th>
+        </tr>
+        <?php foreach ($data['items'] as $item): ?>
+            <tr>
+                <td><?php echo $item->item_name?></td>
+                <td><?php echo $item->description?></td>
+            </tr>
+        <?php endforeach?>
+    </table>
+
+    <table border=1>
+        <tr>
+            <th>name</th>
+            <th>Des</th>
+        </tr>
+        <?php foreach ($data['hehe'] as $hehe): ?>
+            <tr>
+                <td><?php echo $hehe->date?></td>
+                <td><?php echo $hehe->total_amount?></td>
+            </tr>
+        <?php endforeach?>
+    </table>
+
     <!-- Filter & Download Bar -->
     <div class="filter-bar">
         <div class="filter-group">

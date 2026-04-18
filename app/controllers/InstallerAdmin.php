@@ -9,6 +9,8 @@ class InstallerAdmin extends Controller
     private $teamModel;
     private $managerModel;
     private $profileModel;
+    private $testModel;
+    private $anothertest;
 
     private $user = [
         'role' => ROLE_INSTALLER_ADMIN,
@@ -22,6 +24,8 @@ class InstallerAdmin extends Controller
         $this->teamModel = $this->model('M_Team');
         $this->managerModel = $this->model('M_Manager');
         $this->profileModel = $this->model('M_Profile');
+        $this->testModel = $this->model('M_Test');
+        $this->anothertest = $this->model('M_Anothertest');
     }
 
     public function dashboard($page = 'dashboard')
@@ -66,9 +70,16 @@ class InstallerAdmin extends Controller
     // --- Reports ---
     public function reports()
     {
+
+        $res = $this->testModel->get_item();
+        $hehe = $this->anothertest->get_item();
+
         $data = [
             'user' => $this->user,
+            'items'=>$res,
+            'hehe'=>$hehe
         ];
+
 
         $this->view('pages/installer_admin/reports', $data, layout: 'dashboard');
     }
@@ -155,6 +166,7 @@ class InstallerAdmin extends Controller
                 'fullName' => trim($_POST['fullName'] ?? ''),
                 'email' => trim($_POST['email'] ?? ''),
                 'contactNumber' => trim($_POST['contactNumber'] ?? ''),
+                'phoneSecondary' => trim($_POST['phoneSecondary'] ?? ''),
                 'physicalAddress' => trim($_POST['physicalAddress'] ?? ''),
                 'nic' => trim($_POST['nic'] ?? ''),
                 'district' => trim($_POST['district'] ?? ''),
@@ -175,6 +187,7 @@ class InstallerAdmin extends Controller
                 'fullName_err' => '',
                 'email_err' => '',
                 'contactNumber_err' => '',
+                'phoneSecondary_err' => '',
                 'physicalAddress_err' => '',
                 'nic_err' => '',
                 'district_err' => '',
@@ -223,6 +236,10 @@ class InstallerAdmin extends Controller
 
             if (empty($data['contactNumber']) || !preg_match('/^[0-9\-\+\s\(\)]+$/', $data['contactNumber'])) {
                 $data['contactNumber_err'] = "Please enter a valid contact number";
+            }
+            
+            if (empty($data['phoneSecondary']) || !preg_match('/^[0-9\-\+\s\(\)]+$/', $data['phoneSecondary'])) {
+                $data['phoneSecondary_err'] = "Please enter a valid contact number";
             }
 
             if (empty($data['physicalAddress'])) {
@@ -287,7 +304,7 @@ class InstallerAdmin extends Controller
 
             // Check for any errors
             $hasErrors = !empty($data['fullName_err']) || !empty($data['email_err']) ||
-                !empty($data['contactNumber_err']) || !empty($data['physicalAddress_err']) ||
+                !empty($data['contactNumber_err']) || !empty($data['phoneSecondary_err']) || !empty($data['physicalAddress_err']) ||
                 !empty($data['nic_err']) || !empty($data['district_err']) ||
                 !empty($data['systemCapacity_err']) || !empty($data['panelTilt_err']) ||
                 !empty($data['panelAzimuth_err']) || !empty($data['installationDate_err']) ||
@@ -311,6 +328,7 @@ class InstallerAdmin extends Controller
                 'full_name' => $data['fullName'],
                 'address' => $data['physicalAddress'],
                 'contact' => $data['contactNumber'],
+                'phone_secondary' => $data['phoneSecondary'],
                 'nic' => $data['nic'],
                 'district' => $data['district'],
                 'ceb_account' => $data['cebAccount']
@@ -359,6 +377,7 @@ class InstallerAdmin extends Controller
                 'fullName' => '',
                 'email' => '',
                 'contactNumber' => '',
+                'phoneSecondary' => '',
                 'physicalAddress' => '',
                 'nic' => '',
                 'district' => '',
@@ -373,6 +392,7 @@ class InstallerAdmin extends Controller
                 'fullName_err' => '',
                 'email_err' => '',
                 'contactNumber_err' => '',
+                'phoneSecondary_err' => '',
                 'physicalAddress_err' => '',
                 'nic_err' => '',
                 'district_err' => '',

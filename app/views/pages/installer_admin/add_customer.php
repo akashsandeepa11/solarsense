@@ -76,6 +76,9 @@
                             <?php $inputConfig = ['id' => 'contactNumber', 'name' => 'contactNumber', 'label' => 'Contact Number', 'type' => 'tel', 'icon' => 'fas fa-phone', 'value' => $data['contactNumber'] ?? '', 'error' => $data['contactNumber_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                         <div class="col-md-6 form-group">
+                            <?php $inputConfig = ['id' => 'phoneSecondary', 'name' => 'phoneSecondary', 'label' => 'Secondary Phone', 'type' => 'tel', 'icon' => 'fas fa-phone-alt', 'value' => $data['phoneSecondary'] ?? '', 'error' => $data['phoneSecondary_err'] ?? '', 'required' => false]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                        </div>
+                        <div class="col-md-6 form-group">
                             <?php $inputConfig = ['id' => 'nic', 'name' => 'nic', 'label' => 'NIC/ID Number', 'type' => 'text', 'icon' => 'fas fa-id-card', 'value' => $data['nic'] ?? '', 'error' => $data['nic_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                         <div class="col-md-12 form-group">
