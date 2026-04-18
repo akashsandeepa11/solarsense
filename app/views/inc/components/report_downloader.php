@@ -42,20 +42,20 @@ var SolarSenseReport = (function () {
         '  <title>' + _esc(title) + ' – SolarSense</title>\n' +
         '  <style>\n' +
         '    * { margin:0; padding:0; box-sizing:border-box; }\n' +
-        '    body { font-family:"Segoe UI",Arial,sans-serif; color:#1a1a2e; padding:36px; background:#fff; }\n' +
+        '    body { font-family:"Segoe UI",Arial,sans-serif; color:#212121; padding:36px; background:#fff; }\n' +
         '    .ss-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; }\n' +
         '    .ss-brand { display:flex; align-items:center; gap:8px; }\n' +
-        '    .ss-brand-icon { width:32px; height:32px; background:#4f46e5; border-radius:8px;\n' +
+        '    .ss-brand-icon { width:32px; height:32px; background:#fe9630; border-radius:8px;\n' +
         '                     display:flex; align-items:center; justify-content:center;\n' +
         '                     color:#fff; font-size:16px; font-weight:700; }\n' +
-        '    .ss-brand-name { font-size:20px; font-weight:700; color:#4f46e5; }\n' +
+        '    .ss-brand-name { font-size:20px; font-weight:700; color:#fe9630; }\n' +
         '    .ss-meta { text-align:right; }\n' +
         '    .ss-gen-date { font-size:11px; color:#6b7280; }\n' +
         '    .ss-divider { border:none; border-top:2px solid #e5e7eb; margin:0 0 16px; }\n' +
         '    .ss-title { font-size:20px; font-weight:700; color:#111827; margin-bottom:4px; }\n' +
         '    .ss-subtitle { font-size:11px; color:#6b7280; margin-bottom:22px; }\n' +
         '    table { width:100%; border-collapse:collapse; font-size:12px; }\n' +
-        '    thead tr { background:#4f46e5; color:#fff; }\n' +
+        '    thead tr { background:#fe9630; color:#fff; }\n' +
         '    th { padding:10px 12px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.5px; }\n' +
         '    td { padding:9px 12px; border-bottom:1px solid #e5e7eb; color:#374151; }\n' +
         '    tbody tr:nth-child(even) td { background:#f9fafb; }\n' +
