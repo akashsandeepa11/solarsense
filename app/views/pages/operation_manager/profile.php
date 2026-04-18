@@ -1,6 +1,7 @@
 <div class="container-fluid p-8">
   <!-- Page Header -->
   <?php
+  $profile_data = $data['profileData'];
   $config = [
       'title' => 'My Profile',
       'description' => 'Manage your personal information'
@@ -19,7 +20,7 @@
                   [
                       'id' => 'full-name',
                       'label' => 'Full Name',
-                      'value' => 'Jane Operation Manager',
+                      'value' => $profile_data['full_name'],
                       'editable' => true,
                       'required' => true,
                       'summaryTarget' => 'summary-name'
@@ -27,7 +28,7 @@
                   [
                       'id' => 'email',
                       'label' => 'Email',
-                      'value' => 'operations@solarsense.com',
+                      'value' => $profile_data['email'],
                       'type' => 'email',
                       'editable' => true,
                       'required' => true,
@@ -36,16 +37,60 @@
                   [
                       'id' => 'phone',
                       'label' => 'Phone number',
-                      'value' => '+94 112 345 679',
+                      'value' => $profile_data['contact'],
                       'editable' => true,
                       'required' => false,
                       'summaryTarget' => 'summary-phone'
                   ],
                   [
-                      'id' => 'employee-id',
-                      'label' => 'Employee ID',
-                      'value' => 'OPS-2024-001',
+                      'id' => 'address',
+                      'label' => 'Address',
+                      'value' => $profile_data['address'],
+                      'type' => 'text',
+                      'editable' => true,
+                      'required' => true,
+                      'summaryTarget' => 'summary-location'
+                  ],
+                  [
+                      'id' => 'district',
+                      'label' => 'District',
+                      'value' => $profile_data['district'],
+                      'type' => 'text',
                       'editable' => false
+                  ]
+              ]
+          ],
+          [
+              'title' => 'Company Details',
+              'fields' => [
+                  [
+                      'id' => 'agent-id',
+                      'label' => 'Agent ID',
+                      'value' => $profile_data['user_id'],
+                      'type' => 'text',
+                      'editable' => false
+                  ],
+                  [
+                      'id' => 'company-name',
+                      'label' => 'Company Name',
+                      'value' => $profile_data['company_name'],
+                      'type' => 'text',
+                      'editable' => false
+                  ],
+                  [
+                      'id' => 'register-date',
+                      'label' => 'Registered on',
+                      'value' => $profile_data['register_date'],
+                      'type' => 'text',
+                      'editable' => false
+                  ],
+                  [
+                      'id' => 'status',
+                      'label' => 'Status',
+                      'value' => $profile_data['status'],
+                      'type' => 'text',
+                      'editable' => true,
+                      'summaryTarget' => 'summary-status'
                   ]
               ]
           ]
@@ -97,9 +142,9 @@
           <div class="text-center">
             <img src="<?php echo htmlspecialchars(getAvatarUrl('Jane Operation', 140)); ?>" alt="Profile" style="object-fit:cover;">
 
-            <h5 class="mb-1 fw-bold" id="summary-name">Jane Operation Manager</h5>
-            <p class="text-muted small mb-1" id="summary-email">operations@solarsense.com</p>
-            <p class="text-muted small mb-3" id="summary-phone">+94 112 345 679</p>
+            <h5 class="mb-1 fw-bold" id="summary-name"><?php echo htmlspecialchars($profile_data['full_name']); ?></h5>
+            <p class="text-muted small mb-1" id="summary-email"><?php echo htmlspecialchars($profile_data['email']); ?></p>
+            <p class="text-muted small mb-3" id="summary-phone"><?php echo htmlspecialchars($profile_data['contact']); ?></p>
           </div>
 
           <!-- Divider -->

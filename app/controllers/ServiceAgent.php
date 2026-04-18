@@ -10,6 +10,8 @@ class ServiceAgent extends Controller
     private $taskModel;
     private $historyModel;
     private $reportModel;
+    private $teamModel;
+    private $profileModel;
 
 
 
@@ -18,6 +20,8 @@ class ServiceAgent extends Controller
         $this->taskModel = $this->model('M_maintenance_task');
         $this->historyModel = $this->model('M_maintenance_history');
         $this->reportModel = $this->model('M_maintenance_report');
+        $this->teamModel         = $this->model('M_Team');
+        $this->profileModel      = $this->model('M_Profile');
     }
 
     public function tasks($page = '', $task_id = null)
@@ -81,10 +85,13 @@ class ServiceAgent extends Controller
 
     public function profile()
     {
+        $userId = $_SESSION['user_id'] ?? 0;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
+        $profileData = $this->profileModel->getServiceAgentProfile($userId, $companyId);
         $data = [
-            'user' => $this->user,
+            'user'          => $this->user,
+            'profileData' => $profileData
         ];
-
         $this->view('pages/service_agent/profile', $data, layout: 'dashboard');
     }
 

@@ -85,4 +85,61 @@ class M_Profile
         $this->db->bind(':company_id', $company_id);
         return $this->db->single();
     }
+
+    public function getServiceAgentProfile($user_id, $company_id)
+    {
+        $this->db->query("
+        SELECT sa.user_id, sa.company_id, sa.address, sa.contact, sa.district, sa.register_date,
+               sa.specialization, sa.status,
+               u.full_name, u.email,
+               ic.company_name
+        FROM service_agent sa
+        JOIN user u ON u.user_id = sa.user_id
+        JOIN installer_company ic ON ic.company_id = sa.company_id
+        WHERE sa.user_id = :user_id AND sa.company_id = :company_id 
+    ");
+
+        $this->db->bind(':user_id', $user_id);
+        $this->db->bind(':company_id', $company_id);
+
+        return $this->db->single_assoc();
+    }
+
+    public function getOperationManagerProfile($user_id, $company_id)
+    {
+        $this->db->query("
+        SELECT op.user_id, op.company_id, op.address, op.contact, op.district, op.register_date,
+               op.status,
+               u.full_name, u.email,
+               ic.company_name
+        FROM operation_manager op
+        JOIN user u ON u.user_id = op.user_id
+        JOIN installer_company ic ON ic.company_id = op.company_id
+        WHERE op.user_id = :user_id AND op.company_id = :company_id 
+    ");
+
+        $this->db->bind(':user_id', $user_id);
+        $this->db->bind(':company_id', $company_id);
+
+        return $this->db->single_assoc();
+    }
+
+    public function getInventoryManagerProfile($user_id, $company_id)
+    {
+        $this->db->query("
+        SELECT im.user_id, im.company_id, im.address, im.contact, im.district, im.register_date,
+               im.status,
+               u.full_name, u.email,
+               ic.company_name
+        FROM inventory_manager im
+        JOIN user u ON u.user_id = im.user_id
+        JOIN installer_company ic ON ic.company_id = im.company_id
+        WHERE im.user_id = :user_id AND im.company_id = :company_id 
+    ");
+
+        $this->db->bind(':user_id', $user_id);
+        $this->db->bind(':company_id', $company_id);
+
+        return $this->db->single_assoc();
+    }
 }

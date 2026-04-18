@@ -278,6 +278,12 @@ class M_Team
         if ($row)
             return $row->company_id;
 
+        // 4. Check if user is a Service Agent 
+        $this->db->query('SELECT company_id FROM service_agent WHERE user_id = :user_id');
+        $this->db->bind(':user_id', $userId);
+        $row = $this->db->single();
+        if ($row)
+            return $row->company_id;
         return null;
     }
 
