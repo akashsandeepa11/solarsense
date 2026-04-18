@@ -3,8 +3,8 @@
 $quotations = isset($data['quotations']) ? $data['quotations'] : [];
 
 // Summary Card Data
-$pending = count(array_filter($quotations, fn($q) => $q['status'] === 'Pending'));
-$approved = count(array_filter($quotations, fn($q) => $q['status'] === 'Approved'));
+$pending = count(array_filter($quotations, fn($q) => ($q['status'] ?? '') === 'Pending'));
+$approved = count(array_filter($quotations, fn($q) => ($q['status'] ?? '') === 'Approved'));
 
 $summary_cards = [
     ['label' => 'Pending Quotations', 'value' => $pending, 'icon' => 'fas fa-clock', 'color' => 'warning'],
@@ -42,7 +42,6 @@ function getStatusClass($status)
     .status-dot.bg-warning { background-color: #f59e0b !important; }
     .status-dot.bg-secondary { background-color: #9ca3af !important; }
 
-    /* Agent Details Layout */
     .agent-details {
         display: flex;
         flex-direction: column;
@@ -54,10 +53,6 @@ function getStatusClass($status)
         color: #212121;
         font-weight: 600;
     }
-    .agent-id {
-        font-size: 0.85rem;
-        color: #6b7280;
-    }
 </style>
 
 <div class="container-fluid p-8">
@@ -65,15 +60,6 @@ function getStatusClass($status)
     $config = [
         'title' => 'Quotation Management',
         'description' => 'Manage system quotations for your clients.',
-        'buttons' => [
-            [
-                'label' => 'Create New Quotation',
-                'url' => '#',
-                'icon' => 'fas fa-plus',
-                'class' => 'btn-primary btn-md',
-                'onclick' => 'onclick="showAddModal()"'
-            ]
-        ]
     ];
     include __DIR__ . '/../../inc/components/page_header.php';
     ?>
@@ -129,11 +115,13 @@ function getStatusClass($status)
             [
                 'key' => 'customer',
                 'render' => function ($row) {
+                    $name = $row['customer'] ?? 'Unknown';
+                    $id = $row['id'] ?? 'N/A';
                     return '<div class="d-flex align-center gap-3">
-                                <img src="' . getAvatarUrl($row['customer']) . '" alt="' . htmlspecialchars($row['customer']) . '" style="width: 40px; border-radius: 50%;">
+                                <img src="' . getAvatarUrl($name) . '" alt="' . htmlspecialchars($name) . '" style="width: 40px; border-radius: 50%;">
                                 <div class="agent-details">
-                                    <div class="agent-name">' . htmlspecialchars($row['customer']) . '</div>
-                                    <div class="agent-id text-xs">' . htmlspecialchars($row['id']) . '</div>
+                                    <div class="agent-name">' . htmlspecialchars($name) . '</div>
+                                    <div class="agent-id text-xs">ID: ' . htmlspecialchars($id) . '</div>
                                 </div>
                             </div>';
                 }
@@ -141,9 +129,10 @@ function getStatusClass($status)
             [
                 'key' => 'status',
                 'render' => function ($row) {
+                    $status = $row['status'] ?? 'Pending';
                     return '<div class="d-flex align-center">
-                                <span class="status-dot ' . getStatusClass($row['status']) . ' mr-2"></span>
-                                <span class="badge ' . ($row['status'] === 'Pending' ? 'badge-warning' : 'badge-success') . '">' . $row['status'] . '</span>
+                                <span class="status-dot ' . getStatusClass($status) . ' mr-2"></span>
+                                <span class="badge ' . ($status === 'Pending' ? 'badge-warning' : 'badge-success') . '">' . $status . '</span>
                             </div>';
                 }
             ]
@@ -152,21 +141,24 @@ function getStatusClass($status)
             [
                 'label' => 'View',
                 'icon' => 'fas fa-eye',
-                'url' => URLROOT . '/operationmanager/quotation/details/{id}',
+                // This must match the JS function name
+                'onclick' => 'onclick="viewQuotationDetails({id})"',
                 'class' => 'btn-sm btn-info'
             ],
             [
                 'label' => 'Accept',
                 'icon' => 'fas fa-check',
                 'class' => 'btn-sm btn-success',
-                'onclick' => 'onclick="acceptQuotation(\'{id}\')"',
-                'condition' => function($row) { return $row['status'] === 'Pending'; }
+                'onclick' => 'onclick="acceptQuotation({id})"',
+                'condition' => function ($row) {
+                    return ($row['status'] ?? '') === 'Pending';
+                }
             ],
             [
                 'label' => 'Delete',
                 'icon' => 'fas fa-trash',
                 'class' => 'btn-icon-danger',
-                'onclick' => 'onclick="openDeleteModal(\'{id}\')"'
+                'onclick' => 'onclick="openDeleteModal({id})"'
             ]
         ],
         'empty_message' => 'No quotations found.'
@@ -176,20 +168,91 @@ function getStatusClass($status)
     ?>
 </div>
 
+<div id="viewQuotationModal" class="custom-modal" style="display: none;">
+    <div class="modal-overlay" onclick="closeQuotationModal()"></div>
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-file-invoice-dollar text-primary mr-2"></i>Quotation Details</h5>
+                <button type="button" class="btn-close" onclick="closeQuotationModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <h6 class="text-secondary font-bold uppercase text-xs mb-3" style="letter-spacing: 0.05em;">Customer Information</h6>
+                        <p class="mb-2 text-sm"><strong>Name:</strong> <span id="modal-customer"></span></p>
+                        <p class="mb-2 text-sm"><strong>Email:</strong> <span id="modal-email"></span></p>
+                        <p class="mb-2 text-sm"><strong>Phone:</strong> <span id="modal-contact"></span></p>
+                        <p class="mb-2 text-sm"><strong>Address:</strong> <span id="modal-address"></span></p>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <h6 class="text-secondary font-bold uppercase text-xs mb-3" style="letter-spacing: 0.05em;">System Preferences</h6>
+                        <p class="mb-2 text-sm"><strong>Bill Range:</strong> <span id="modal-bill"></span></p>
+                        <p class="mb-2 text-sm"><strong>Roof Type:</strong> <span id="modal-roof"></span></p>
+                        <p class="mb-2 text-sm"><strong>Property Type:</strong> <span id="modal-property"></span></p>
+                        <p class="mb-2 text-sm"><strong>Existing System:</strong> <span id="modal-existing"></span></p>
+                    </div>
+                </div>
+                <div class="border-top pt-3 d-flex justify-between align-center">
+                    <span class="text-xs text-secondary">Submission Date: <span id="modal-date"></span></span>
+                    <span id="modal-status-badge" class="badge"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="closeQuotationModal()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    function showAddModal() { /* Implement existing add modal trigger */ }
+    // Critical: Initialize the data variable for JS
+    const quotationData = <?php echo json_encode($quotations); ?>;
+
+    function viewQuotationDetails(id) {
+        // Find the record in the localized data array
+        const quote = quotationData.find(q => q.id == id);
+        if (!quote) return;
+
+        // Populate Modal Fields
+        document.getElementById('modal-customer').textContent = quote.customer || 'N/A';
+        document.getElementById('modal-email').textContent = quote.email || 'N/A';
+        document.getElementById('modal-contact').textContent = quote.contact || 'N/A';
+        document.getElementById('modal-address').textContent = quote.address || 'N/A';
+        document.getElementById('modal-bill').textContent = formatLabel(quote.bill_range);
+        document.getElementById('modal-roof').textContent = formatLabel(quote.roof_type);
+        document.getElementById('modal-property').textContent = formatLabel(quote.property_type);
+        document.getElementById('modal-existing').textContent = quote.existing_system || 'No';
+        document.getElementById('modal-date').textContent = quote.date || 'N/A';
+
+        // Set status badge styling
+        const badge = document.getElementById('modal-status-badge');
+        badge.textContent = quote.status;
+        badge.className = 'badge ' + (quote.status === 'Pending' ? 'badge-warning' : 'badge-success');
+
+        // Trigger the standard modal show function
+        showConfirmationModal('viewQuotationModal');
+    }
+
+    function closeQuotationModal() {
+        hideConfirmationModal('viewQuotationModal');
+    }
 
     function acceptQuotation(id) {
         if (confirm('Approve this quotation?')) {
-            // Add your update logic here
             window.location.href = '<?php echo URLROOT; ?>/operationmanager/quotation/approve/' + id;
         }
     }
 
     function openDeleteModal(id) {
         if (confirm('Delete this quotation?')) {
-            // Add your delete logic here
             window.location.href = '<?php echo URLROOT; ?>/operationmanager/quotation/delete/' + id;
         }
+    }
+
+    // Helper to clean up database technical strings (e.g. 'very-high' to 'Very High')
+    function formatLabel(token) {
+        if (!token) return "N/A";
+        return token.toString().replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
 </script>
