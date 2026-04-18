@@ -393,11 +393,24 @@ class HomeOwner extends Controller
 
     public function reports()
     {
-        $data = [
-            'user' => $this->user,
-        ];
+        $userId      = (int) $_SESSION['user_id'];
+        $availYears  = $this->smsModel->get_available_years($userId);
+        $selectedYear = isset($_GET['year']) && in_array((int)$_GET['year'], $availYears)
+            ? (int)$_GET['year']
+            : ($availYears[0] ?? (int)date('Y'));
 
-        $this->calculateExpectedGeneration('2025-02-05');
+        $chartData    = $this->smsModel->get_chart_data($userId, 12, $selectedYear);
+        $smsHistory   = $this->smsModel->sms_history();
+        $serviceHistory = $this->serviceModel->get_service_history();
+
+        $data = [
+            'user'          => $this->user,
+            'chart_data'    => $chartData,
+            'sms_history'   => $smsHistory,
+            'service_history' => $serviceHistory,
+            'selected_year' => $selectedYear,
+            'available_years' => $availYears ?: [(int)date('Y')],
+        ];
 
         $this->view('pages/homeowner/reports', $data, 'dashboard');
     }

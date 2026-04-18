@@ -186,14 +186,25 @@ $backLabel = $config['back_label'] ?? 'Back';
         <?php if (!empty($buttons)): ?>
             <div class="header-actions">
                 <?php foreach ($buttons as $button): ?>
-                    <a href="<?php echo htmlspecialchars($button['url']); ?>" 
-                       class="btn <?php echo htmlspecialchars($button['class'] ?? 'btn-primary'); ?>" 
-                       style="text-decoration: none;">
-                        <?php if (!empty($button['icon'])): ?>
-                            <i class="<?php echo htmlspecialchars($button['icon']); ?> mr-2"></i>
-                        <?php endif; ?>
-                        <?php echo htmlspecialchars($button['label']); ?>
-                    </a>
+                    <?php if (!empty($button['onclick'])): ?>
+                        <button type="button"
+                                class="btn <?php echo htmlspecialchars($button['class'] ?? 'btn-primary'); ?>"
+                                <?php echo $button['onclick']; ?>>
+                            <?php if (!empty($button['icon'])): ?>
+                                <i class="<?php echo htmlspecialchars($button['icon']); ?> mr-2"></i>
+                            <?php endif; ?>
+                            <?php echo htmlspecialchars($button['label']); ?>
+                        </button>
+                    <?php else: ?>
+                        <a href="<?php echo htmlspecialchars($button['url'] ?? '#'); ?>"
+                           class="btn <?php echo htmlspecialchars($button['class'] ?? 'btn-primary'); ?>"
+                           style="text-decoration: none;">
+                            <?php if (!empty($button['icon'])): ?>
+                                <i class="<?php echo htmlspecialchars($button['icon']); ?> mr-2"></i>
+                            <?php endif; ?>
+                            <?php echo htmlspecialchars($button['label']); ?>
+                        </a>
+                    <?php endif; ?>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
