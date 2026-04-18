@@ -464,7 +464,7 @@ function initializeQuotationCalculator() {
   const quotationSection = document.getElementById("quotation-section");
   if (!quotationSection) return;
 
-  loadInstallerOptions();
+  // Installer cards are server-rendered by PHP — no JS loading needed.
   setupQuotationEventListeners();
   goToStep(1);
 }
@@ -704,17 +704,7 @@ function loadInstallerOptions() {
   });
 }
 
-function selectInstaller(installer, cardElement) {
-  selectedInstaller = installer;
-
-  document.querySelectorAll(".installer-option").forEach((card) => {
-    card.classList.remove("selected");
-  });
-
-  cardElement.classList.add("selected");
-
-  quotationState.installer = installer.name;
-}
+// selectInstaller is defined below — it handles both static and DB-sourced installer objects.
 
 function handleNextStep() {
   if (currentStep === 1 && !selectedInstaller) {
@@ -724,7 +714,8 @@ function handleNextStep() {
 
   updateStateFromInputs();
 
-  if (currentStep === 4) {
+  // Step 3 is the contact/details step — submit on "Get My Quote"
+  if (currentStep === 3) {
     if (!validateContactDetails()) {
       return;
     }
@@ -732,7 +723,7 @@ function handleNextStep() {
     return;
   }
 
-  const next = Math.min(currentStep + 1, 5);
+  const next = Math.min(currentStep + 1, 4);
   goToStep(next);
 }
 
@@ -753,7 +744,7 @@ function goToStep(stepNumber) {
   document.querySelectorAll(".progress-step").forEach((progressEl) => {
     const progressStep = Number(progressEl.dataset.step);
     progressEl.classList.toggle("active", progressStep === currentStep);
-    if (currentStep >= 5) {
+    if (currentStep >= 4) {
       progressEl.classList.add("completed");
     } else if (progressStep < currentStep) {
       progressEl.classList.add("completed");
@@ -762,7 +753,8 @@ function goToStep(stepNumber) {
     }
   });
 
-  if (currentStep === 4) {
+  // Step 3 is the review/confirmation step (before submission)
+  if (currentStep === 3) {
     renderConfirmation();
     displayPriceSummary();
   }
@@ -785,13 +777,15 @@ function updateNavigationState() {
     prevBtn.style.visibility = "visible";
   }
 
-  if (currentStep === 4) {
+  // Step 3 = contact/review, next button says "Get My Quote"
+  if (currentStep === 3) {
     nextBtn.textContent = "Get My Quote";
   } else {
     nextBtn.textContent = "Continue";
   }
 
-  if (currentStep >= 5) {
+  // Step 4 = success screen — hide the footer nav
+  if (currentStep >= 4) {
     footer.classList.add("hidden");
     footer.style.display = "none";
   } else {
@@ -858,7 +852,7 @@ function calculatePrice() {
 
   // Calculate totals
   const subtotal = systemCost + batteryCost + roofCost + monitoringCost + warrantyCost;
-  const tax = subtotal * cfg.fees.taxRate;
+  const tax = subtotal * cfg.fees.taxRate; 
   const total = Math.round(subtotal + tax);
 
   return {
@@ -1080,28 +1074,53 @@ function validateContactDetails() {
 }
 
 function submitQuotation() {
-  const pricing = calculatePrice();
-  if (!pricing) return;
-
-  const payload = {
-    installer: selectedInstaller?.name,
-    configuration: { ...quotationState },
-    pricing,
-    customer: {
-      name: document.getElementById("customer-name")?.value.trim() || "",
-      email: document.getElementById("customer-email")?.value.trim() || "",
-      phone: document.getElementById("customer-phone")?.value.trim() || "",
-    },
-  };
-
-  console.table(payload);
-
-  const successInstaller = document.getElementById("success-installer");
-  if (successInstaller) {
-    successInstaller.textContent = selectedInstaller?.name || "your installer";
+  const nextBtn = document.getElementById("next-step-btn");
+  if (nextBtn) {
+    nextBtn.disabled = true;
+    nextBtn.textContent = "Submitting…";
   }
 
-  goToStep(5);
+  const payload = {
+    company_id:       selectedInstaller?.id  || quotationState.company_id,
+    customer_name:    document.getElementById("customer-name")?.value.trim()    || "",
+    customer_phone:   document.getElementById("customer-phone")?.value.trim()   || "",
+    customer_email:   document.getElementById("customer-email")?.value.trim()   || "",
+    customer_address: document.getElementById("customer-address")?.value.trim() || "",
+    bill_range:       document.getElementById("bill-amount")?.value || "",
+    roof_type:        document.getElementById("roof-type")?.value   || "",
+    property_type:    document.getElementById("backup-needs")?.value || "",
+    existing_system:  document.getElementById("preference")?.value  || "",
+  };
+
+  fetch(URLROOT + "/pages/submit_quotation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        const successInstaller = document.getElementById("success-installer");
+        if (successInstaller) {
+          successInstaller.textContent = selectedInstaller?.name || "your installer";
+        }
+        goToStep(4);
+      } else {
+        alert("Submission failed: " + (data.message || "Unknown error"));
+        if (nextBtn) {
+          nextBtn.disabled = false;
+          nextBtn.textContent = "Get My Quote";
+        }
+      }
+    })
+    .catch((err) => {
+      console.error("Quotation submission error:", err);
+      alert("Network error. Please check your connection and try again.");
+      if (nextBtn) {
+        nextBtn.disabled = false;
+        nextBtn.textContent = "Get My Quote";
+      }
+    });
 }
 
 function resetCalculator() {

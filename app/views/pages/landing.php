@@ -600,4 +600,8 @@
         </div>
     </footer>
 
+    <script>
+        // Expose server-side constants to JavaScript
+        const URLROOT = "<?php echo URLROOT; ?>";
+    </script>
     <script src="<?php echo URLROOT; ?>/public/js/landing.js"></script>
