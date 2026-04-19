@@ -43,13 +43,13 @@ $orderRows = array_map(function ($o) {
     <!-- Page Header -->
     <?php
     $config = [
-        'title'       => 'Purchase Orders',
+        'title' => 'Purchase Orders',
         'description' => 'All customer orders from your store',
-        'buttons'     => [
+        'buttons' => [
             [
-                'label'   => 'Download PDF',
-                'icon'    => 'fas fa-file-pdf',
-                'class'   => 'btn-outline-primary btn-md',
+                'label' => 'Download PDF',
+                'icon' => 'fas fa-file-pdf',
+                'class' => 'btn-outline-primary btn-md',
                 'onclick' => 'onclick="SolarSenseReport.download({tableSelector:\'.data-table\',title:\'Purchase Orders Report\',subtitle:\'All customer orders from the store\',columns:[\'Order #\',\'Items\',\'Total\',\'Date\',\'Status\']},this)"'
             ]
         ]
@@ -88,22 +88,16 @@ $orderRows = array_map(function ($o) {
     <!-- Filter Bar -->
     <div class="card shadow-sm rounded-xl mb-4 mt-6">
         <div class="card-body">
-            <?php 
-            $filterBaseUrl = ($data['user']['role'] === ROLE_OPERATION_MANAGER) 
-                ? URLROOT . '/operationmanager/maintenance/purchases/'
-                : URLROOT . '/inventorymanager/purchases/';
-            ?>
             <div class="d-flex flex-wrap gap-4 align-center">
                 <input type="text" id="searchInput" placeholder="Search by order #..." class="form-control"
                     style="max-width:220px;">
-                <select name="statusFilter" id="statusFilter" class="form-control" style="max-width:180px;"
-                    onchange="window.location.href='<?php echo $filterBaseUrl; ?>' + this.value">
-                    <option value="all" <?php echo $statusFilter === 'all' ? 'selected' : ''; ?>>All Status</option>
-                    <option value="pending" <?php echo $statusFilter === 'pending' ? 'selected' : ''; ?>>Pending</option>
-                    <option value="completed" <?php echo $statusFilter === 'completed' ? 'selected' : ''; ?>>Completed
-                    </option>
-                    <option value="cancelled" <?php echo $statusFilter === 'cancelled' ? 'selected' : ''; ?>>Cancelled
-                    </option>
+
+                <select id="statusFilter" class="form-control" style="max-width:180px;">
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
                 </select>
             </div>
         </div>
@@ -170,11 +164,15 @@ $orderRows = array_map(function ($o) {
                         $status = strtolower($row->status ?? 'pending');
                         $map = [
                             'pending' => ['bg-warning', 'Pending'],
-                            'completed' => ['bg-success', 'Completed'],
-                            'cancelled' => ['bg-error', 'Cancelled'],
+                            'in-progress' => ['bg-info', 'In Progress'], // Handle in-progress status
+                            'completed' => ['bg-success', 'Completed']
                         ];
                         [$cls, $lbl] = $map[$status] ?? ['bg-secondary', ucfirst($status)];
-                        return '<span class="badge ' . $cls . ' text-surface px-3 py-1 rounded-full text-xs">' . $lbl . '</span>';
+
+                        // ADDED: data-status attribute for JS filtering
+                        return '<span class="badge ' . $cls . ' text-surface px-3 py-1 rounded-full text-xs" data-status="' . $status . '">'
+                            . $lbl .
+                            '</span>';
                     }
                 ],
             ],
@@ -235,38 +233,44 @@ $orderRows = array_map(function ($o) {
 
     <script>
         const BASE = "<?= URLROOT ?>";
-        // Client-side search by order #
-        document.getElementById('searchInput').addEventListener('input', function () {
-            const q = this.value.toLowerCase();
+
+        const filterTable = () => {
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            const statusQuery = document.getElementById('statusFilter').value.toLowerCase();
             document.querySelectorAll('tbody tr').forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(q) ? '' : 'none';
+                // Check Order #
+                const orderIdText = row.querySelector('td:first-child')?.textContent?.toLowerCase() ?? '';
+
+                // Check Status
+                const statusBadge = row.querySelector('[data-status]');
+                const rowStatus = statusBadge ? statusBadge.getAttribute('data-status') : '';
+
+                const matchesSearch = orderIdText.includes(searchQuery);
+                const matchesStatus = (statusQuery === 'all' || rowStatus === statusQuery);
+
+                row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
             });
-        });
+        };
 
-        function closeDeleteModal() { $('deleteModal').classList.remove('show'); }
+        // Attach listeners
+        document.getElementById('searchInput').addEventListener('input', filterTable);
+        document.getElementById('statusFilter').addEventListener('change', filterTable);
 
+        // Existing modal logic remains same
         function openAssignModal(orderId, customer, currentAgentId = '') {
-            document.getElementById("assignTaskInfo").innerText =
-                `Purchase ID: "${orderId}" for ${customer}`;
-
-            document.getElementById("assignForm").action =
-                `${BASE}/operationmanager/maintenance/purchases/assign/${orderId}`;
-
-            document.getElementById("assignAgentSelect").value =
-                currentAgentId || "";
-
-            const assignModal = document.getElementById("assignModal");
-            assignModal.hidden = false;
-            assignModal.classList.add("show");
+            document.getElementById("assignTaskInfo").innerText = `Purchase ID: "${orderId}" for ${customer}`;
+            document.getElementById("assignForm").action = `${BASE}/operationmanager/maintenance/purchases/assign/${orderId}`;
+            document.getElementById("assignAgentSelect").value = currentAgentId || "";
+            const modal = document.getElementById("assignModal");
+            modal.hidden = false;
+            modal.classList.add("show");
         }
 
         function closeAssignModal() {
-            const assignModal = document.getElementById("assignModal");
-            assignModal.classList.remove("show");
-            assignModal.hidden = true;
+            const modal = document.getElementById("assignModal");
+            modal.classList.remove("show");
+            modal.hidden = true;
         }
-
     </script>
 
-<?php require APPROOT . '/views/inc/components/report_downloader.php'; ?>
+    <?php require APPROOT . '/views/inc/components/report_downloader.php'; ?>

@@ -247,41 +247,44 @@ class M_inventory
         return null;
     }
 
-    // ── Orders (used by Purchases page) ──────────────────────────────────────
-
-    public function get_all_orders()
+    public function get_all_orders($companyId)
     {
         $this->db->query("
         SELECT o.order_id, o.user_id, o.agent_id, o.total_amount, o.status, o.date,
                u1.full_name AS customer_name,
                u2.full_name AS agent_name,
-               COUNT(oi.order_item_id) as item_count
+               COUNT(DISTINCT oi.order_item_id) as item_count
         FROM orders o
         JOIN user u1 ON o.user_id = u1.user_id
         LEFT JOIN user u2 ON o.agent_id = u2.user_id
-        LEFT JOIN order_item oi ON oi.order_id = o.order_id
+        JOIN order_item oi ON o.order_id = oi.order_id
+        JOIN inventory i ON oi.inventory_id = i.inventory_id
+        WHERE i.company_id = :company_id
         GROUP BY o.order_id, u1.full_name, u2.full_name, o.agent_id, o.total_amount, o.status, o.date
         ORDER BY o.date DESC
     ");
+        $this->db->bind(':company_id', $companyId);
         return $this->db->resultSet();
     }
 
-    public function get_orders_by_status($status)
+    public function get_orders_by_status($status, $companyId)
     {
         $this->db->query("
-            SELECT o.order_id, o.user_id, o.agent_id, o.total_amount, o.status, o.date,
-                   u1.full_name AS customer_name,
-                   u2.full_name AS agent_name,
-                   COUNT(oi.order_item_id) as item_count
-            FROM orders o
-            JOIN user u1 ON o.user_id = u1.user_id
-            LEFT JOIN user u2 ON o.agent_id = u2.user_id
-            LEFT JOIN order_item oi ON oi.order_id = o.order_id
-            WHERE o.status = :status
-            GROUP BY o.order_id, u1.full_name, u2.full_name, o.agent_id, o.total_amount, o.status, o.date
-            ORDER BY o.date DESC
-        ");
+        SELECT o.order_id, o.user_id, o.agent_id, o.total_amount, o.status, o.date,
+               u1.full_name AS customer_name,
+               u2.full_name AS agent_name,
+               COUNT(DISTINCT oi.order_item_id) as item_count
+        FROM orders o
+        JOIN user u1 ON o.user_id = u1.user_id
+        LEFT JOIN user u2 ON o.agent_id = u2.user_id
+        JOIN order_item oi ON o.order_id = oi.order_id
+        JOIN inventory i ON oi.inventory_id = i.inventory_id
+        WHERE o.status = :status AND i.company_id = :company_id
+        GROUP BY o.order_id, u1.full_name, u2.full_name, o.agent_id, o.total_amount, o.status, o.date
+        ORDER BY o.date DESC
+    ");
         $this->db->bind(':status', $status);
+        $this->db->bind(':company_id', $companyId);
         return $this->db->resultSet();
     }
 
@@ -303,16 +306,24 @@ class M_inventory
             return false;
         }
     }
-    public function get_order_stats()
+    public function get_order_stats($companyId)
     {
         $this->db->query("
-            SELECT
-                COUNT(*) as total_orders,
-                SUM(CASE WHEN status = 'pending'   THEN 1 ELSE 0 END) as pending_count,
-                SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_count,
-                SUM(total_amount) as total_value
-            FROM orders
-        ");
+        SELECT
+            COUNT(order_id) as total_orders,
+            SUM(CASE WHEN status = 'pending'   THEN 1 ELSE 0 END) as pending_count,
+            SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_count,
+            SUM(total_amount) as total_value
+        FROM orders
+        WHERE order_id IN (
+            SELECT DISTINCT oi.order_id 
+            FROM order_item oi
+            JOIN inventory i ON oi.inventory_id = i.inventory_id
+            WHERE i.company_id = :company_id
+        )
+    ");
+
+        $this->db->bind(':company_id', $companyId);
         return $this->db->single();
     }
 

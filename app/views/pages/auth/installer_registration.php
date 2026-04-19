@@ -293,7 +293,7 @@ $buttonIcon = 'fas fa-paper-plane';
                         </div>
 
                         <!-- Terms and Conditions -->
-                        <div class="form-section mb-10">
+                        <!-- <div class="form-section mb-10">
                             <div class="form-check">
                                 <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
                                 <label class="form-check-label" for="terms">
@@ -305,7 +305,7 @@ $buttonIcon = 'fas fa-paper-plane';
                                     <span class="error-message"><?php echo $data['terms_err']; ?></span>
                                 <?php endif; ?>
                             </div>
-                        </div>
+                        </div> -->
 
                         <!-- Submit Button -->
                         <div class="mt-8 pt-5 border-t d-flex justify-end">

@@ -35,8 +35,8 @@ $operation_manager_nav = [
         ['title' => 'Dashboard', 'url' => '/operationmanager/dashboard', 'icon' => 'fa-solid fa-list-check'],
         ['title' => 'Fleet', 'url' => '/operationmanager/fleet', 'icon' => 'fa-solid fa-solar-panel'],        
         ['title' => 'Team', 'url' => '/operationmanager/team', 'icon' => 'fa-solid fa-users'],
-        ['title' => 'Maintenance', 'url' => '/operationmanager/maintenance', 'icon' => 'fa-solid fa-wrench'],        
-        ['title' => 'Quotation', 'url' => '/operationmanager/quotation', 'icon' => 'fa-solid fa-file-invoice-dollar'],
+        ['title' => 'Tasks', 'url' => '/operationmanager/maintenance', 'icon' => 'fa-solid fa-wrench'],        
+        ['title' => 'Site Vists', 'url' => '/operationmanager/quotation', 'icon' => 'fa-solid fa-file-invoice-dollar'],
         //['title' => 'Reports', 'url' => '/operationmanager/reports', 'icon' => 'fa-solid fa-file-lines'],
     ],
     'PERSONAL' => [
