@@ -58,13 +58,13 @@ function getVerificationStatusClass($status)
 <div class="container-fluid p-8">
     <?php
     $config = [
-        'title'       => 'Company Verifications',
+        'title' => 'Company Verifications',
         'description' => 'Review and verify installer company registration requests.',
-        'buttons'     => [
+        'buttons' => [
             [
-                'label'   => 'Download PDF',
-                'icon'    => 'fas fa-file-pdf',
-                'class'   => 'btn-outline-primary',
+                'label' => 'Download PDF',
+                'icon' => 'fas fa-file-pdf',
+                'class' => 'btn-outline-primary',
                 'onclick' => 'onclick="SolarSenseReport.download({tableSelector:\'.data-table\',title:\'Verification Requests Report\',subtitle:\'Company registration and verification status\',columns:[\'Company Name\',\'Contact\',\'Address\',\'Submitted Date\',\'Status\']},this)"'
             ]
         ]
@@ -92,8 +92,7 @@ function getVerificationStatusClass($status)
                 ]
             ]
         ],
-        'form_method' => 'GET',
-        'auto_submit' => true,
+        'auto_submit' => false, // Set to false for client-side filtering
         'reset_on_clear' => true
     ];
     include __DIR__ . '/../../inc/components/filter_bar.php';
@@ -129,7 +128,7 @@ function getVerificationStatusClass($status)
             ],
             [
                 'key' => 'contact', // Custom renderer to merge email and contact number
-                'render' => function($row) {
+                'render' => function ($row) {
                     $email = is_object($row) ? $row->email : $row['email'];
                     $phone = is_object($row) ? $row->contact : $row['contact'];
                     return '<div class="company-details">
@@ -142,20 +141,20 @@ function getVerificationStatusClass($status)
                 'key' => 'status',
                 'render' => function ($row) {
                     $status = is_object($row) ? $row->status : $row['status'];
-                    return '<div class="d-flex align-center">
-                                <span class="status-dot ' . getVerificationStatusClass($status) . ' mr-2"></span>
-                                <span class="badge ' . (strtolower($status) === 'pending' ? 'badge-warning' : 'badge-success') . '">' . ucfirst($status) . '</span>
-                            </div>';
+                    return '<div class="d-flex align-center" data-filter="status"> 
+                    <span class="status-dot ' . getVerificationStatusClass($status) . ' mr-2"></span>
+                    <span class="badge ' . (strtolower($status) === 'pending' ? 'badge-warning' : 'badge-success') . '">' . ucfirst($status) . '</span>
+                </div>';
                 }
             ]
         ],
         'actions' => [
-            [
-                'label' => 'View Details',
-                'icon' => 'fas fa-eye',
-                'class' => 'btn-sm btn-info',
-                'onclick' => 'onclick="openViewModal({companyId})"'
-            ],
+            // [
+            //     'label' => 'View Details',
+            //     'icon' => 'fas fa-eye',
+            //     'class' => 'btn-sm btn-info',
+            //     'onclick' => 'onclick="openViewModal({companyId})"'
+            // ],
             [
                 'label' => 'Verify',
                 'icon' => 'fas fa-check-circle',
@@ -192,6 +191,29 @@ include __DIR__ . '/../../inc/models/confirmation_modal.php';
 ?>
 
 <script>
+    const applyFilters = () => {
+        const searchQuery = document.getElementById('searchBar').value.toLowerCase();
+        const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
+
+        document.querySelectorAll('tbody tr').forEach(row => {
+            // Get text content for search
+            const rowText = row.innerText.toLowerCase();
+            
+            // Get specific status value from our data-filter attribute
+            const rowStatus = row.querySelector('[data-filter="status"]')?.innerText.trim().toLowerCase() || "";
+
+            const matchesSearch = rowText.includes(searchQuery);
+            const matchesStatus = !statusFilter || rowStatus === statusFilter;
+
+            // Show row only if it matches BOTH filters
+            row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+        });
+    };
+
+    // Attach listeners to both elements
+    document.getElementById('searchBar').addEventListener('input', applyFilters);
+    document.getElementById('statusFilter').addEventListener('change', applyFilters);
+
     const verifications = <?php echo json_encode($verifications); ?>;
 
     function openViewModal(id) {

@@ -18,13 +18,13 @@ class OperationManager extends Controller
 
     public function __construct()
     {
-        $this->fleetModel        = $this->model('M_Fleet');
-        $this->teamModel         = $this->model('M_Team');
-        $this->taskModel         = $this->model('M_maintenance_task');
-        $this->inventoryModel    = $this->model('M_inventory');
+        $this->fleetModel = $this->model('M_Fleet');
+        $this->teamModel = $this->model('M_Team');
+        $this->taskModel = $this->model('M_maintenance_task');
+        $this->inventoryModel = $this->model('M_inventory');
         $this->notificationModel = $this->model('M_Notification');
-        $this->reportModel       = $this->model('M_maintenance_report');
-        $this->profileModel      = $this->model('M_Profile');
+        $this->reportModel = $this->model('M_maintenance_report');
+        $this->profileModel = $this->model('M_Profile');
 
         // Pre-load notifications for the topnavbar bell on every page
         $userId = (int) ($_SESSION['user_id'] ?? 0);
@@ -55,12 +55,12 @@ class OperationManager extends Controller
 
         // Fetch the same data used by the Installer Admin
         $data = [
-            'user'               => $this->user,
-            'notifications'      => $this->notifications,
-            'stats'              => $dashboardModel->getStats($companyId),
-            'alerts'             => $dashboardModel->getAlerts($companyId),
+            'user' => $this->user,
+            'notifications' => $this->notifications,
+            'stats' => $dashboardModel->getStats($companyId),
+            'alerts' => $dashboardModel->getAlerts($companyId),
             'performance_snapshot' => $dashboardModel->getPerformanceSnapshot($companyId),
-            'service_agents'     => $dashboardModel->getServiceTeamStatus($companyId),
+            'service_agents' => $dashboardModel->getServiceTeamStatus($companyId),
             'new_customers_data' => $dashboardModel->getNewCustomersChartData($companyId),
             'service_tasks_data' => $dashboardModel->getServiceTasksChartData($companyId),
         ];
@@ -85,11 +85,11 @@ class OperationManager extends Controller
 
         // FIX: Use get_customer_stats to return ARRAYS and prevent the stdClass error
         $data = [
-            'user'          => $this->user,
+            'user' => $this->user,
             'notifications' => $this->notifications,
-            'customers'     => $this->fleetModel->get_customer_stats($companyId),
-            'stats'         => [
-                'total_clients'     => $this->fleetModel->get_total_customers($companyId) ?? 0,
+            'customers' => $this->fleetModel->get_customer_stats($companyId),
+            'stats' => [
+                'total_clients' => $this->fleetModel->get_total_customers($companyId) ?? 0,
                 'pending_maintenace' => $this->fleetModel->get_pending_services($companyId) ?? 0,
                 'completed_services' => $this->fleetModel->get_completed_services($companyId) ?? 0,
             ],
@@ -109,13 +109,13 @@ class OperationManager extends Controller
 
         // FIX: Use get_service_agent_stats to align with InstallerAdmin logic
         $data = [
-            'user'          => $this->user,
+            'user' => $this->user,
             'notifications' => $this->notifications,
-            'agents'        => $this->teamModel->get_service_agent_stats($companyId),
-            'stats'         => [
-                'total_agents'  => $this->teamModel->get_total_agents($companyId)->total_agents ?? 0,
+            'agents' => $this->teamModel->get_service_agent_stats($companyId),
+            'stats' => [
+                'total_agents' => $this->teamModel->get_total_agents($companyId)->total_agents ?? 0,
                 'active_agents' => $this->teamModel->get_active_agents($companyId)->active_agents ?? 0,
-                'total_tasks'   => $this->teamModel->get_total_tasks($companyId)->total_tasks ?? 0,
+                'total_tasks' => $this->teamModel->get_total_tasks($companyId)->total_tasks ?? 0,
                 'pending_tasks' => $this->teamModel->get_pending_tasks($companyId)->pending_tasks ?? 0,
             ],
         ];
@@ -148,10 +148,10 @@ class OperationManager extends Controller
         }
 
         $data = [
-            'user'           => $this->user,
-            'notifications'  => $this->notifications,
-            'customerId'     => $customerId,
-            'customer'       => $customer,
+            'user' => $this->user,
+            'notifications' => $this->notifications,
+            'customerId' => $customerId,
+            'customer' => $customer,
             'service_agents' => $serviceAgents,
         ];
 
@@ -190,9 +190,9 @@ class OperationManager extends Controller
         }
 
         $data = [
-            'user'          => $this->user,
+            'user' => $this->user,
             'notifications' => $this->notifications,
-            'agent'         => $agent,
+            'agent' => $agent,
         ];
 
         // Render the shared agent details view
@@ -229,7 +229,7 @@ class OperationManager extends Controller
         $quotations = json_decode(json_encode($quotationsRaw), true);
 
         $data = [
-            'user'          => $this->user,
+            'user' => $this->user,
             'notifications' => $this->notifications,
             'quotations' => $quotations
         ];
@@ -292,22 +292,21 @@ class OperationManager extends Controller
 
         // --- Prepare Data for View ---
         $data = [
-            'user'          => $this->user,
+            'user' => $this->user,
             'notifications' => $this->notifications,
-            'active_tab'    => $tab,
+            'active_tab' => $tab,
         ];
 
         if ($tab === 'purchases') {
-            $statusFilter = $id; // In purchase tab, the second parameter acts as the status filter
-            $data['orders'] = ($statusFilter !== 'all')
-                ? $this->inventoryModel->get_orders_by_status($statusFilter)
-                : $this->inventoryModel->get_all_orders();
-            $data['stats'] = $this->inventoryModel->get_order_stats();
+            $data['orders'] = $this->inventoryModel->get_all_orders($companyId);
+
+            $data['stats'] = $this->inventoryModel->get_order_stats($companyId);
             $data['agents'] = $this->taskModel->get_active_agents($companyId);
             $data['customers'] = $this->fleetModel->get_customer_stats($companyId);
-            $data['status_filter'] = $statusFilter;
+            $data['status_filter'] = 'all';
 
             $this->view('pages/common/purchases', $data, layout: 'dashboard');
+
         } elseif ($tab === 'reports') {
             // Handle "View Detail" sub-routing: maintenance/reports/view/{report_id}
             if ($id === 'view' && $action) {
@@ -338,7 +337,7 @@ class OperationManager extends Controller
     public function reports()
     {
         $data = [
-            'user'          => $this->user,
+            'user' => $this->user,
             'notifications' => $this->notifications,
         ];
 
@@ -351,9 +350,9 @@ class OperationManager extends Controller
         $companyId = $this->teamModel->get_company_id_by_user($userId);
         $profileData = $this->profileModel->getOperationManagerProfile($userId, $companyId);
         $data = [
-            'user'          => $this->user,
+            'user' => $this->user,
             'notifications' => $this->notifications,
-            'profileData'   => $profileData
+            'profileData' => $profileData
         ];
 
         $this->view('pages/operation_manager/profile', $data, layout: 'dashboard');
@@ -365,7 +364,7 @@ class OperationManager extends Controller
         $userId = (int) ($_SESSION['user_id'] ?? 0);
 
         $data = [
-            'user'          => $this->user,
+            'user' => $this->user,
             'notifications' => $this->notificationModel->get_all_notifications($userId),
         ];
 
@@ -376,7 +375,7 @@ class OperationManager extends Controller
     public function clearNotifications()
     {
         header('Content-Type: application/json');
-        $userId  = (int) ($_SESSION['user_id'] ?? 0);
+        $userId = (int) ($_SESSION['user_id'] ?? 0);
         $success = $userId ? $this->notificationModel->delete_all($userId) : false;
         echo json_encode(['success' => $success]);
         exit();
@@ -407,7 +406,7 @@ class OperationManager extends Controller
         }
 
         $data = [
-            'user'          => $this->user,
+            'user' => $this->user,
             'notifications' => $this->notifications,
         ];
         $this->view('pages/operation_manager/help', $data, layout: 'dashboard');
