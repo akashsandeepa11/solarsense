@@ -140,7 +140,6 @@ class M_maintenance_task {
                     sr.status,
                     sr.homeowner_id,
                     sr.agent_id
-                    o.agent_id
                 FROM service_req sr
                 LEFT JOIN service_type st ON sr.service_type_id = st.service_type_id
                 LEFT JOIN user u          ON sr.homeowner_id    = u.user_id
