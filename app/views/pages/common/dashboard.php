@@ -228,17 +228,17 @@ function getAgentStatusClass($status) {
         <!-- Right Column -->
         <div class="col-lg-4">
             <!-- System Performance Snapshot -->
-            <div class="card shadow-lg rounded-xl mb-6">
+            <!-- <div class="card shadow-lg rounded-xl mb-6">
                 <div class="card-body">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                        <h3 class="card-title text-xl font-semibold">System Performance Snapshot</h3>
+                        <h3 class="card-title text-xl font-semibold">System Performance Snapshot</h3> -->
                         <!-- <a href="<?php echo URLROOT; ?>/installeradmin/dashboard/system_performance" class="btn btn-sm btn-primary" style="padding: 0.5rem 1rem; background-color: #fe9630; color: white; text-decoration: none; border-radius: 0.375rem; font-size: 0.875rem;">
                             <i class="fas fa-chart-bar mr-2"></i>View Full Analytics
                         </a> -->
-                    </div>
+                    <!-- </div> -->
                     
                     <!-- Best Performers -->
-                    <div class="mb-6">
+                    <!-- <div class="mb-6">
                         <h4 class="font-semibold text-success mb-3">
                             <i class="fas fa-arrow-up mr-2"></i>Best Performing
                         </h4>
@@ -248,10 +248,10 @@ function getAgentStatusClass($status) {
                             <span class="font-bold <?php echo $performer['status_class']; ?>"><?php echo $performer['performance']; ?>%</span>
                         </div>
                         <?php endforeach; ?>
-                    </div>
+                    </div> -->
 
                     <!-- Worst Performers -->
-                    <div>
+                    <!-- <div>
                         <h4 class="font-semibold text-error mb-3">
                             <i class="fas fa-arrow-down mr-2"></i>Worst Performing
                         </h4>
@@ -263,7 +263,7 @@ function getAgentStatusClass($status) {
                         <?php endforeach; ?>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
             <!-- Service Team Status -->
             <div class="card shadow-lg rounded-xl">

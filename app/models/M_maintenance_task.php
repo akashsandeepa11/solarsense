@@ -59,9 +59,9 @@ class M_maintenance_task {
                 sa.user_id,
                 u.full_name
             FROM service_agent sa
-            JOIN user u ON sa.user_id = u.user_id
+            LEFT JOIN user u ON sa.user_id = u.user_id
             WHERE sa.company_id = :company_id
-            AND sa.status = 'Active'
+            AND (sa.status = 'Active' OR sa.status = 'active')
         ");
         $this->db->bind(':company_id', $companyId);
         return $this->db->resultSet();

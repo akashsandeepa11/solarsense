@@ -435,20 +435,19 @@ function renderTable(data) {
                 <td class="text-sm">${item.price.toLocaleString(undefined,{minimumFractionDigits:2})}</td>
                 <td class="text-sm">${total.toLocaleString(undefined,{minimumFractionDigits:2})}</td>
                 <td class="text-sm">${statusBadge}</td>
-                <td class="text-sm">
-                    <a href="<?php echo URLROOT; ?>/inventorymanager/item/${item.id}"
-                       class="btn btn-sm btn-info rounded-lg mr-1">
-                        <i class="fas fa-eye mr-1"></i>View
-                    </a>
-                    <button class="btn btn-primary btn-sm rounded-lg mr-1" onclick="editItem('${item.id}')">
-                        <i class="fas fa-edit mr-1"></i>Edit
-                    </button>
-                    <button class="btn btn-sm rounded-lg"
-                            style="background:var(--color-error,#dc2626);color:#fff;padding:0.25rem 0.6rem;"
-                            onclick="deleteItem('${item.id}')"
-                            title="Delete item">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                <td>
+                    <div class="actions-menu d-flex gap-2 justify-center">
+                        <a href="<?php echo URLROOT; ?>/inventorymanager/item/${item.id}"
+                           class="btn-icon btn-sm btn-info" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <button class="btn-icon btn-sm btn-primary" onclick="editItem('${item.id}')" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon btn-icon-danger" onclick="deleteItem('${item.id}')" title="Delete item">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </td>
             </tr>`;
     });

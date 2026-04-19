@@ -323,6 +323,7 @@ function getMaintenanceStatusClass($status)
                     <option value="<?= $agent->user_id ?>">
                         <?= htmlspecialchars($agent->full_name) ?>
                     </option>
+
                 <?php endforeach; ?>
 
             </select>

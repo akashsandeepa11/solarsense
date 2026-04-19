@@ -279,6 +279,7 @@ class OperationManager extends Controller
             } else {
                 if ($id === 'assign' && $action) {
                     $agentId = $_POST['agent_id'] ?? null;
+
                     if ($agentId && $this->inventoryModel->assign_agent($action, $agentId)) {
                         setToast('Agent assigned successfully.', 'success');
                     } else {
