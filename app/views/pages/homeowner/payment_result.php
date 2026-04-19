@@ -9,7 +9,7 @@ $isSuccess = $status === 'success';
     <div style="text-align:center;max-width:480px;padding:3rem 2rem;background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
 
         <?php if ($isSuccess): ?>
-            <div style="font-size:4rem;margin-bottom:1rem;">✅</div>
+            <!-- <div style="font-size:4rem;margin-bottom:1rem;">✅</div> -->
             <h2 style="color:#16a34a;margin:0 0 0.5rem;">Payment Successful!</h2>
             <p style="color:#6b7280;margin:0 0 2rem;">Your order has been placed successfully. Thank you for shopping with SolarSense.</p>
         <?php else: ?>
