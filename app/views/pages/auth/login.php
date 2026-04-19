@@ -5,7 +5,9 @@
     <!-- Left Promotional Panel -->
     <div class="login-promo-panel">
         <div>
-            <h1>SolarSense</h1>
+            <a href="<?php echo URLROOT; ?>" style="text-decoration: none; color: inherit;">
+                <h1>SolarSense</h1>
+            </a>
             <p>Unlock the true potential of your solar investment.</p>
             <a href="#" class="btn btn-light-orange">Read More</a>
         </div>

@@ -12,7 +12,9 @@ $invalid_token = $data['invalid_token'] ?? false;
     <!-- Left Promotional Panel -->
     <div class="login-promo-panel">
         <div>
-            <h1>SolarSense</h1>
+            <a href="<?php echo URLROOT; ?>" style="text-decoration: none; color: inherit;">
+                <h1>SolarSense</h1>
+            </a>
             <p>Choose a strong, unique password to protect your account.</p>
             <a href="<?php echo URLROOT; ?>/auth/login" class="btn btn-light-orange">Back to Login</a>
         </div>
