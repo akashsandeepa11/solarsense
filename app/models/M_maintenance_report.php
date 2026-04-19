@@ -132,6 +132,68 @@ class M_maintenance_report
         return $this->db->single();
     }
 
-    
+
+    /**
+     * Insert a delivery report (linked to an order, not a service_req task) and
+     * mark the order as 'completed' — runs inside a single transaction.
+     */
+    public function insertDeliveryReportAndCompleteOrder(array $data): bool
+    {
+        try {
+            $this->db->beginTransaction();
+
+            $this->db->query("
+                INSERT INTO service_report
+                    (task_id, order_id, agent_id, actions_taken, replaced_parts, time_spent,
+                     completion_date, technician_notes, final_status)
+                VALUES
+                    (NULL, :order_id, :agent_id, :actions_taken, :replaced_parts, :time_spent,
+                     :completion_date, :technician_notes, :final_status)
+            ");
+            $this->db->bind(':order_id',         $data['order_id']);
+            $this->db->bind(':agent_id',          $data['agent_id']);
+            $this->db->bind(':actions_taken',     $data['actions_taken']);
+            $this->db->bind(':replaced_parts',    $data['replaced_parts'] ?? '');
+            $this->db->bind(':time_spent',        $data['time_spent']);
+            $this->db->bind(':completion_date',   $data['completion_date']);
+            $this->db->bind(':technician_notes',  $data['technician_notes'] ?? '');
+            $this->db->bind(':final_status',      $data['final_status']);
+
+            if (!$this->db->execute()) {
+                $this->db->rollBack();
+                return false;
+            }
+
+            // Mark the order as completed
+            $this->db->query("
+                UPDATE orders SET status = 'completed'
+                WHERE order_id = :order_id AND agent_id = :agent_id
+            ");
+            $this->db->bind(':order_id', $data['order_id']);
+            $this->db->bind(':agent_id', $data['agent_id']);
+
+            if (!$this->db->execute()) {
+                $this->db->rollBack();
+                return false;
+            }
+
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            error_log('insertDeliveryReportAndCompleteOrder failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Check if a delivery report already exists for a given order.
+     */
+    public function getDeliveryReportByOrderId(int $order_id): ?object
+    {
+        $this->db->query("SELECT * FROM service_report WHERE order_id = :order_id LIMIT 1");
+        $this->db->bind(':order_id', $order_id);
+        return $this->db->single() ?: null;
+    }
 }
 ?>

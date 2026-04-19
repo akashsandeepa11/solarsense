@@ -269,12 +269,16 @@ class M_inventory
     public function get_orders_by_status($status)
     {
         $this->db->query("
-            SELECT o.order_id, o.user_id, o.total_amount, o.status, o.date,
+            SELECT o.order_id, o.user_id, o.agent_id, o.total_amount, o.status, o.date,
+                   u1.full_name AS customer_name,
+                   u2.full_name AS agent_name,
                    COUNT(oi.order_item_id) as item_count
             FROM orders o
+            JOIN user u1 ON o.user_id = u1.user_id
+            LEFT JOIN user u2 ON o.agent_id = u2.user_id
             LEFT JOIN order_item oi ON oi.order_id = o.order_id
             WHERE o.status = :status
-            GROUP BY o.order_id, o.user_id, o.total_amount, o.status, o.date
+            GROUP BY o.order_id, u1.full_name, u2.full_name, o.agent_id, o.total_amount, o.status, o.date
             ORDER BY o.date DESC
         ");
         $this->db->bind(':status', $status);
@@ -407,6 +411,98 @@ class M_inventory
         $this->db->bind(':company_id', $company_id);
         $rows = $this->db->resultSet();
         return $rows ? array_column(array_map('get_object_vars', $rows), 'user_id') : [];
+    }
+
+    /**
+     * Get all purchase orders assigned to the currently logged-in service agent.
+     * Excludes completed orders so the agent's delivery list stays tidy.
+     */
+    public function get_agent_orders(): array
+    {
+        try {
+            $this->db->query("
+                SELECT
+                    o.order_id,
+                    o.user_id,
+                    o.agent_id,
+                    o.total_amount,
+                    o.status,
+                    o.date,
+                    u.full_name  AS customer_name,
+                    COUNT(oi.order_item_id) AS item_count
+                FROM orders o
+                JOIN user u ON o.user_id = u.user_id
+                LEFT JOIN order_item oi ON oi.order_id = o.order_id
+                WHERE o.agent_id = :agent_id
+                  AND o.status <> 'completed'
+                GROUP BY o.order_id, o.user_id, o.agent_id, o.total_amount, o.status, o.date, u.full_name
+                ORDER BY o.date DESC
+            ");
+            $this->db->bind(':agent_id', (int)($_SESSION['user_id'] ?? 0));
+            return $this->db->resultSet() ?: [];
+        } catch (Exception $e) {
+            error_log('get_agent_orders failed: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Get a single order with full item details for the view modal.
+     */
+    public function get_order_with_items(int $order_id): ?object
+    {
+        try {
+            // Order header
+            $this->db->query("
+                SELECT o.*, u.full_name AS customer_name
+                FROM orders o
+                JOIN user u ON o.user_id = u.user_id
+                WHERE o.order_id = :order_id
+                LIMIT 1
+            ");
+            $this->db->bind(':order_id', $order_id);
+            $order = $this->db->single();
+            if (!$order) return null;
+
+            // Order items
+            $this->db->query("
+                SELECT
+                    oi.order_item_id,
+                    oi.quantity,
+                    i.item_name,
+                    i.unit_price,
+                    (oi.quantity * i.unit_price) AS line_total
+                FROM order_item oi
+                JOIN inventory i ON oi.inventory_id = i.inventory_id
+                WHERE oi.order_id = :order_id
+            ");
+            $this->db->bind(':order_id', $order_id);
+            $order->items = $this->db->resultSet() ?: [];
+            return $order;
+        } catch (Exception $e) {
+            error_log('get_order_with_items failed: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Update order status — used by service agents (pending → in_progress → completed).
+     */
+    public function update_order_status_for_agent(int $order_id, string $status): bool
+    {
+        try {
+            $this->db->query("
+                UPDATE orders SET status = :status
+                WHERE order_id = :order_id AND agent_id = :agent_id
+            ");
+            $this->db->bind(':status',   $status);
+            $this->db->bind(':order_id', $order_id);
+            $this->db->bind(':agent_id', (int)($_SESSION['user_id'] ?? 0));
+            return $this->db->execute();
+        } catch (Exception $e) {
+            error_log('update_order_status_for_agent failed: ' . $e->getMessage());
+            return false;
+        }
     }
 }
 

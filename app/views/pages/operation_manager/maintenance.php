@@ -262,14 +262,18 @@ function getMaintenanceStatusClass($status)
                 'label' => 'Assign',
                 'icon' => 'fas fa-user-plus',
                 'class' => 'btn-sm btn-success',
+                'condition' => function($row) {
+                    $status = strtolower($row->status ?? '');
+                    return empty($row->agent_id) && $status !== 'completed';
+                },
                 'onclick' => 'onclick="openAssignModal(&quot;{task_id}&quot;, &quot;{service_type}&quot;, &quot;{customer_name}&quot;, &quot;{agent_id}&quot;)"'
             ],
-            [
-                'label' => 'Delete',
-                'icon' => 'fas fa-trash',
-                'class' => 'btn-icon-danger',
-                'onclick' => 'onclick="openDeleteModal(&quot;{task_id}&quot;, &quot;{service_type}&quot;, &quot;{customer_name}&quot;)"'
-            ]
+            // [
+            //     'label' => 'Delete',
+            //     'icon' => 'fas fa-trash',
+            //     'class' => 'btn-icon-danger',
+            //     'onclick' => 'onclick="openDeleteModal(&quot;{task_id}&quot;, &quot;{service_type}&quot;, &quot;{customer_name}&quot;)"'
+            // ]
         ],
         'empty_message' => 'No maintenance tasks found.'
     ];

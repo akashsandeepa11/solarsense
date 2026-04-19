@@ -12,31 +12,43 @@ class ServiceAgent extends Controller
     private $reportModel;
     private $teamModel;
     private $profileModel;
+    private $inventoryModel;
+
 
 
 
     public function __construct()
     {
-        $this->taskModel = $this->model('M_maintenance_task');
-        $this->historyModel = $this->model('M_maintenance_history');
-        $this->reportModel = $this->model('M_maintenance_report');
-        $this->teamModel         = $this->model('M_Team');
-        $this->profileModel      = $this->model('M_Profile');
+        $this->taskModel      = $this->model('M_maintenance_task');
+        $this->historyModel   = $this->model('M_maintenance_history');
+        $this->reportModel    = $this->model('M_maintenance_report');
+        $this->teamModel      = $this->model('M_Team');
+        $this->profileModel   = $this->model('M_Profile');
+        $this->inventoryModel = $this->model('M_inventory');
+
     }
 
-    public function tasks($page = '', $task_id = null)
+    public function tasks($tab = 'tasks', $task_id = null)
     {
-
-        if ($page === 'maintenance_report' && $task_id) {
-            $this->maintenance_report($task_id);
+        // Sub-route: maintenance report form
+        if ($tab === 'maintenance_report' && $task_id) {
+            $this->maintenance_report((int)$task_id);
             return;
         }
 
-        $tasks = $this->taskModel->get_agent_tasks();
+        // Sub-route: installation report form
+        if ($tab === 'delivery_report' && $task_id) {
+            $this->delivery_report((int)$task_id);
+            return;
+        }
+
+        $activeTab = in_array($tab, ['tasks', 'installations']) ? $tab : 'tasks';
 
         $data = [
-            'user' => $this->user,
-            'tasks' => $tasks,
+            'user'       => $this->user,
+            'active_tab' => $activeTab,
+            'tasks'      => $this->taskModel->get_agent_tasks(),
+            'orders'     => $this->inventoryModel->get_agent_orders(),
         ];
 
         $this->view('pages/service_agent/task', $data, layout: 'dashboard');
@@ -72,11 +84,10 @@ class ServiceAgent extends Controller
 
     public function history()
     {
-
-        $history = $this->historyModel->get_agent_history();
+        $history = $this->historyModel->get_agent_full_history();
 
         $data = [
-            'user' => $this->user,
+            'user'    => $this->user,
             'history' => $history,
         ];
 
@@ -98,7 +109,7 @@ class ServiceAgent extends Controller
     public function reports()
     {
         $tasks   = $this->taskModel->get_agent_tasks()       ?? [];
-        $history = $this->historyModel->get_agent_history()  ?? [];
+        $history = $this->historyModel->get_agent_full_history()  ?? [];
 
         $data = [
             'user'    => $this->user,
@@ -215,6 +226,130 @@ class ServiceAgent extends Controller
         $this->view('pages/service_agent/report', $data, 'dashboard');
 
 
+    }
+
+    /**
+     * AJAX: return order items as JSON for the installation detail modal.
+     * GET /serviceagent/order_items/{order_id}
+     */
+    public function order_items($order_id = null)
+    {
+        header('Content-Type: application/json');
+        $order = $this->inventoryModel->get_order_with_items((int)$order_id);
+        if (!$order) { echo json_encode([]); exit; }
+        echo json_encode($order->items ?? []);
+        exit;
+    }
+
+    // --- Installations tab (alias → tasks/installations) ---
+    public function deliveries($page = '', $order_id = null)
+    {
+        // Delivery report sub-route
+        if ($page === 'delivery_report' && $order_id) {
+            $this->delivery_report((int)$order_id);
+            return;
+        }
+        // Redirect all other deliveries URLs to the installations tab
+        redirect('serviceagent/tasks/installations');
+    }
+
+    /**
+     * AJAX endpoint: update order status (pending → in_progress)
+     * POST /serviceagent/update_order_status
+     */
+    public function update_order_status()
+    {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request']);
+            exit;
+        }
+
+        $order_id = intval($_POST['order_id'] ?? 0);
+        $status   = trim($_POST['status'] ?? '');
+        $allowed  = ['pending', 'in_progress', 'completed'];
+
+        if (!$order_id || !in_array($status, $allowed)) {
+            echo json_encode(['success' => false, 'message' => 'Invalid parameters']);
+            exit;
+        }
+
+        $result = $this->inventoryModel->update_order_status_for_agent($order_id, $status);
+        echo json_encode(['success' => (bool)$result]);
+        exit;
+    }
+
+    /**
+     * Delivery report: show form (GET) and handle submission (POST).
+     */
+    public function delivery_report(int $order_id)
+    {
+        // Verify the order belongs to this agent
+        $order = $this->inventoryModel->get_order_with_items($order_id);
+        if (!$order || (int)$order->agent_id !== (int)($_SESSION['user_id'] ?? 0)) {
+            setToast('Order not found or access denied.', 'error');
+            redirect('serviceagent/deliveries');
+            return;
+        }
+
+        $data = [
+            'user'               => $this->user,
+            'order'              => $order,
+            'order_id'           => $order_id,
+            'actions_taken'      => '',
+            'time_spent'         => '',
+            'final_status'       => '',
+            'technician_notes'   => '',
+            'completion_date'    => date('Y-m-d'),
+            'actions_taken_err'  => '',
+            'time_spent_err'     => '',
+            'final_status_err'   => '',
+            'completion_date_err'=> '',
+        ];
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delivery_report_submitted'])) {
+            $data['actions_taken']    = trim($_POST['actions_taken']    ?? '');
+            $data['time_spent']       = floatval($_POST['time_spent']   ?? 0);
+            $data['final_status']     = trim($_POST['final_status']     ?? '');
+            $data['technician_notes'] = trim($_POST['technician_notes'] ?? '');
+            $data['completion_date']  = trim($_POST['completion_date']  ?? '');
+
+            if ($data['actions_taken'] === '')  $data['actions_taken_err']  = 'Actions taken is required';
+            if ($data['time_spent'] <= 0)       $data['time_spent_err']     = 'Time spent must be > 0';
+            if ($data['final_status'] === '')   $data['final_status_err']   = 'Final status is required';
+            if ($data['completion_date'] === '') $data['completion_date_err'] = 'Completion date is required';
+
+            if (
+                empty($data['actions_taken_err'])  &&
+                empty($data['time_spent_err'])     &&
+                empty($data['final_status_err'])   &&
+                empty($data['completion_date_err'])
+            ) {
+                $reportData = [
+                    'order_id'         => $order_id,
+                    'agent_id'         => $_SESSION['user_id'] ?? null,
+                    'actions_taken'    => $data['actions_taken'],
+                    'replaced_parts'   => '',
+                    'time_spent'       => $data['time_spent'],
+                    'completion_date'  => date('Y-m-d', strtotime($data['completion_date'])),
+                    'technician_notes' => $data['technician_notes'],
+                    'final_status'     => $data['final_status'],
+                ];
+
+                if ($this->reportModel->insertDeliveryReportAndCompleteOrder($reportData)) {
+                    setToast('Installation report submitted successfully!', 'success');
+                    redirect('serviceagent/tasks/installations');
+                    return;
+                }
+
+                setToast('Failed to submit installation report. Please try again.', 'error');
+            } else {
+                setToast('Please fill in all required fields.', 'error');
+            }
+        }
+
+        $this->view('pages/service_agent/delivery_report', $data, 'dashboard');
     }
 
     // --- Notifications ---

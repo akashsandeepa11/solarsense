@@ -88,12 +88,16 @@ $orderRows = array_map(function ($o) {
     <!-- Filter Bar -->
     <div class="card shadow-sm rounded-xl mb-4 mt-6">
         <div class="card-body">
-            <form method="GET" action="<?php echo URLROOT; ?>/inventorymanager/purchases"
-                class="d-flex flex-wrap gap-4 align-center">
+            <?php 
+            $filterBaseUrl = ($data['user']['role'] === ROLE_OPERATION_MANAGER) 
+                ? URLROOT . '/operationmanager/maintenance/purchases/'
+                : URLROOT . '/inventorymanager/purchases/';
+            ?>
+            <div class="d-flex flex-wrap gap-4 align-center">
                 <input type="text" id="searchInput" placeholder="Search by order #..." class="form-control"
                     style="max-width:220px;">
                 <select name="statusFilter" id="statusFilter" class="form-control" style="max-width:180px;"
-                    onchange="this.form.submit()">
+                    onchange="window.location.href='<?php echo $filterBaseUrl; ?>' + this.value">
                     <option value="all" <?php echo $statusFilter === 'all' ? 'selected' : ''; ?>>All Status</option>
                     <option value="pending" <?php echo $statusFilter === 'pending' ? 'selected' : ''; ?>>Pending</option>
                     <option value="completed" <?php echo $statusFilter === 'completed' ? 'selected' : ''; ?>>Completed
@@ -101,7 +105,7 @@ $orderRows = array_map(function ($o) {
                     <option value="cancelled" <?php echo $statusFilter === 'cancelled' ? 'selected' : ''; ?>>Cancelled
                     </option>
                 </select>
-            </form>
+            </div>
         </div>
     </div>
 
@@ -184,6 +188,10 @@ $orderRows = array_map(function ($o) {
                     'label' => 'Assign',
                     'icon' => 'fas fa-user-plus',
                     'class' => 'btn-sm btn-success',
+                    'condition' => function($row) {
+                        $status = strtolower($row->status ?? '');
+                        return empty($row->agent_id) && $status !== 'completed';
+                    },
                     'onclick' => 'onclick="openAssignModal(\'{order_id}\', \'{customer_name}\', \'{agent_id}\')"'
                 ],
                 // [
@@ -231,7 +239,7 @@ $orderRows = array_map(function ($o) {
         document.getElementById('searchInput').addEventListener('input', function () {
             const q = this.value.toLowerCase();
             document.querySelectorAll('tbody tr').forEach(row => {
-                const text = row.querySelector('td')?.textContent?.toLowerCase() ?? '';
+                const text = row.textContent.toLowerCase();
                 row.style.display = text.includes(q) ? '' : 'none';
             });
         });

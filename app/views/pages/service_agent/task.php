@@ -1,11 +1,11 @@
 <?php
-// Map real DB tasks to the format expected by the JS
-// NOTE: Controller::view() does NOT call extract($data), so use $data['tasks']
-$rawTasks = $data['tasks'] ?? [];
+$rawTasks   = $data['tasks']  ?? [];
+$rawOrders  = $data['orders'] ?? [];
+$activeTab  = $data['active_tab'] ?? 'tasks';
+
+// Map tasks
 $mappedTasks = [];
 foreach ($rawTasks as $t) {
-    // DB status: 'Pending' | 'In Progress' | 'Completed'
-    // JS status keys: 'pending' | 'in-progress' | 'completed'
     $dbStatus = $t->status ?? 'Pending';
     $jsStatus = match(strtolower(trim($dbStatus))) {
         'in progress', 'in-progress' => 'in-progress',
@@ -13,28 +13,46 @@ foreach ($rawTasks as $t) {
         default                       => 'pending',
     };
     $mappedTasks[] = [
-        'id'       => $t->task_id,
-        'title'    => $t->title    ?? 'Untitled Task',
-        'customer' => $t->customer ?? 'Unknown Customer',
-        'date'     => $t->date     ? date('Y-m-d', strtotime($t->date)) : 'N/A',
-        'notes'    => $t->notes    ?? '',
-        'address'  => $t->address  ?? 'N/A',
+        'id'             => $t->task_id,
+        'title'          => $t->title    ?? 'Untitled Task',
+        'customer'       => $t->customer ?? 'Unknown Customer',
+        'date'           => $t->date     ? date('Y-m-d', strtotime($t->date)) : 'N/A',
+        'notes'          => $t->notes    ?? '',
+        'address'        => $t->address  ?? 'N/A',
         'contact_number' => $t->contact_number ?? 'N/A',
-        'status'   => $jsStatus,
+        'status'         => $jsStatus,
     ];
 }
 
-
-
-// var_dump($mappedTasks);
+// Map orders (installations)
+$mappedOrders = [];
+foreach ($rawOrders as $o) {
+    $dbStatus = $o->status ?? 'pending';
+    $jsStatus = match(strtolower(trim($dbStatus))) {
+        'in_progress', 'in progress' => 'in-progress',
+        'completed'                  => 'completed',
+        default                      => 'pending',
+    };
+    $mappedOrders[] = [
+        'id'           => $o->order_id,
+        'order_id'     => $o->order_id,
+        'customer'     => $o->customer_name ?? 'Unknown',
+        'date'         => $o->date ? date('Y-m-d', strtotime($o->date)) : 'N/A',
+        'total_amount' => 'LKR ' . number_format($o->total_amount ?? 0, 2),
+        'item_count'   => (int)($o->item_count ?? 0),
+        'status'       => $jsStatus,
+    ];
+}
 ?>
+
+<link rel="stylesheet" href="<?php echo URLROOT ?>/css/pages/installer_admin/managers.css">
 
 <div class="content-area" style="padding: 1.5rem;">
     <!-- Page Header -->
     <?php
     $config = [
         'title'       => 'My Tasks',
-        'description' => 'Manage and track your assigned service tasks',
+        'description' => 'Manage your assigned service tasks and installation jobs',
         'buttons'     => [
             [
                 'label'   => 'Download PDF',
@@ -46,6 +64,23 @@ foreach ($rawTasks as $t) {
     ];
     include __DIR__ . '/../../inc/components/page_header.php';
     ?>
+
+    <!-- Tab Bar (mirrors OP Manager maintenance tabs) -->
+    <div class="managers-tabs mb-4">
+        <div class="tabs-container">
+            <a href="<?php echo URLROOT; ?>/serviceagent/tasks"
+               class="tab-item <?php echo $activeTab === 'tasks' ? 'active' : ''; ?>">
+                <i class="fas fa-clipboard-list"></i><span>My Tasks</span>
+            </a>
+            <a href="<?php echo URLROOT; ?>/serviceagent/tasks/installations"
+               class="tab-item <?php echo $activeTab === 'installations' ? 'active' : ''; ?>">
+                <i class="fas fa-solar-panel"></i><span>Installations</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ═══════════════════ MY TASKS TAB ═══════════════════ -->
+    <?php if ($activeTab === 'tasks'): ?>
 
     <!-- Summary Cards -->
     <?php
@@ -142,6 +177,59 @@ foreach ($rawTasks as $t) {
             <p class="text-secondary mb-0">There are no tasks matching your search criteria.</p>
         </div>
     </div>
+
+    <?php endif; /* end tasks tab */ ?>
+
+    <!-- ═══════════════════ INSTALLATIONS TAB ═══════════════════ -->
+    <?php if ($activeTab === 'installations'): ?>
+
+    <!-- Summary Cards -->
+    <?php
+    $config = [
+        'stats' => [
+            ['label' => 'Pending',     'value' => count(array_filter($mappedOrders, fn($o) => $o['status'] === 'pending')),     'icon' => 'fas fa-clock',                'color' => 'warning'],
+            ['label' => 'In Progress', 'value' => count(array_filter($mappedOrders, fn($o) => $o['status'] === 'in-progress')), 'icon' => 'fas fa-screwdriver-wrench',   'color' => 'primary'],
+        ]
+    ];
+    include __DIR__ . '/../../inc/components/stat_card.php';
+    ?>
+
+    <!-- Filter Bar -->
+    <?php
+    $config = [
+        'search'          => ['id' => 'orderSearchBar', 'name' => 'search', 'label' => 'Search Installations', 'placeholder' => 'Search by order # or customer...'],
+        'filters'         => [
+            ['id' => 'orderStatusFilter', 'name' => 'status', 'label' => 'Status', 'options' => [
+                ['value' => 'all',         'label' => 'All Status'],
+                ['value' => 'pending',     'label' => 'Pending'],
+                ['value' => 'in-progress', 'label' => 'In Progress'],
+            ]]
+        ],
+        'buttons'         => [],
+        'form_action'     => '',
+        'form_method'     => 'GET',
+        'auto_submit'     => false,
+        'reset_on_clear'  => false,
+        'result_count'    => true,
+        'result_count_id' => 'orderResultCount'
+    ];
+    include __DIR__ . '/../../inc/components/filter_bar.php';
+    ?>
+
+    <!-- Order Card List -->
+    <div id="orderList"></div>
+
+    <!-- Empty State (installations) -->
+    <div id="orderEmptyState" class="card shadow-sm rounded-xl" style="display: none;">
+        <div class="card-body text-center" style="padding: 3rem;">
+            <i class="fas fa-solar-panel text-secondary" style="font-size: 4rem; opacity: 0.3;"></i>
+            <h4 class="mt-4 mb-2">No Installation Tasks Found</h4>
+            <p class="text-secondary mb-0">There are no purchase orders assigned to you for installation right now.</p>
+        </div>
+    </div>
+
+    <?php endif; /* end installations tab */ ?>
+
 </div>
 
 <!-- View Task Modal -->
@@ -258,7 +346,6 @@ include __DIR__ . '/../../inc/models/confirmation_modal.php';
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     margin-bottom: 1rem;
-    border-left: 4px solid #ccc;
     transition: all 0.3s ease;
     display: flex;
     justify-content: space-between;
@@ -272,17 +359,7 @@ include __DIR__ . '/../../inc/models/confirmation_modal.php';
     transform: translateY(-2px);
 }
 
-.task-card.priority-high {
-    border-left-color: #ef4444;
-}
 
-.task-card.priority-medium {
-    border-left-color: #f59e0b;
-}
-
-.task-card.priority-low {
-    border-left-color: #22c55e;
-}
 
 .task-info {
     flex: 1;
@@ -483,6 +560,7 @@ include __DIR__ . '/../../inc/models/confirmation_modal.php';
 }
 </style>
 <script>
+<?php if ($activeTab === 'tasks'): ?>
 // Safely encode PHP array into JS
 const tasks = <?php echo json_encode(
     $mappedTasks,
@@ -726,6 +804,192 @@ function buildAndDownloadTasksPdf(btn) {
     }, btn);
 }
 
+<?php endif; /* end tasks tab JS */ ?>
+
+<?php if ($activeTab === 'installations'): ?>
+// ── INSTALLATIONS TAB JS ──────────────────────────────────────────────────
+const orders = <?php echo json_encode($mappedOrders, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
+const orderList         = document.getElementById('orderList');
+const orderSearchBar    = document.getElementById('orderSearchBar');
+const orderStatusFilter = document.getElementById('orderStatusFilter');
+const orderEmptyState   = document.getElementById('orderEmptyState');
+let currentOrder = null;
+
+function persistOrderStatus(orderId, newStatus) {
+    const fd = new FormData();
+    fd.append('order_id', orderId);
+    fd.append('status', newStatus);
+    fetch('<?php echo URLROOT ?>/serviceagent/update_order_status', { method: 'POST', body: fd })
+        .catch(e => console.error('Order status update failed', e));
+}
+
+function loadOrderItems(orderId) {
+    const tbody   = document.getElementById('orderItemsBody');
+    const loading = document.getElementById('orderItemsLoading');
+    tbody.innerHTML = '';
+    loading.style.display = 'block';
+    fetch('<?php echo URLROOT ?>/serviceagent/order_items/' + orderId)
+        .then(r => r.json())
+        .then(items => {
+            loading.style.display = 'none';
+            if (!items || items.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-secondary py-3">No items found.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = items.map(item => `
+                <tr>
+                    <td>${item.item_name}</td>
+                    <td class="text-center">${item.quantity}</td>
+                    <td class="text-right">LKR ${parseFloat(item.unit_price).toFixed(2)}</td>
+                    <td class="text-right">LKR ${parseFloat(item.line_total).toFixed(2)}</td>
+                </tr>
+            `).join('');
+        })
+        .catch(() => {
+            loading.style.display = 'none';
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-secondary py-3">Failed to load items.</td></tr>';
+        });
+}
+
+function openOrderModal(order) {
+    currentOrder = order;
+    const statusLabel = { 'pending': 'Pending', 'in-progress': 'In Progress', 'completed': 'Completed' }[order.status] || order.status;
+    document.getElementById('modalOrderId').textContent      = '#' + order.order_id;
+    document.getElementById('modalOrderCustomer').textContent= order.customer;
+    document.getElementById('modalOrderDate').textContent    = order.date;
+    document.getElementById('modalOrderTotal').textContent   = order.total_amount;
+    const statusBadge = document.getElementById('modalOrderStatus');
+    statusBadge.className = `badge status-${order.status}`;
+    statusBadge.textContent = statusLabel;
+
+    const startBtn    = document.getElementById('modalStartBtn');
+    const completeBtn = document.getElementById('modalCompleteBtn');
+    startBtn.style.display = completeBtn.style.display = 'none';
+    if (order.status === 'pending')     { startBtn.style.display    = 'inline-flex'; }
+    if (order.status === 'in-progress') { completeBtn.style.display = 'inline-flex'; }
+
+    loadOrderItems(order.order_id);
+    const modal = document.getElementById('orderModal');
+    modal.style.display = 'flex';
+    modal.classList.add('show');
+}
+
+function closeOrderModal() {
+    const modal = document.getElementById('orderModal');
+    modal.classList.remove('show');
+    modal.style.display = 'none';
+}
+
+function confirmStartDelivery() {
+    if (!currentOrder) return;
+    currentOrder.status = 'in-progress';
+    persistOrderStatus(currentOrder.id, 'in_progress');
+    renderOrders();
+    closeConfirmationModal('startInstallModal');
+}
+
+function confirmCompleteDelivery() {
+    if (!currentOrder) return;
+    closeConfirmationModal('completeInstallModal');
+    window.location.href = '<?php echo URLROOT ?>/serviceagent/tasks/delivery_report/' + currentOrder.id;
+}
+
+function renderOrders() {
+    orderList.innerHTML = '';
+    const q  = orderSearchBar.value.toLowerCase();
+    const sf = orderStatusFilter.value;
+    const filtered = orders.filter(o => {
+        const matchSearch = ('#' + o.order_id).toLowerCase().includes(q) || o.customer.toLowerCase().includes(q);
+        const matchStatus = sf === 'all' || o.status === sf;
+        return matchSearch && matchStatus;
+    });
+    const rc = document.getElementById('orderResultCount');
+    if (rc) rc.textContent = filtered.length;
+    orderEmptyState.style.display = filtered.length === 0 ? 'block' : 'none';
+    if (filtered.length === 0) return;
+
+    const statusLabel = { 'pending': 'Pending', 'in-progress': 'In Progress', 'completed': 'Completed' };
+    filtered.forEach(order => {
+        const card = document.createElement('div');
+        card.className = 'task-card';
+        let actionBtns = '';
+        if (order.status === 'pending')     actionBtns = `<button class="btn btn-sm btn-primary start-btn"><i class="fas fa-play mr-1"></i>Start</button>`;
+        if (order.status === 'in-progress') actionBtns = `<button class="btn btn-sm btn-success done-btn"><i class="fas fa-check mr-1"></i>Complete</button>`;
+        card.innerHTML = `
+            <div class="task-info">
+                <h3><i class="fas fa-hashtag mr-1 text-secondary" style="font-size:.9rem;"></i>Order #${order.order_id}</h3>
+                <p><i class="fas fa-user"></i> ${order.customer}</p>
+                <p><i class="fas fa-calendar"></i> ${order.date}</p>
+                <p><i class="fas fa-coins"></i> ${order.total_amount} &nbsp;&middot;&nbsp; ${order.item_count} item${order.item_count !== 1 ? 's' : ''} to install</p>
+            </div>
+            <div class="task-actions">
+                <span class="badge status-${order.status}">${statusLabel[order.status] || order.status}</span>
+                <button class="btn btn-sm btn-info view-btn"><i class="fas fa-eye mr-1"></i>View</button>
+                ${actionBtns}
+            </div>
+        `;
+        card.querySelector('.view-btn').addEventListener('click', () => openOrderModal(order));
+        const startBtn = card.querySelector('.start-btn');
+        if (startBtn) startBtn.addEventListener('click', () => { currentOrder = order; showConfirmationModal('startInstallModal'); });
+        const doneBtn = card.querySelector('.done-btn');
+        if (doneBtn) doneBtn.addEventListener('click', () => { currentOrder = order; showConfirmationModal('completeInstallModal'); });
+        orderList.appendChild(card);
+    });
+}
+
+orderSearchBar.addEventListener('input', renderOrders);
+orderStatusFilter.addEventListener('change', renderOrders);
+renderOrders();
+<?php endif; ?>
+
 </script>
+
+<?php if ($activeTab === 'installations'): ?>
+<!-- View Order Modal -->
+<div id="orderModal" class="custom-modal" style="display: none;">
+    <div class="modal-overlay" onclick="closeOrderModal()"></div>
+    <div class="modal-dialog" style="max-width: 700px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-solar-panel text-primary mr-2"></i>Installation Task Details</h5>
+                <button type="button" class="btn-close" onclick="closeOrderModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6"><label class="text-secondary text-sm mb-1">Order #</label><p class="mb-0 font-semibold" id="modalOrderId"></p></div>
+                    <div class="col-md-6"><label class="text-secondary text-sm mb-1">Customer</label><p class="mb-0 font-semibold" id="modalOrderCustomer"></p></div>
+                    <div class="col-md-6"><label class="text-secondary text-sm mb-1">Date</label><p class="mb-0 font-semibold" id="modalOrderDate"></p></div>
+                    <div class="col-md-6"><label class="text-secondary text-sm mb-1">Total</label><p class="mb-0 font-semibold" id="modalOrderTotal"></p></div>
+                    <div class="col-md-6"><label class="text-secondary text-sm mb-1">Status</label><p class="mb-0"><span id="modalOrderStatus" class="badge"></span></p></div>
+                </div>
+                <h6 class="font-semibold mb-3"><i class="fas fa-list mr-2 text-primary"></i>Items to Install</h6>
+                <div id="orderItemsLoading" class="text-center py-3" style="display:none;"><i class="fas fa-spinner fa-spin text-primary"></i> Loading...</div>
+                <div class="table-responsive">
+                    <table class="data-table" style="font-size:.9rem;">
+                        <thead><tr><th>Item</th><th class="text-center">Qty</th><th class="text-right">Unit Price</th><th class="text-right">Line Total</th></tr></thead>
+                        <tbody id="orderItemsBody"><tr><td colspan="4" class="text-center text-secondary py-3">Loading items...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-secondary" onclick="closeOrderModal()"><i class="fas fa-times mr-2"></i>Close</button>
+                <button type="button" id="modalStartBtn" class="btn btn-sm btn-primary" style="display:none;" onclick="closeOrderModal();showConfirmationModal('startInstallModal');"><i class="fas fa-play mr-2"></i>Start Installation</button>
+                <button type="button" id="modalCompleteBtn" class="btn btn-sm btn-success" style="display:none;" onclick="closeOrderModal();showConfirmationModal('completeInstallModal');"><i class="fas fa-check mr-2"></i>Complete &amp; Report</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Start Installation Confirmation -->
+<?php
+$config = ['modal_id' => 'startInstallModal', 'title' => 'Start Installation', 'icon' => 'fas fa-screwdriver-wrench', 'icon_color' => 'text-primary', 'heading' => 'Start this installation task?', 'message' => "You are about to start installing the purchased items on the homeowner's solar system.", 'confirm_text' => 'Start Installation', 'cancel_text' => 'Cancel', 'confirm_action' => 'confirmStartDelivery()', 'confirm_method' => 'onclick', 'confirm_class' => 'btn-primary', 'confirm_icon' => 'fas fa-play'];
+include __DIR__ . '/../../inc/models/confirmation_modal.php';
+?>
+<!-- Complete Installation Confirmation -->
+<?php
+$config = ['modal_id' => 'completeInstallModal', 'title' => 'Complete Installation', 'icon' => 'fas fa-check-circle', 'icon_color' => 'text-success', 'heading' => 'Mark installation as complete?', 'message' => 'You will be taken to the installation report form to finalise this task.', 'confirm_text' => 'Continue to Report', 'cancel_text' => 'Cancel', 'confirm_action' => 'confirmCompleteDelivery()', 'confirm_method' => 'onclick', 'confirm_class' => 'btn-success', 'confirm_icon' => 'fas fa-arrow-right'];
+include __DIR__ . '/../../inc/models/confirmation_modal.php';
+?>
+<?php endif; ?>
 
 <?php require APPROOT . '/views/inc/components/report_downloader.php'; ?>
