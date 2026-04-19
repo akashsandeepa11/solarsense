@@ -19,12 +19,23 @@ foreach ($rawTasks as $t) {
 
 $mappedHistory = [];
 foreach ($rawHistory as $h) {
+    $isInstall = ($h->task_id === null || $h->task_id === '') && $h->order_id !== null;
+
+    if ($isInstall) {
+        $title = 'Order #' . $h->linked_order_id . ' — Installation';
+        $customer = $h->order_customer ?? 'N/A';
+    } else {
+        $title = $h->task_title ?? 'Service Task';
+        $customer = $h->task_customer ?? 'N/A';
+    }
+
     $mappedHistory[] = [
-        'title'    => $h->title    ?? 'Untitled',
-        'customer' => $h->customer ?? 'N/A',
-        'address'  => $h->address  ?? 'N/A',
-        'date'     => $h->date     ?? 'N/A',
-        'notes'    => $h->notes    ?? '',
+        'title'        => $title,
+        'customer'     => $customer,
+        'date'         => $h->completion_date ? date('Y-m-d', strtotime($h->completion_date)) : 'N/A',
+        'actions'      => $h->actions_taken ?? '—',
+        'final_status' => $h->final_status ?? '—',
+        'time_spent'   => $h->time_spent ?? '—',
     ];
 }
 
@@ -114,20 +125,20 @@ $totalHistory  = count($mappedHistory);
         </div>
     </div>
 
-    <!-- ── SECTION 2 : Task History ──────────────────────────────── -->
+    <!-- ── SECTION 2 : Service Reports ──────────────────────────────── -->
     <div class="rp-section-header mb-4 mt-6">
         <div>
-            <h2 class="rp-section-title">Task History</h2>
+            <h2 class="rp-section-title">Service Reports</h2>
             <p class="rp-section-sub">
-                <?php echo $totalHistory ?> completed task<?php echo $totalHistory != 1 ? 's' : '' ?>
+                <?php echo $totalHistory ?> service report<?php echo $totalHistory != 1 ? 's' : '' ?>
             </p>
         </div>
         <?php
         $config = [
             'table_selector' => '.history-report-table',
-            'report_title'   => 'Task History Report',
-            'report_subtitle'=> 'Completed service task history',
-            'columns'        => ['Task', 'Customer', 'Address', 'Date', 'Notes'],
+            'report_title'   => 'Service Reports',
+            'report_subtitle'=> 'Completed tasks and installations reports',
+            'columns'        => ['Job', 'Customer', 'Completed Date', 'Actions', 'Final Status', 'Time Spent (Hrs)'],
             'btn_id'         => 'btn-history-pdf',
         ];
         require APPROOT . '/views/inc/components/download_report_btn.php';
@@ -141,11 +152,12 @@ $totalHistory  = count($mappedHistory);
                     <table class="table table-hover mb-0 history-report-table">
                         <thead class="table-light">
                             <tr>
-                                <th>Task</th>
+                                <th>Job</th>
                                 <th>Customer</th>
-                                <th>Address</th>
-                                <th>Date</th>
-                                <th>Notes</th>
+                                <th>Completed Date</th>
+                                <th>Actions</th>
+                                <th>Status</th>
+                                <th>Time (Hrs)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -153,9 +165,18 @@ $totalHistory  = count($mappedHistory);
                             <tr>
                                 <td class="font-semibold"><?php echo htmlspecialchars($h['title']) ?></td>
                                 <td><?php echo htmlspecialchars($h['customer']) ?></td>
-                                <td><?php echo htmlspecialchars($h['address']) ?></td>
                                 <td><?php echo htmlspecialchars($h['date']) ?></td>
-                                <td class="text-secondary text-sm"><?php echo htmlspecialchars($h['notes'] ?: '—') ?></td>
+                                <td class="text-secondary text-sm"><?php echo htmlspecialchars($h['actions']) ?></td>
+                                <td>
+                                    <?php
+                                    $sClass = match(strtolower(trim($h['final_status']))) {
+                                        'resolved', 'success', 'completed', 'done' => 'badge-success',
+                                        default => 'badge-info',
+                                    };
+                                    ?>
+                                    <span class="badge <?php echo $sClass ?>"><?php echo htmlspecialchars($h['final_status']) ?></span>
+                                </td>
+                                <td class="text-center"><?php echo htmlspecialchars($h['time_spent']) ?></td>
                             </tr>
                             <?php endforeach ?>
                         </tbody>
@@ -163,8 +184,8 @@ $totalHistory  = count($mappedHistory);
                 </div>
             <?php else: ?>
                 <div class="text-center py-8">
-                    <i class="fas fa-history text-4xl text-secondary opacity-50 mb-3 d-block"></i>
-                    <p class="text-secondary">No completed tasks in history.</p>
+                    <i class="fas fa-file-contract text-4xl text-secondary opacity-50 mb-3 d-block"></i>
+                    <p class="text-secondary">No service reports found.</p>
                 </div>
             <?php endif ?>
         </div>
