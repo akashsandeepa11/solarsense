@@ -38,9 +38,18 @@ function getStatusClass($status)
         border-radius: 50%;
         flex-shrink: 0;
     }
-    .status-dot.bg-success { background-color: #22c55e !important; }
-    .status-dot.bg-warning { background-color: #f59e0b !important; }
-    .status-dot.bg-secondary { background-color: #9ca3af !important; }
+
+    .status-dot.bg-success {
+        background-color: #22c55e !important;
+    }
+
+    .status-dot.bg-warning {
+        background-color: #f59e0b !important;
+    }
+
+    .status-dot.bg-secondary {
+        background-color: #9ca3af !important;
+    }
 
     .agent-details {
         display: flex;
@@ -48,6 +57,7 @@ function getStatusClass($status)
         gap: 0.25rem;
         min-width: 0;
     }
+
     .agent-name {
         font-size: 0.95rem;
         color: #212121;
@@ -58,13 +68,13 @@ function getStatusClass($status)
 <div class="container-fluid p-8">
     <?php
     $config = [
-        'title'       => 'Quotation Management',
+        'title' => 'Quotation Management',
         'description' => 'Manage system quotations for your clients.',
-        'buttons'     => [
+        'buttons' => [
             [
-                'label'   => 'Download PDF',
-                'icon'    => 'fas fa-file-pdf',
-                'class'   => 'btn-outline-primary btn-md',
+                'label' => 'Download PDF',
+                'icon' => 'fas fa-file-pdf',
+                'class' => 'btn-outline-primary btn-md',
                 'onclick' => 'onclick="SolarSenseReport.download({tableSelector:\'.data-table\',title:\'Quotation Management Report\',subtitle:\'Client quotations overview\',columns:[\'Customer Name\',\'Email\',\'Date\',\'Contact\',\'Address\',\'Status\']},this)"'
             ]
         ]
@@ -147,17 +157,11 @@ function getStatusClass($status)
         ],
         'actions' => [
             [
-                'label' => 'View',
-                'icon' => 'fas fa-eye',
-                // This must match the JS function name
-                'onclick' => 'onclick="viewQuotationDetails({id})"',
-                'class' => 'btn-sm btn-info'
-            ],
-            [
                 'label' => 'Accept',
                 'icon' => 'fas fa-check',
                 'class' => 'btn-sm btn-success',
-                'onclick' => 'onclick="acceptQuotation({id})"',
+                // Updated to call the detailed modal function
+                'onclick' => 'onclick="openAcceptModal({id})"',
                 'condition' => function ($row) {
                     return ($row['status'] ?? '') === 'Pending';
                 }
@@ -174,91 +178,98 @@ function getStatusClass($status)
 
     include __DIR__ . '/../../inc/components/data_table.php';
     ?>
+    <?php
+    $config = [
+        'modal_id' => 'acceptModal',
+        'title' => 'Approve Quotation',
+        'icon' => 'fas fa-check-circle',
+        'icon_color' => 'text-success',
+        'heading' => 'Confirm Approval',
+        'message' => 'Are you sure you want to approve this quotation?',
+        'confirm_text' => 'Approve',
+        'cancel_text' => 'Cancel',
+        'confirm_action' => '',
+        'confirm_method' => 'GET',
+        'confirm_class' => 'btn-success',
+        'confirm_icon' => 'fas fa-check'
+    ];
+    include __DIR__ . '/../../inc/models/confirmation_modal.php';
+    ?>
 </div>
 
-<div id="viewQuotationModal" class="custom-modal" style="display: none;">
-    <div class="modal-overlay" onclick="closeQuotationModal()"></div>
+<div id="acceptQuotationModal" class="custom-modal" style="display: none;">
+    <div class="modal-overlay" onclick="closeAcceptModal()"></div>
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="fas fa-file-invoice-dollar text-primary mr-2"></i>Quotation Details</h5>
-                <button type="button" class="btn-close" onclick="closeQuotationModal()"><i class="fas fa-times"></i></button>
+                <h5 class="modal-title"><i class="fas fa-check-circle text-success mr-2"></i>Review & Approve Site Visit</h5>
+                <button type="button" class="btn-close" onclick="closeAcceptModal()"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
                 <div class="row">
-                    <div class="col-md-6 mb-4">
-                        <h6 class="text-secondary font-bold uppercase text-xs mb-3" style="letter-spacing: 0.05em;">Customer Information</h6>
-                        <p class="mb-2 text-sm"><strong>Name:</strong> <span id="modal-customer"></span></p>
-                        <p class="mb-2 text-sm"><strong>Email:</strong> <span id="modal-email"></span></p>
-                        <p class="mb-2 text-sm"><strong>Phone:</strong> <span id="modal-contact"></span></p>
-                        <p class="mb-2 text-sm"><strong>Address:</strong> <span id="modal-address"></span></p>
+                    <div class="col-md-6 mb-4 border-right">
+                        <h6 class="text-secondary font-bold uppercase text-xs mb-3">Customer Information</h6>
+                        <p class="mb-2 text-sm"><strong>Name:</strong> <span id="acc-customer"></span></p>
+                        <p class="mb-2 text-sm"><strong>Email:</strong> <span id="acc-email"></span></p>
+                        <p class="mb-2 text-sm"><strong>Phone:</strong> <span id="acc-contact"></span></p>
+                        <p class="mb-2 text-sm"><strong>Address:</strong> <span id="acc-address"></span></p>
                     </div>
                     <div class="col-md-6 mb-4">
-                        <h6 class="text-secondary font-bold uppercase text-xs mb-3" style="letter-spacing: 0.05em;">System Preferences</h6>
-                        <p class="mb-2 text-sm"><strong>Bill Range:</strong> <span id="modal-bill"></span></p>
-                        <p class="mb-2 text-sm"><strong>Roof Type:</strong> <span id="modal-roof"></span></p>
-                        <p class="mb-2 text-sm"><strong>Property Type:</strong> <span id="modal-property"></span></p>
-                        <p class="mb-2 text-sm"><strong>Existing System:</strong> <span id="modal-existing"></span></p>
+                        <h6 class="text-secondary font-bold uppercase text-xs mb-3">Home Information</h6>
+                        <p class="mb-2 text-sm"><strong>Bill Range:</strong> <span id="acc-bill"></span></p>
+                        <p class="mb-2 text-sm"><strong>Roof Type:</strong> <span id="acc-roof"></span></p>
+                        <p class="mb-2 text-sm"><strong>Property Type:</strong> <span id="acc-property"></span></p>
+                        <p class="mb-2 text-sm"><strong>Existing System:</strong> <span id="acc-existing"></span></p>
                     </div>
                 </div>
-                <div class="border-top pt-3 d-flex justify-between align-center">
-                    <span class="text-xs text-secondary">Submission Date: <span id="modal-date"></span></span>
-                    <span id="modal-status-badge" class="badge"></span>
+                <div class="border-top pt-3">
+                    <p class="text-xs text-secondary italic text-center">Please review these details carefully before approving the site visit.</p>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-sm" onclick="closeQuotationModal()">Close</button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="closeAcceptModal()">Cancel</button>
+                <a id="confirm-approve-btn" href="#" class="btn btn-success btn-sm">
+                    <i class="fas fa-check mr-1"></i>Confirm Approval
+                </a>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // Critical: Initialize the data variable for JS
     const quotationData = <?php echo json_encode($quotations); ?>;
 
-    function viewQuotationDetails(id) {
-        // Find the record in the localized data array
+    function openAcceptModal(id) {
         const quote = quotationData.find(q => q.id == id);
         if (!quote) return;
 
-        // Populate Modal Fields
-        document.getElementById('modal-customer').textContent = quote.customer || 'N/A';
-        document.getElementById('modal-email').textContent = quote.email || 'N/A';
-        document.getElementById('modal-contact').textContent = quote.contact || 'N/A';
-        document.getElementById('modal-address').textContent = quote.address || 'N/A';
-        document.getElementById('modal-bill').textContent = formatLabel(quote.bill_range);
-        document.getElementById('modal-roof').textContent = formatLabel(quote.roof_type);
-        document.getElementById('modal-property').textContent = formatLabel(quote.property_type);
-        document.getElementById('modal-existing').textContent = quote.existing_system || 'No';
-        document.getElementById('modal-date').textContent = quote.date || 'N/A';
+        // 1. Populate details exactly like the old view modal
+        document.getElementById('acc-customer').textContent = quote.customer || 'N/A';
+        document.getElementById('acc-email').textContent = quote.email || 'N/A';
+        document.getElementById('acc-contact').textContent = quote.contact || 'N/A';
+        document.getElementById('acc-address').textContent = quote.address || 'N/A';
+        document.getElementById('acc-bill').textContent = formatLabel(quote.bill_range);
+        document.getElementById('acc-roof').textContent = formatLabel(quote.roof_type);
+        document.getElementById('acc-property').textContent = formatLabel(quote.property_type);
+        document.getElementById('acc-existing').textContent = quote.existing_system || 'No';
 
-        // Set status badge styling
-        const badge = document.getElementById('modal-status-badge');
-        badge.textContent = quote.status;
-        badge.className = 'badge ' + (quote.status === 'Pending' ? 'badge-warning' : 'badge-success');
+        // 2. Set the 'Confirm Approval' link to point to your controller action
+        const approveBtn = document.getElementById('confirm-approve-btn');
+        approveBtn.setAttribute('href', `<?php echo URLROOT; ?>/operationmanager/quotation/approve/${id}`);
 
-        // Trigger the standard modal show function
-        showConfirmationModal('viewQuotationModal');
+        // 3. Show the modal with proper centering
+        const modal = document.getElementById('acceptQuotationModal');
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('show'), 10);
     }
 
-    function closeQuotationModal() {
-        hideConfirmationModal('viewQuotationModal');
+    function closeAcceptModal() {
+        const modal = document.getElementById('acceptQuotationModal');
+        modal.classList.remove('show');
+        setTimeout(() => modal.style.display = 'none', 300);
     }
 
-    function acceptQuotation(id) {
-        if (confirm('Approve this quotation?')) {
-            window.location.href = '<?php echo URLROOT; ?>/operationmanager/quotation/approve/' + id;
-        }
-    }
-
-    function openDeleteModal(id) {
-        if (confirm('Delete this quotation?')) {
-            window.location.href = '<?php echo URLROOT; ?>/operationmanager/quotation/delete/' + id;
-        }
-    }
-
-    // Helper to clean up database technical strings (e.g. 'very-high' to 'Very High')
+    // Keep your formatLabel helper for clean text
     function formatLabel(token) {
         if (!token) return "N/A";
         return token.toString().replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
