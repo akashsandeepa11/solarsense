@@ -95,6 +95,37 @@ class ServiceAgent extends Controller
         $this->view('pages/service_agent/profile', $data, layout: 'dashboard');
     }
 
+    public function update_profile()
+    {
+        $userId = $_SESSION['user_id'] ?? 0;
+        $companyId = $this->teamModel->get_company_id_by_user($userId);
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+
+            $data = [
+                'user' => $this->user,
+                'fullName' => trim($_POST['fullName'] ?? ''),
+                'email' => trim($_POST['email'] ?? ''),
+                'contactNumber' => trim($_POST['contactNumber'] ?? ''),
+                'address' => trim($_POST['physicalAddress'] ?? ''),
+                'district' => trim($_POST['district'] ?? ''),
+                'company_name' => trim($_POST['company-name'] ?? ''),
+                'register_date' => trim($_POST['register-date'] ?? ''),
+                'specialization' => trim($_POST['specialization'] ?? ''),
+                'status' => trim($_POST['status'] ?? 'Active'),
+        ];
+        $success = $this->profileModel->updateServiceAgentProfile($userId, $data);
+        if ($success) {
+                    setToast('Manager Updated Successfully', 'success');
+                    redirect('serviceagent/profile');
+                    return;
+                }
+                setToast('Something went wrong during update', 'error');
+
+        $this->view('pages/service_agent/profile', $data, layout: 'dashboard');
+        }
+    }
+
     public function reports()
     {
         $tasks   = $this->taskModel->get_agent_tasks()       ?? [];
