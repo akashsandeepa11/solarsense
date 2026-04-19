@@ -13,7 +13,6 @@ $summary_cards = [
     ['label' => 'Critical Faults', 'value' => $stats['critical_faults'], 'icon' => 'fas fa-exclamation-triangle', 'color' => 'error'],
     ['label' => 'Underperforming Systems', 'value' => $stats['underperforming'], 'icon' => 'fas fa-chart-line', 'color' => 'warning'],
     ['label' => 'Pending Tasks', 'value' => $stats['pending_tasks'], 'icon' => 'fas fa-wrench', 'color' => 'warning'],
-    ['label' => 'Pending Installations', 'value' => $stats['pending_installations'], 'icon' => 'fas fa-tools', 'color' => 'warning'],
     ['label' => 'Active Agents', 'value' => $stats['active_agents'], 'icon' => 'fas fa-users-cog', 'color' => 'accent']
 ];
 

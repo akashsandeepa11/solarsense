@@ -423,7 +423,7 @@ class M_Team
             $this->db->query('
                 SELECT COUNT(*) as active_agents
                 FROM service_agent
-                WHERE company_id = :company_id AND status = "Active"
+                WHERE company_id = :company_id AND (status = "Active" OR status = "active");
             ');
             $this->db->bind(':company_id', $companyId);
             return $this->db->single();

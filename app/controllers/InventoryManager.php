@@ -31,11 +31,11 @@ class InventoryManager extends Controller
     // --- Dashboard Page ---
     public function dashboard()
     {
-        $totalItems        = $this->inventoryModel->get_total_items_count();
-        $lowStockItems     = $this->inventoryModel->get_low_stock_items(5);
-        $totalStockValue   = $this->inventoryModel->get_total_stock_value();
+        $totalItems        = $this->inventoryModel->get_total_items_count($this->company_id);
+        $lowStockItems     = $this->inventoryModel->get_low_stock_items(5, $this->company_id);
+        $totalStockValue   = $this->inventoryModel->get_total_stock_value($this->company_id);
         $categoriesCount   = $this->inventoryModel->get_categories_count();
-        $stockByCategory   = $this->inventoryModel->get_stock_by_category();
+        $stockByCategory   = $this->inventoryModel->get_stock_by_category($this->company_id);
         $recentOrders      = $this->inventoryModel->get_recent_orders(5);
         $totalOrdersCount  = $this->inventoryModel->get_total_orders_count();
         $totalOrdersAmount = $this->inventoryModel->get_total_orders_amount();

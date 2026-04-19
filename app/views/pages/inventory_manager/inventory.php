@@ -27,6 +27,11 @@ $categories = $data['categories'] ?? [];
                 </select>
                 <select id="categoryFilter" class="form-control" style="max-width: 180px;">
                     <option value="all">All Categories</option>
+                    <?php foreach ($categories as $cat): ?>
+                        <option value="<?php echo htmlspecialchars($cat->name); ?>">
+                            <?php echo htmlspecialchars($cat->name); ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
                 <select id="stockFilter" class="form-control" style="max-width: 150px;">
                     <option value="all">All Stock</option>
@@ -438,8 +443,11 @@ function renderTable(data) {
                     <button class="btn btn-primary btn-sm rounded-lg mr-1" onclick="editItem('${item.id}')">
                         <i class="fas fa-edit mr-1"></i>Edit
                     </button>
-                    <button class="btn btn-sm rounded-lg bg-error" onclick="deleteItem('${item.id}')">
-                        <i class="fas fa-trash mr-1"></i>Delete
+                    <button class="btn btn-sm rounded-lg"
+                            style="background:var(--color-error,#dc2626);color:#fff;padding:0.25rem 0.6rem;"
+                            onclick="deleteItem('${item.id}')"
+                            title="Delete item">
+                        <i class="fas fa-trash"></i>
                     </button>
                 </td>
             </tr>`;

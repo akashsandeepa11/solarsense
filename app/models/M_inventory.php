@@ -113,15 +113,15 @@ class M_inventory
         return $this->db->resultSet();
     }
 
-    public function get_total_items_count()
+    public function get_total_items_count($company_id)
     {
         $this->db->query("SELECT COUNT(*) as total FROM inventory WHERE company_id = :company_id");
-        $this->db->bind(':company_id', 1);
+        $this->db->bind(':company_id', (int) $company_id);
         $row = $this->db->single();
         return $row->total ?? 0;
     }
 
-    public function get_low_stock_items($threshold = 5)
+    public function get_low_stock_items($threshold = 5, $company_id)
     {
         $this->db->query("
             SELECT i.inventory_id as id, i.item_name as name, i.quantity, c.name as category_name
@@ -130,15 +130,15 @@ class M_inventory
             WHERE i.company_id = :company_id AND i.quantity <= :threshold
             ORDER BY i.quantity ASC
         ");
-        $this->db->bind(':company_id', 1);
+        $this->db->bind(':company_id', (int) $company_id);
         $this->db->bind(':threshold', $threshold);
         return $this->db->resultSet();
     }
 
-    public function get_total_stock_value()
+    public function get_total_stock_value($company_id)
     {
         $this->db->query("SELECT SUM(quantity * unit_price) as total_value FROM inventory WHERE company_id = :company_id");
-        $this->db->bind(':company_id', 1);
+        $this->db->bind(':company_id', (int) $company_id);
         $row = $this->db->single();
         return $row->total_value ?? 0;
     }
@@ -150,7 +150,7 @@ class M_inventory
         return $row->total ?? 0;
     }
 
-    public function get_stock_by_category()
+    public function get_stock_by_category($company_id)
     {
         $this->db->query("
             SELECT 
@@ -163,7 +163,7 @@ class M_inventory
             GROUP BY c.id, c.name
             ORDER BY total_qty DESC
         ");
-        $this->db->bind(':company_id', 1);
+        $this->db->bind(':company_id', (int) $company_id);
         return $this->db->resultSet();
     }
 

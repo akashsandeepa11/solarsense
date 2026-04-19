@@ -322,8 +322,12 @@ class M_Fleet
                         u.full_name,
                         u.email,
                         h.district,
+                        s.system_id,
                         s.capacity,
-                        sm.last_reading
+                        s.installation_date,
+                        sm.last_reading,
+                        latest_sms.expected_generation AS latest_expected,
+                        (latest_sms.export_reading - latest_sms.prev_export_reading) AS latest_export
                     FROM user u
                     JOIN homeowner h ON u.user_id = h.user_id
                     JOIN solar_system s ON u.user_id = s.user_id
@@ -332,6 +336,9 @@ class M_Fleet
                         FROM sms
                         GROUP BY user_id
                     ) sm ON u.user_id = sm.user_id
+                    LEFT JOIN sms latest_sms 
+                        ON latest_sms.user_id = u.user_id 
+                        AND latest_sms.reading_date = sm.last_reading
                     WHERE h.company_id = :company_id');
 
             $this->db->bind(':company_id', $companyId);
@@ -339,13 +346,34 @@ class M_Fleet
 
             $formattedResults = [];
             foreach ($results as $row) {
+                // Calculate performance % same as homeowner dashboard:
+                // actual generation (export) vs expected generation from latest SMS
+                $latestExport   = (float) ($row->latest_export ?? 0);
+                $latestExpected = (float) ($row->latest_expected ?? 0);
+
+                $performancePct = ($latestExpected > 0)
+                    ? min(100, round(($latestExport / $latestExpected) * 100))
+                    : 0;
+
+                // Classify against threshold constants from constants.php
+                if ($performancePct >= HEALTH_EXCELLENT_THRESHOLD) {
+                    $healthStatus = HEALTH_STATUS_EXCELLENT;
+                } elseif ($performancePct >= HEALTH_GOOD_THRESHOLD) {
+                    $healthStatus = HEALTH_STATUS_GOOD;
+                } elseif ($performancePct >= HEALTH_WARNING_THRESHOLD) {
+                    $healthStatus = HEALTH_STATUS_WARNING;
+                } else {
+                    $healthStatus = HEALTH_STATUS_CRITICAL;
+                }
+
                 $formattedResults[] = [
                     'id' => $row->user_id,
+                    'system_id' => $row->system_id,
                     'name' => $row->full_name,
                     'location' => $row->district,
                     'size' => $row->capacity,
-                    'health' => 'Healthy', // Placeholder for health logic
-                    'performance' => '100', // Placeholder for performance calculation
+                    'health' => $healthStatus,
+                    'performance' => $performancePct,
                     'last_upload' => $row->last_reading ?? 'No readings yet',
                     'avatar' => getAvatarUrl($row->full_name)
                 ];

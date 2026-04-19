@@ -15,73 +15,94 @@ class M_InstallerAdmin_Dashboard
      */
     public function getStats($companyId)
     {
-
         // 1. Total Active Clients
         $this->db->query("
-        SELECT COUNT(*) as total 
-        FROM homeowner 
-        WHERE company_id = :company_id
+            SELECT COUNT(*) as total 
+            FROM homeowner 
+            WHERE company_id = :company_id
         ");
         $this->db->bind(':company_id', $companyId);
         $activeClients = $this->db->single()->total ?? 0;
 
-        // 2. Critical Faults: Use single quotes for 'Pending'
+        // 2. Critical Faults: systems whose latest monthly generation (delta) is
+        //    below HEALTH_WARNING_THRESHOLD % of expected.
+        //    NULL / zero expected_generation rows are excluded — no data ≠ critical.
+        $criticalPct = HEALTH_WARNING_THRESHOLD / 100; // e.g. 0.80
         $this->db->query("
-        SELECT COUNT(*) as total FROM (
-            SELECT s1.user_id
-            FROM sms s1
-            JOIN (SELECT user_id, MAX(reading_date) as max_date FROM sms GROUP BY user_id) s2 
-                ON s1.user_id = s2.user_id AND s1.reading_date = s2.max_date
-            JOIN homeowner h ON s1.user_id = h.user_id
-            WHERE h.company_id = :company_id 
-            AND s1.export_reading < (s1.expected_generation * 0.50)
-        ) as critical_count
-    ");
+            SELECT COUNT(*) as total FROM (
+                SELECT s1.user_id,
+                       (s1.export_reading - s1.prev_export_reading)  AS actual_gen,
+                       s1.expected_generation
+                FROM sms s1
+                JOIN (
+                    SELECT user_id, MAX(reading_date) AS max_date
+                    FROM sms
+                    GROUP BY user_id
+                ) s2 ON s1.user_id = s2.user_id AND s1.reading_date = s2.max_date
+                JOIN homeowner h ON s1.user_id = h.user_id
+                WHERE h.company_id = :company_id
+                  AND s1.expected_generation IS NOT NULL
+                  AND s1.expected_generation > 0
+                HAVING actual_gen < (s1.expected_generation * {$criticalPct})
+            ) AS critical_count
+        ");
         $this->db->bind(':company_id', $companyId);
         $criticalFaults = $this->db->single()->total ?? 0;
 
-        // 3. Underperforming: Latest generation thresholds
+        // 3. Underperforming: latest monthly generation is in the Warning band
+        //    i.e. >= HEALTH_WARNING_THRESHOLD% but < HEALTH_GOOD_THRESHOLD%.
+        //    NULL / zero expected_generation rows are excluded.
+        $warningPct = HEALTH_WARNING_THRESHOLD / 100; // e.g. 0.80
+        $goodPct    = HEALTH_GOOD_THRESHOLD    / 100; // e.g. 0.90
         $this->db->query("
-        SELECT COUNT(*) as total FROM (
-            SELECT s1.user_id
-            FROM sms s1
-            JOIN (SELECT user_id, MAX(reading_date) as max_date FROM sms GROUP BY user_id) s2 
-                ON s1.user_id = s2.user_id AND s1.reading_date = s2.max_date
-            JOIN homeowner h ON s1.user_id = h.user_id
-            WHERE h.company_id = :company_id 
-            AND s1.export_reading >= (s1.expected_generation * 0.50)
-            AND s1.export_reading < (s1.expected_generation * 0.85)
-        ) as underperforming_count
-    ");
+            SELECT COUNT(*) as total FROM (
+                SELECT s1.user_id,
+                       (s1.export_reading - s1.prev_export_reading) AS actual_gen,
+                       s1.expected_generation
+                FROM sms s1
+                JOIN (
+                    SELECT user_id, MAX(reading_date) AS max_date
+                    FROM sms
+                    GROUP BY user_id
+                ) s2 ON s1.user_id = s2.user_id AND s1.reading_date = s2.max_date
+                JOIN homeowner h ON s1.user_id = h.user_id
+                WHERE h.company_id = :company_id
+                  AND s1.expected_generation IS NOT NULL
+                  AND s1.expected_generation > 0
+                HAVING actual_gen >= (s1.expected_generation * {$warningPct})
+                   AND actual_gen <  (s1.expected_generation * {$goodPct})
+            ) AS underperforming_count
+        ");
         $this->db->bind(':company_id', $companyId);
         $underperforming = $this->db->single()->total ?? 0;
 
-        // 4. Pending Tasks: Fixed query with single quotes for 'Pending'
+        // 4. Pending Tasks
         $this->db->query("
-        SELECT COUNT(*) as total 
-        FROM service_req sr 
-        JOIN homeowner h ON sr.homeowner_id = h.user_id 
-        WHERE h.company_id = :company_id AND sr.status = 'Pending'
-    ");
+            SELECT COUNT(*) as total 
+            FROM service_req sr 
+            JOIN homeowner h ON sr.homeowner_id = h.user_id 
+            WHERE h.company_id = :company_id AND sr.status = 'Pending'
+        ");
         $this->db->bind(':company_id', $companyId);
         $pendingTasks = $this->db->single()->total ?? 0;
 
-        // 5. Active Service Agents: Fixed query with single quotes for 'Available'
+        // 5. Active Service Agents: Available + On Task (excludes truly inactive)
         $this->db->query("
-        SELECT COUNT(*) as total 
-        FROM service_agent 
-        WHERE company_id = :company_id AND status = 'Available'
+            SELECT COUNT(*) as total 
+            FROM service_agent 
+            WHERE company_id = :company_id   
+              AND (status = 'Active' OR status = 'active');
         ");
         $this->db->bind(':company_id', $companyId);
         $activeAgents = $this->db->single()->total ?? 0;
 
+
         return [
-            'active_clients' => $activeClients,
+            'active_clients'  => $activeClients,
             'critical_faults' => $criticalFaults,
             'underperforming' => $underperforming,
-            'pending_tasks' => $pendingTasks,
-            'active_agents' => $activeAgents,
-            'pending_installations' => 0
+            'pending_tasks'   => $pendingTasks,
+            'active_agents'   => $activeAgents,
         ];
     }
 
