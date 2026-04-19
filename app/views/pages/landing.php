@@ -537,7 +537,7 @@
                 <h2>Are You a Solar Installer?</h2>
                 <p>Join Sri Lanka's fastest-growing network of solar professionals. Connect with qualified homeowners,
                     manage your fleet, and streamline your operations.</p>
-                <a href="installer_registration" class="btn btn-lg">Register Your Company</a>
+                <a href="auth/installer_registration" class="btn btn-lg">Register Your Company</a>
             </div>
         </div>
     </section>

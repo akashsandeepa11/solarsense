@@ -131,9 +131,9 @@ function notifBadgeColor(string $type): string {
                             <div style="color: #6b7280; font-size: 0.875rem; margin-top: 0.25rem; word-wrap: break-word;">
                                 <?php echo htmlspecialchars($notif['message'] ?? ''); ?>
                             </div>
-                            <div style="color: #9ca3af; font-size: 0.75rem; margin-top: 0.5rem;">
+                            <!-- <div style="color: #9ca3af; font-size: 0.75rem; margin-top: 0.5rem;">
                                 <?php echo htmlspecialchars($notif['timestamp'] ?? ''); ?>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                 <?php endforeach; ?>
