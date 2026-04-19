@@ -186,87 +186,63 @@ function getStatusClass($health)
     ?>
 
     <!-- Clients Table -->
-    <?php
-    $config = [
-        'headers' => [
-            ['key' => 'name', 'label' => 'Client Name'],
-            ['key' => 'location', 'label' => 'Location'],
-            ['key' => 'size', 'label' => 'System Size'],
-            ['key' => 'health', 'label' => 'System Health'],
-            ['key' => 'performance', 'label' => 'Performance'],
-            ['key' => 'last_upload', 'label' => 'Last SMS Upload']
-        ],
-        'rows' => $clients,
-        'columns' => [
-            [
-                'key' => 'name',
-                'render' => function ($row) {
-                    return '<div class="d-flex align-center gap-3">
-                                    <img src="' . getAvatarUrl($row['name']) . '" alt="' . htmlspecialchars($row['name']) . '">
-                                    <div class="agent-details">
-                                        <div class="agent-name font-semibold">' . htmlspecialchars($row['name']) . '</div>
-                                        <div class="agent-role text-secondary text-sm">' . htmlspecialchars($row['location']) . '</div>
-                                    </div>
-                                </div>';
-                }
-            ],
-            [
-                'key' => 'health',
-                'render' => function ($row) {
-                    return '<div class="d-flex align-center">
-                                    <span class="status-dot ' . getStatusClass($row['health']) . ' mr-2"></span>
-                                    ' . htmlspecialchars($row['health']) . '
-                                </div>';
-                }
-            ],
-            [
-                'key' => 'performance',
-                'render' => function ($row) {
-                    return htmlspecialchars($row['performance']) . '%';
-                }
-            ],
-            [
-                'key' => 'size',
-                'render' => function ($row) {
-                    return htmlspecialchars($row['size']) . ' kWp';
-                }
-            ]
-        ],
-        'actions' => [],
-        'empty_message' => 'No clients available'
-    ];
-
-    $rolePath = ($data['user']['role'] === ROLE_INSTALLER_ADMIN) ? 'installeradmin' : 'operationmanager';
-
-    // Update the actions array
-    $config['actions'] = [
-        [
-            'label' => 'View Details',
-            'icon' => 'fas fa-eye',
-            // Change {user_id} back to {id} to match the model key
-            'url' => URLROOT . '/' . $rolePath . '/fleet/customer_details/{id}',
-            'class' => 'btn-sm btn-info'
-        ]
-    ];
-
-    // Add Edit and Remove actions only for Installer Admin
-    if ($data['user']['role'] === ROLE_INSTALLER_ADMIN) {
-        $config['actions'][] = [
-            'label' => 'Edit',
-            'icon' => 'fas fa-edit',
-            'url' => URLROOT . '/installeradmin/fleet/edit_customer/{id}',
-            'class' => 'btn-sm btn-primary'
-        ];
-        $config['actions'][] = [
-            'label' => 'Remove',
-            'icon' => 'fas fa-trash',
-            'class' => 'btn-icon-danger',
-            'onclick' => 'onclick="openDeleteModal(' . '{id}' . ')"'
-        ];
-    }
-
-    include __DIR__ . '/../../inc/components/data_table.php';
-    ?>
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Client Name</th>
+                            <th>Location</th>
+                            <th>System Size</th>
+                            <th>System Health</th>
+                            <th>Performance</th>
+                            <th>Last SMS Upload</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($clients)): ?>
+                            <tr><td colspan="7" class="text-center p-6 text-secondary">No clients available</td></tr>
+                        <?php else: ?>
+                            <?php foreach ($clients as $row): ?>
+                                <tr class="data-table-row">
+                                    <td>
+                                        <div class="d-flex align-center gap-3">
+                                            <img src="<?php echo getAvatarUrl($row['name']); ?>" alt="<?php echo htmlspecialchars($row['name']); ?>">
+                                            <div class="agent-details">
+                                                <div class="agent-name font-semibold"><?php echo htmlspecialchars($row['name']); ?></div>
+                                                <div class="agent-role text-secondary text-sm"><?php echo htmlspecialchars($row['location']); ?></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($row['location']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['size']); ?> kWp</td>
+                                    <td>
+                                        <div class="d-flex align-center">
+                                            <span class="status-dot <?php echo getStatusClass($row['health']); ?> mr-2"></span>
+                                            <?php echo htmlspecialchars($row['health']); ?>
+                                        </div>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($row['performance']); ?>%</td>
+                                    <td><?php echo htmlspecialchars($row['last_upload'] ?? '—'); ?></td>
+                                    <td>
+                                        <div class="actions-menu d-flex gap-2 justify-center">
+                                            <a href="<?php echo URLROOT; ?>/<?php echo $rolePath; ?>/fleet/customer_details/<?php echo $row['id']; ?>" class="btn-icon btn-sm btn-info" title="View Details"><i class="fas fa-eye"></i></a>
+                                            <?php if ($data['user']['role'] === ROLE_INSTALLER_ADMIN): ?>
+                                            <a href="<?php echo URLROOT; ?>/installeradmin/fleet/edit_customer/<?php echo $row['id']; ?>" class="btn-icon btn-sm btn-primary" title="Edit"><i class="fas fa-edit"></i></a>
+                                            <button class="btn-icon btn-icon-danger" title="Remove" onclick="openDeleteModal(<?php echo (int)$row['id']; ?>)"><i class="fas fa-trash"></i></button>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
     <!-- Delete Confirmation Modal -->
     <?php

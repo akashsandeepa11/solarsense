@@ -104,73 +104,79 @@ function getVerificationStatusClass($status)
     include __DIR__ . '/../../inc/components/stat_card.php';
     ?>
 
-    <?php
-    $config = [
-        'headers' => [
-            ['key' => 'company_name', 'label' => 'Company Name'],
-            ['key' => 'contact', 'label' => 'Contact'],
-            ['key' => 'address', 'label' => 'Address'],
-            ['key' => 'request_date', 'label' => 'Submitted Date'],
-            ['key' => 'status', 'label' => 'Status']
-        ],
-        'rows' => $verifications,
-        'columns' => [
-            [
-                'key' => 'company_name',
-                'render' => function ($row) {
-                    $name = is_object($row) ? $row->company_name : $row['company_name'];
-                    return '<div class="d-flex align-center gap-3">
-                                <img src="' . getAvatarUrl($name) . '" alt="' . htmlspecialchars($name) . '">
-                                <div class="company-details">
-                                    <div class="company-name">' . htmlspecialchars($name) . '</div>
-                                </div>
-                            </div>';
-                }
-            ],
-            [
-                'key' => 'contact', // Custom renderer to merge email and contact number
-                'render' => function($row) {
-                    $email = is_object($row) ? $row->email : $row['email'];
-                    $phone = is_object($row) ? $row->contact : $row['contact'];
-                    return '<div class="company-details">
-                                <div class="email">' . htmlspecialchars($email) . '</div>
-                                <div class="text-secondary text-xs">' . htmlspecialchars($phone) . '</div>
-                            </div>';
-                }
-            ],
-            [
-                'key' => 'status',
-                'render' => function ($row) {
-                    $status = is_object($row) ? $row->status : $row['status'];
-                    return '<div class="d-flex align-center">
-                                <span class="status-dot ' . getVerificationStatusClass($status) . ' mr-2"></span>
-                                <span class="badge ' . (strtolower($status) === 'pending' ? 'badge-warning' : 'badge-success') . '">' . ucfirst($status) . '</span>
-                            </div>';
-                }
-            ]
-        ],
-        'actions' => [
-            [
-                'label' => 'View Details',
-                'icon' => 'fas fa-eye',
-                'class' => 'btn-sm btn-info',
-                'onclick' => 'onclick="openViewModal({companyId})"'
-            ],
-            [
-                'label' => 'Verify',
-                'icon' => 'fas fa-check-circle',
-                'class' => 'btn-sm btn-success',
-                'onclick' => 'onclick="openVerifyModal({companyId}, \'{company_name}\')"',
-                'condition' => function ($row) {
-                    $status = is_object($row) ? $row->status : $row['status'];
-                    return strtolower($status) === 'pending';
-                }
-            ]
-        ],
-        'empty_message' => 'No verification requests found.'
-    ];
-    include __DIR__ . '/../../inc/components/data_table.php';
-    ?>
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Company Name</th>
+                            <th>Contact</th>
+                            <th>Address</th>
+                            <th>Submitted Date</th>
+                            <th>Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($verifications)): ?>
+                            <tr><td colspan="6" class="text-center p-6 text-secondary">No verification requests found.</td></tr>
+                        <?php else: ?>
+                            <?php foreach ($verifications as $row): ?>
+                                <?php
+                                $name   = is_object($row) ? $row->company_name : $row['company_name'];
+                                $email  = is_object($row) ? $row->email        : $row['email'];
+                                $phone  = is_object($row) ? $row->contact      : $row['contact'];
+                                $addr   = is_object($row) ? $row->address      : $row['address'];
+                                $date   = is_object($row) ? $row->request_date : $row['request_date'];
+                                $status = is_object($row) ? $row->status       : $row['status'];
+                                $cid    = is_object($row) ? $row->companyId    : $row['companyId'];
+                                ?>
+                                <tr class="data-table-row">
+                                    <td>
+                                        <div class="d-flex align-center gap-3">
+                                            <img src="<?php echo getAvatarUrl($name); ?>" alt="<?php echo htmlspecialchars($name); ?>">
+                                            <div class="company-details">
+                                                <div class="company-name"><?php echo htmlspecialchars($name); ?></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="company-details">
+                                            <div class="email"><?php echo htmlspecialchars($email); ?></div>
+                                            <div class="text-secondary text-xs"><?php echo htmlspecialchars($phone); ?></div>
+                                        </div>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($addr); ?></td>
+                                    <td><?php echo htmlspecialchars($date); ?></td>
+                                    <td>
+                                        <div class="d-flex align-center">
+                                            <span class="status-dot <?php echo getVerificationStatusClass($status); ?> mr-2"></span>
+                                            <span class="badge <?php echo strtolower($status) === 'pending' ? 'badge-warning' : 'badge-success'; ?>"><?php echo ucfirst($status); ?></span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="actions-menu d-flex gap-2 justify-center">
+                                            <button class="btn-icon btn-sm btn-info" title="View Details"
+                                                    onclick="openViewModal(<?php echo (int)$cid; ?>)">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <?php if (strtolower($status) === 'pending'): ?>
+                                            <button class="btn-icon btn-sm btn-success" title="Verify"
+                                                    onclick="openVerifyModal(<?php echo (int)$cid; ?>, '<?php echo htmlspecialchars($name, ENT_QUOTES); ?>')">
+                                                <i class="fas fa-check-circle"></i>
+                                            </button>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 <?php

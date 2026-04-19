@@ -167,102 +167,91 @@
         ?>
 
         <!-- Managers Table -->
-        <?php
-        // Table headers differ based on manager type
-        $headers = ($managerType === 'operation_managers') ? [
-            ['key' => 'name', 'label' => 'Manager Name'],
-            ['key' => 'specialization', 'label' => 'Specialization'],
-            ['key' => 'district', 'label' => 'District'],
-            ['key' => 'status', 'label' => 'Status'],
-            ['key' => 'pending_tasks', 'label' => 'Pending Tasks']
-        ] : [
-            ['key' => 'name', 'label' => 'Manager Name'],
-            ['key' => 'warehouse', 'label' => 'Warehouse Location'],
-            ['key' => 'status', 'label' => 'Status'],
-            ['key' => 'inventory_items', 'label' => 'Inventory Items'],
-            ['key' => 'low_stock', 'label' => 'Low Stock Items'],
-            ['key' => 'efficiency', 'label' => 'Efficiency Score']
-        ];
-
-        $config = [
-            'headers' => $headers,
-            'rows' => $managers,
-            'columns' => [
-                [
-                    'key' => 'name',
-                    'render' => function($row) {
-                        return '<div class="d-flex align-center gap-3">
-                                    <img src="' . getAvatarUrl($row['name'] ?? 'Manager') . '" alt="' . htmlspecialchars($row['name'] ?? 'Manager') . '">
-                                    <div class="manager-details">
-                                        <div class="manager-name font-semibold">' . htmlspecialchars($row['name'] ?? 'N/A') . '</div>
-                                        <div class="manager-email text-secondary text-sm">' . htmlspecialchars($row['email'] ?? 'N/A') . '</div>
-                                    </div>
-                                </div>';
-                    }
-                ],
-                [
-                    'key' => 'status',
-                    'render' => function($row) {
-                        return '<div class="d-flex align-center">
-                                    <span class="status-dot ' . getStatusClass($row['status'] ?? 'inactive') . ' mr-2"></span>
-                                    ' . htmlspecialchars($row['status'] ?? 'N/A') . '
-                                </div>';
-                    }
-                ],
-                [
-                    'key' => 'pending_tasks',
-                    'render' => function($row) {
-                        return '<span class="badge badge-primary">' . htmlspecialchars($row['pending_tasks'] ?? '0') . '</span>';
-                    }
-                ],
-                [
-                    'key' => 'efficiency',
-                    'render' => function($row) {
-                        $efficiency = isset($row['efficiency']) ? $row['efficiency'] : '0';
-                        return htmlspecialchars($efficiency) . '%';
-                    }
-                ],
-                [
-                    'key' => 'low_stock',
-                    'render' => function($row) {
-                        $low_stock = isset($row['low_stock']) ? $row['low_stock'] : '0';
-                        $class = $low_stock > 0 ? 'badge-warning' : 'badge-success';
-                        return '<span class="badge ' . $class . '">' . htmlspecialchars($low_stock) . '</span>';
-                    }
-                ]
-            ],
-            'actions' => [],
-            'empty_message' => 'No managers available'
-        ];
-        
-        // Build actions array - View Details always available
-        $config['actions'] = [
-            [
-                'label' => 'View Details',
-                'icon' => 'fas fa-eye',
-                'url' => URLROOT . '/installeradmin/managers/' . $managerType . '/{id}',
-                'class' => 'btn-sm btn-info'
-            ]
-        ];
-        
-        // Add Edit and Remove actions only for Installer Admin
-        if($data['user']['role'] === ROLE_INSTALLER_ADMIN) {
-            $config['actions'][] = [
-                'label' => 'Edit',
-                'icon' => 'fas fa-edit',
-                'url' => URLROOT . '/installeradmin/managers/' . $managerType . '/edit/{id}',
-                'class' => 'btn-sm btn-primary'
-            ];
-            $config['actions'][] = [
-                'label' => 'Remove',
-                'icon' => 'fas fa-trash',
-                'class' => 'btn-icon-danger',
-                'onclick' => 'onclick="openDeleteModal(' . '{id}' . ')"'
-            ];
-        }
-        
-        include __DIR__ . '/../../inc/components/data_table.php';
-        ?>
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Manager Name</th>
+                                <?php if ($managerType === 'operation_managers'): ?>
+                                <th>Specialization</th>
+                                <th>District</th>
+                                <th>Status</th>
+                                <th>Pending Tasks</th>
+                                <?php else: ?>
+                                <th>Warehouse Location</th>
+                                <th>Status</th>
+                                <th>Inventory Items</th>
+                                <th>Low Stock Items</th>
+                                <th>Efficiency Score</th>
+                                <?php endif; ?>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($managers)): ?>
+                                <tr><td colspan="<?php echo $managerType === 'operation_managers' ? 6 : 7; ?>" class="text-center p-6 text-secondary">No managers available</td></tr>
+                            <?php else: ?>
+                                <?php foreach ($managers as $row): ?>
+                                    <?php
+                                    $rid    = $row['id'] ?? '';
+                                    $name   = $row['name'] ?? 'N/A';
+                                    $email  = $row['email'] ?? 'N/A';
+                                    $status = $row['status'] ?? 'inactive';
+                                    ?>
+                                    <tr class="data-table-row">
+                                        <td>
+                                            <div class="d-flex align-center gap-3">
+                                                <img src="<?php echo getAvatarUrl($name); ?>" alt="<?php echo htmlspecialchars($name); ?>">
+                                                <div class="manager-details">
+                                                    <div class="manager-name font-semibold"><?php echo htmlspecialchars($name); ?></div>
+                                                    <div class="manager-email text-secondary text-sm"><?php echo htmlspecialchars($email); ?></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <?php if ($managerType === 'operation_managers'): ?>
+                                        <td><?php echo htmlspecialchars($row['specialization'] ?? '—'); ?></td>
+                                        <td><?php echo htmlspecialchars($row['district'] ?? '—'); ?></td>
+                                        <td>
+                                            <div class="d-flex align-center">
+                                                <span class="status-dot <?php echo getStatusClass($status); ?> mr-2"></span>
+                                                <?php echo htmlspecialchars($status); ?>
+                                            </div>
+                                        </td>
+                                        <td><span class="badge badge-primary"><?php echo htmlspecialchars($row['pending_tasks'] ?? '0'); ?></span></td>
+                                        <?php else: ?>
+                                        <td><?php echo htmlspecialchars($row['warehouse'] ?? '—'); ?></td>
+                                        <td>
+                                            <div class="d-flex align-center">
+                                                <span class="status-dot <?php echo getStatusClass($status); ?> mr-2"></span>
+                                                <?php echo htmlspecialchars($status); ?>
+                                            </div>
+                                        </td>
+                                        <td><?php echo htmlspecialchars($row['inventory_items'] ?? '0'); ?></td>
+                                        <td>
+                                            <?php $ls = $row['low_stock'] ?? '0'; ?>
+                                            <span class="badge <?php echo $ls > 0 ? 'badge-warning' : 'badge-success'; ?>"><?php echo htmlspecialchars($ls); ?></span>
+                                        </td>
+                                        <td><?php echo htmlspecialchars($row['efficiency'] ?? '0'); ?>%</td>
+                                        <?php endif; ?>
+                                        <td>
+                                            <div class="actions-menu d-flex gap-2 justify-center">
+                                                <a href="<?php echo URLROOT; ?>/installeradmin/managers/<?php echo $managerType; ?>/<?php echo $rid; ?>" class="btn-icon btn-sm btn-info" title="View Details"><i class="fas fa-eye"></i></a>
+                                                <?php if ($data['user']['role'] === ROLE_INSTALLER_ADMIN): ?>
+                                                <a href="<?php echo URLROOT; ?>/installeradmin/managers/<?php echo $managerType; ?>/edit/<?php echo $rid; ?>" class="btn-icon btn-sm btn-primary" title="Edit"><i class="fas fa-edit"></i></a>
+                                                <button class="btn-icon btn-icon-danger" title="Remove" onclick="openDeleteModal(<?php echo (int)$rid; ?>)"><i class="fas fa-trash"></i></button>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
     <!-- Delete Confirmation Modal -->
     <?php

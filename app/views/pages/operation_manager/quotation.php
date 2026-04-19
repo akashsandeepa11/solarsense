@@ -108,72 +108,72 @@ function getStatusClass($status)
     include __DIR__ . '/../../inc/components/stat_card.php';
     ?>
 
-    <?php
-    $config = [
-        'headers' => [
-            ['key' => 'customer', 'label' => 'Customer Name'],
-            ['key' => 'email', 'label' => 'Email'],
-            ['key' => 'date', 'label' => 'Date'],
-            ['key' => 'contact', 'label' => 'Contact Number'],
-            ['key' => 'address', 'label' => 'Address'],
-            ['key' => 'status', 'label' => 'Status']
-        ],
-        'rows' => $quotations,
-        'columns' => [
-            [
-                'key' => 'customer',
-                'render' => function ($row) {
-                    $name = $row['customer'] ?? 'Unknown';
-                    $id = $row['id'] ?? 'N/A';
-                    return '<div class="d-flex align-center gap-3">
-                                <img src="' . getAvatarUrl($name) . '" alt="' . htmlspecialchars($name) . '" style="width: 40px; border-radius: 50%;">
-                                <div class="agent-details">
-                                    <div class="agent-name">' . htmlspecialchars($name) . '</div>
-                                    <div class="agent-id text-xs">ID: ' . htmlspecialchars($id) . '</div>
-                                </div>
-                            </div>';
-                }
-            ],
-            [
-                'key' => 'status',
-                'render' => function ($row) {
-                    $status = $row['status'] ?? 'Pending';
-                    return '<div class="d-flex align-center">
-                                <span class="status-dot ' . getStatusClass($status) . ' mr-2"></span>
-                                <span class="badge ' . ($status === 'Pending' ? 'badge-warning' : 'badge-success') . '">' . $status . '</span>
-                            </div>';
-                }
-            ]
-        ],
-        'actions' => [
-            [
-                'label' => 'View',
-                'icon' => 'fas fa-eye',
-                // This must match the JS function name
-                'onclick' => 'onclick="viewQuotationDetails({id})"',
-                'class' => 'btn-sm btn-info'
-            ],
-            [
-                'label' => 'Accept',
-                'icon' => 'fas fa-check',
-                'class' => 'btn-sm btn-success',
-                'onclick' => 'onclick="acceptQuotation({id})"',
-                'condition' => function ($row) {
-                    return ($row['status'] ?? '') === 'Pending';
-                }
-            ],
-            [
-                'label' => 'Delete',
-                'icon' => 'fas fa-trash',
-                'class' => 'btn-icon-danger',
-                'onclick' => 'onclick="openDeleteModal({id})"'
-            ]
-        ],
-        'empty_message' => 'No quotations found.'
-    ];
-
-    include __DIR__ . '/../../inc/components/data_table.php';
-    ?>
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Customer Name</th>
+                            <th>Email</th>
+                            <th>Date</th>
+                            <th>Contact Number</th>
+                            <th>Address</th>
+                            <th>Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($quotations)): ?>
+                            <tr><td colspan="7" class="text-center p-6 text-secondary">No quotations found.</td></tr>
+                        <?php else: ?>
+                            <?php foreach ($quotations as $row): ?>
+                                <?php
+                                $qid    = $row['id'] ?? 'N/A';
+                                $name   = $row['customer'] ?? 'Unknown';
+                                $email  = $row['email'] ?? '';
+                                $date   = $row['date'] ?? '';
+                                $phone  = $row['contact'] ?? '';
+                                $addr   = $row['address'] ?? '';
+                                $status = $row['status'] ?? 'Pending';
+                                ?>
+                                <tr class="data-table-row">
+                                    <td>
+                                        <div class="d-flex align-center gap-3">
+                                            <img src="<?php echo getAvatarUrl($name); ?>" alt="<?php echo htmlspecialchars($name); ?>" style="width:40px;border-radius:50%;">
+                                            <div class="agent-details">
+                                                <div class="agent-name"><?php echo htmlspecialchars($name); ?></div>
+                                                <div class="agent-id text-xs">ID: <?php echo htmlspecialchars($qid); ?></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($email); ?></td>
+                                    <td><?php echo htmlspecialchars($date); ?></td>
+                                    <td><?php echo htmlspecialchars($phone); ?></td>
+                                    <td><?php echo htmlspecialchars($addr); ?></td>
+                                    <td>
+                                        <div class="d-flex align-center">
+                                            <span class="status-dot <?php echo getStatusClass($status); ?> mr-2"></span>
+                                            <span class="badge <?php echo $status === 'Pending' ? 'badge-warning' : 'badge-success'; ?>"><?php echo $status; ?></span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="actions-menu d-flex gap-2 justify-center">
+                                            <button class="btn-icon btn-sm btn-info" title="View" onclick="viewQuotationDetails(<?php echo (int)$qid; ?>)"><i class="fas fa-eye"></i></button>
+                                            <?php if ($status === 'Pending'): ?>
+                                            <button class="btn-icon btn-sm btn-success" title="Accept" onclick="acceptQuotation(<?php echo (int)$qid; ?>)"><i class="fas fa-check"></i></button>
+                                            <?php endif; ?>
+                                            <button class="btn-icon btn-icon-danger" title="Delete" onclick="openDeleteModal(<?php echo (int)$qid; ?>)"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div id="viewQuotationModal" class="custom-modal" style="display: none;">

@@ -100,70 +100,72 @@ function getComplaintStatusClass($status)
     include __DIR__ . '/../../inc/components/stat_card.php';
     ?>
 
-    <?php
-    $config = [
-        'headers' => [
-            ['key' => 'customer', 'label' => 'Submitted By'],
-            ['key' => 'title', 'label' => 'Subject'],
-            ['key' => 'date', 'label' => 'Date Received'],
-            ['key' => 'status', 'label' => 'Status']
-        ],
-        'rows' => $tasks,
-        'columns' => [
-            [
-                'key' => 'complaint_id',
-                'render' => function ($row) {
-                    $id = is_object($row) ? $row->complaint_id : $row['complaint_id'];
-                    return '<span class="font-semibold">#' . $id . '</span>';
-                }
-            ],
-            [
-                'key' => 'customer',
-                'render' => function ($row) {
-                    $name = is_object($row) ? $row->customer : $row['customer'];
-                    $role = is_object($row) ? $row->user_type : $row['user_type'];
-                    return '<div class="d-flex align-center gap-3">
-                                <img src="' . getAvatarUrl($name) . '" alt="' . htmlspecialchars($name) . '">
-                                <div class="user-details">
-                                    <div class="user-name">' . htmlspecialchars($name) . '</div>
-                                    <div class="text-secondary text-xs">' . htmlspecialchars($role) . '</div>
-                                </div>
-                            </div>';
-                }
-            ],
-            [
-                'key' => 'status',
-                'render' => function ($row) {
-                    $status = is_object($row) ? $row->status : $row['status'];
-                    return '<div class="d-flex align-center">
-                                <span class="status-dot ' . getComplaintStatusClass($status) . ' mr-2"></span>
-                                <span class="badge ' . (strtolower($status) === 'pending' ? 'badge-warning' : 'badge-success') . '">' . ucfirst($status) . '</span>
-                            </div>';
-                }
-            ]
-        ],
-        'actions' => [
-            [
-                'label' => 'View Details',
-                'icon' => 'fas fa-eye',
-                'class' => 'btn-sm btn-info',
-                'onclick' => 'onclick="openViewModal({complaint_id})"'
-            ],
-            [
-                'label' => 'Resolve',
-                'icon' => 'fas fa-check-circle',
-                'class' => 'btn-sm btn-success',
-                'onclick' => 'onclick="openResolveModal({complaint_id})"',
-                'condition' => function ($row) {
-                    $status = is_object($row) ? $row->status : $row['status'];
-                    return strtolower($status) === 'pending';
-                }
-            ]
-        ],
-        'empty_message' => 'No support requests found.'
-    ];
-    include __DIR__ . '/../../inc/components/data_table.php';
-    ?>
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Submitted By</th>
+                            <th>Subject</th>
+                            <th>Date Received</th>
+                            <th>Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($tasks)): ?>
+                            <tr><td colspan="5" class="text-center p-6 text-secondary">No support requests found.</td></tr>
+                        <?php else: ?>
+                            <?php foreach ($tasks as $idx => $row): ?>
+                                <?php
+                                $name   = is_object($row) ? $row->customer    : $row['customer'];
+                                $role   = is_object($row) ? $row->user_type   : $row['user_type'];
+                                $title  = is_object($row) ? $row->title       : $row['title'];
+                                $date   = is_object($row) ? $row->date        : $row['date'];
+                                $status = is_object($row) ? $row->status      : $row['status'];
+                                $cid    = is_object($row) ? $row->complaint_id: $row['complaint_id'];
+                                ?>
+                                <tr class="data-table-row">
+                                    <td>
+                                        <div class="d-flex align-center gap-3">
+                                            <img src="<?php echo getAvatarUrl($name); ?>" alt="<?php echo htmlspecialchars($name); ?>">
+                                            <div class="user-details">
+                                                <div class="user-name"><?php echo htmlspecialchars($name); ?></div>
+                                                <div class="text-secondary text-xs"><?php echo htmlspecialchars($role); ?></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($title); ?></td>
+                                    <td><?php echo htmlspecialchars($date); ?></td>
+                                    <td>
+                                        <div class="d-flex align-center">
+                                            <span class="status-dot <?php echo getComplaintStatusClass($status); ?> mr-2"></span>
+                                            <span class="badge <?php echo strtolower($status) === 'pending' ? 'badge-warning' : 'badge-success'; ?>"><?php echo ucfirst($status); ?></span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="actions-menu d-flex gap-2 justify-center">
+                                            <button class="btn-icon btn-sm btn-info" title="View Details"
+                                                    onclick="showViewModal(<?php echo $idx; ?>)">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <?php if (strtolower($status) === 'pending'): ?>
+                                            <button class="btn-icon btn-sm btn-success" title="Resolve"
+                                                    onclick="openResolveModal(<?php echo (int)$cid; ?>)">
+                                                <i class="fas fa-check-circle"></i>
+                                            </button>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 <div id="viewModal" class="custom-modal" style="display: none;">
     <div class="modal-overlay" onclick="closeViewModal()"></div>

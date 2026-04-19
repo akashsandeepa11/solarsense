@@ -107,96 +107,67 @@ $orderRows = array_map(function ($o) {
 
     <!-- Orders Table -->
     <div class="container-fluid p-8">
-        <?php
-        $config = [
-            'headers' => [
-                ['key' => 'order_id', 'label' => 'Order #'],
-                ['key' => 'customer_name', 'label' => 'Customer'],
-                ['key' => 'item_count', 'label' => 'Items'],
-                ['key' => 'total', 'label' => 'Total'],
-                ['key' => 'date', 'label' => 'Date'],
-                ['key' => 'agent', 'label' => 'Assigned Agent'],
-                ['key' => 'status', 'label' => 'Status'],
-            ],
-            'rows' => $orders,
-            'columns' => [
-                [
-                    'key' => 'order_id',
-                    'render' => function ($row) {
-                        return '<span class="font-semibold">#' . htmlspecialchars($row->order_id) . '</span>';
-                    }
-                ],
-                [
-                    'key' => 'customer_name',
-                    'render' => function ($row) {
-                        return '<span class="customer-name">' . htmlspecialchars($row->customer_name) . '</span>';
-                    }
-                ],
-                [
-                    'key' => 'item_count',
-                    'render' => function ($row) {
-                        $count = $row->item_count ?? 0;
-                        return $count . ' item' . ($count != 1 ? 's' : '');
-                    }
-                ],
-                [
-                    'key' => 'total',
-                    'render' => function ($row) {
-                        return '<span class="font-semibold">LKR ' . number_format($row->total_amount ?? 0, 2) . '</span>';
-                    }
-                ],
-                [
-                    'key' => 'agent',
-                    'render' => function ($row) {
-                        if (!empty($row->agent_id)) {
-                            return '<div data-filter="assigned" data-filter-value="yes">
-                                    <span class="text-success font-semibold">'
-                                . htmlspecialchars($row->agent_name) .
-                                '</span><br>
-                                    <small class="text-success">Assigned</small>
-                                </div>';
-                        } else {
-                            return '<span class="text-warning" data-filter="assigned" data-filter-value="no">Unassigned</span>';
-                        }
-                    }
-                ],
-                [
-                    'key' => 'status',
-                    'render' => function ($row) {
-                        $status = strtolower($row->status ?? 'pending');
-                        $map = [
-                            'pending' => ['bg-warning', 'Pending'],
-                            'completed' => ['bg-success', 'Completed'],
-                            'cancelled' => ['bg-error', 'Cancelled'],
-                        ];
-                        [$cls, $lbl] = $map[$status] ?? ['bg-secondary', ucfirst($status)];
-                        return '<span class="badge ' . $cls . ' text-surface px-3 py-1 rounded-full text-xs">' . $lbl . '</span>';
-                    }
-                ],
-            ],
-            'empty_message' => 'No orders found.',
-        ];
-
-        // ONLY ALLOW OPERATION MANAGER TO SEE ACTIONS
-        if ($data['user']['role'] === ROLE_OPERATION_MANAGER) {
-            $config['actions'] = [
-                [
-                    'label' => 'Assign',
-                    'icon' => 'fas fa-user-plus',
-                    'class' => 'btn-sm btn-success',
-                    'onclick' => 'onclick="openAssignModal(\'{order_id}\', \'{customer_name}\', \'{agent_id}\')"'
-                ],
-                // [
-                //     'label' => 'Delete',
-                //     'icon' => 'fas fa-trash',
-                //     'class' => 'btn-icon-danger',
-                //     'onclick' => 'onclick="openDeleteModal(\'{task_id}\', \'{service_type}\', \'{customer_name}\')"'
-                // ]
-            ];
-        }
-
-        include __DIR__ . '/../../inc/components/data_table.php';
-        ?>
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Order #</th>
+                                <th>Customer</th>
+                                <th>Items</th>
+                                <th>Total</th>
+                                <th>Date</th>
+                                <th>Assigned Agent</th>
+                                <th>Status</th>
+                                <?php if ($data['user']['role'] === ROLE_OPERATION_MANAGER): ?><th class="text-center">Actions</th><?php endif; ?>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($orders)): ?>
+                                <tr><td colspan="<?php echo $data['user']['role'] === ROLE_OPERATION_MANAGER ? 8 : 7; ?>" class="text-center p-6 text-secondary">No orders found.</td></tr>
+                            <?php else: ?>
+                                <?php foreach ($orders as $row): ?>
+                                    <?php
+                                    $status = strtolower($row->status ?? 'pending');
+                                    $map = ['pending'=>['bg-warning','Pending'],'completed'=>['bg-success','Completed'],'cancelled'=>['bg-error','Cancelled']];
+                                    [$cls, $lbl] = $map[$status] ?? ['bg-secondary', ucfirst($status)];
+                                    ?>
+                                    <tr class="data-table-row">
+                                        <td><span class="font-semibold">#<?php echo htmlspecialchars($row->order_id); ?></span></td>
+                                        <td><span class="customer-name"><?php echo htmlspecialchars($row->customer_name); ?></span></td>
+                                        <td><?php $c = $row->item_count ?? 0; echo $c . ' item' . ($c != 1 ? 's' : ''); ?></td>
+                                        <td><span class="font-semibold">LKR <?php echo number_format($row->total_amount ?? 0, 2); ?></span></td>
+                                        <td><?php echo htmlspecialchars($row->date ?? '—'); ?></td>
+                                        <td>
+                                            <?php if (!empty($row->agent_id)): ?>
+                                                <div data-filter="assigned" data-filter-value="yes">
+                                                    <span class="text-success font-semibold"><?php echo htmlspecialchars($row->agent_name); ?></span><br>
+                                                    <small class="text-success">Assigned</small>
+                                                </div>
+                                            <?php else: ?>
+                                                <span class="text-warning" data-filter="assigned" data-filter-value="no">Unassigned</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td><span class="badge <?php echo $cls; ?> text-surface px-3 py-1 rounded-full text-xs"><?php echo $lbl; ?></span></td>
+                                        <?php if ($data['user']['role'] === ROLE_OPERATION_MANAGER): ?>
+                                        <td>
+                                            <div class="actions-menu d-flex gap-2 justify-center">
+                                                <button class="btn-icon btn-sm btn-success" title="Assign"
+                                                        onclick="openAssignModal('<?php echo $row->order_id; ?>', '<?php echo htmlspecialchars($row->customer_name, ENT_QUOTES); ?>', '<?php echo $row->agent_id; ?>')">
+                                                    <i class="fas fa-user-plus"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <?php endif; ?>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Assign Modal -->

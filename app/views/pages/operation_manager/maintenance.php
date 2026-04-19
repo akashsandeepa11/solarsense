@@ -185,96 +185,77 @@ function getMaintenanceStatusClass($status)
     include __DIR__ . '/../../inc/components/stat_card.php';
     ?>
 
-    <?php
-    $config = [
-        'headers' => [
-            ['key' => 'id', 'label' => '#'],
-            ['key' => 'type', 'label' => 'Service Type'],
-            ['key' => 'customer', 'label' => 'Customer'],
-            ['key' => 'description', 'label' => 'Description'],
-            ['key' => 'date', 'label' => 'Date'],
-            ['key' => 'agent', 'label' => 'Assigned Agent'],
-            ['key' => 'status', 'label' => 'Status']
-        ],
-        'rows' => $tasks,
-        'columns' => [
-            [
-                'key' => 'id',
-                'render' => function ($row) {
-                    return '<span class="font-semibold">#' . $row->task_id . '</span>';
-                }
-            ],
-
-            [
-                'key' => 'type',
-                'render' => fn($row) => htmlspecialchars($row->service_type ?? '-')
-            ],
-
-
-            [
-                'key' => 'customer',
-                'render' => function ($row) {
-                    return '<div class="agent-details">
-                                <div class="agent-name font-semibold">' . htmlspecialchars($row->customer_name) . '</div>
-                                <div class="agent-role text-secondary text-xs">' . htmlspecialchars($row->customer_address) . '</div>
-                            </div>';
-                }
-            ],
-
-            [
-                'key' => 'description',
-                'render' => fn($row) => htmlspecialchars($row->service_description ?? '-')
-            ],
-
-            [
-                'key' => 'date',
-                'render' => fn($row) => date('Y-m-d', strtotime($row->request_date))
-            ],
-
-            [
-                'key' => 'agent',
-                'render' => function ($row) {
-                    if (!empty($row->agent_id)) {
-                        return '<div data-filter="assigned" data-filter-value="yes">
-                                    <span class="text-success font-semibold">'
-                            . htmlspecialchars($row->agent_name) .
-                            '</span><br>
-                                    <small class="text-success">Assigned</small>
-                                </div>';
-                    } else {
-                        return '<span class="text-warning" data-filter="assigned" data-filter-value="no">Unassigned</span>';
-                    }
-                }
-            ],
-            [
-                'key' => 'status',
-                'render' => function ($row) {
-                    $badgeClass = $row->status === 'Completed' ? 'badge-success' : ($row->status === 'Pending' ? 'badge-warning' : ($row->status === 'In Progress' ? 'badge-info' : 'badge-secondary'));
-                    return '<div class="d-flex align-center" data-filter="status">
-                                <span class="' . getMaintenanceStatusClass($row->status) . ' mr-2"></span>
-                                <span class="badge ' . $badgeClass . '">' . $row->status . '</span>
-                            </div>';
-                }
-            ]
-        ],
-        'actions' => [
-            [
-                'label' => 'Assign',
-                'icon' => 'fas fa-user-plus',
-                'class' => 'btn-sm btn-success',
-                'onclick' => 'onclick="openAssignModal(&quot;{task_id}&quot;, &quot;{service_type}&quot;, &quot;{customer_name}&quot;, &quot;{agent_id}&quot;)"'
-            ],
-            [
-                'label' => 'Delete',
-                'icon' => 'fas fa-trash',
-                'class' => 'btn-icon-danger',
-                'onclick' => 'onclick="openDeleteModal(&quot;{task_id}&quot;, &quot;{service_type}&quot;, &quot;{customer_name}&quot;)"'
-            ]
-        ],
-        'empty_message' => 'No maintenance tasks found.'
-    ];
-    include __DIR__ . '/../../inc/components/data_table.php';
-    ?>
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Service Type</th>
+                            <th>Customer</th>
+                            <th>Description</th>
+                            <th>Date</th>
+                            <th>Assigned Agent</th>
+                            <th>Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($tasks)): ?>
+                            <tr><td colspan="8" class="text-center p-6 text-secondary">No maintenance tasks found.</td></tr>
+                        <?php else: ?>
+                            <?php foreach ($tasks as $row): ?>
+                                <?php
+                                $badgeClass = $row->status === 'Completed' ? 'badge-success' : ($row->status === 'Pending' ? 'badge-warning' : ($row->status === 'In Progress' ? 'badge-info' : 'badge-secondary'));
+                                ?>
+                                <tr class="data-table-row">
+                                    <td><span class="font-semibold">#<?php echo $row->task_id; ?></span></td>
+                                    <td><?php echo htmlspecialchars($row->service_type ?? '-'); ?></td>
+                                    <td>
+                                        <div class="agent-details">
+                                            <div class="agent-name font-semibold"><?php echo htmlspecialchars($row->customer_name); ?></div>
+                                            <div class="agent-role text-secondary text-xs"><?php echo htmlspecialchars($row->customer_address); ?></div>
+                                        </div>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($row->service_description ?? '-'); ?></td>
+                                    <td><?php echo date('Y-m-d', strtotime($row->request_date)); ?></td>
+                                    <td>
+                                        <?php if (!empty($row->agent_id)): ?>
+                                            <div data-filter="assigned" data-filter-value="yes">
+                                                <span class="text-success font-semibold"><?php echo htmlspecialchars($row->agent_name); ?></span><br>
+                                                <small class="text-success">Assigned</small>
+                                            </div>
+                                        <?php else: ?>
+                                            <span class="text-warning" data-filter="assigned" data-filter-value="no">Unassigned</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-center" data-filter="status">
+                                            <span class="<?php echo getMaintenanceStatusClass($row->status); ?> mr-2"></span>
+                                            <span class="badge <?php echo $badgeClass; ?>"><?php echo $row->status; ?></span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="actions-menu d-flex gap-2 justify-center">
+                                            <button class="btn-icon btn-sm btn-success" title="Assign"
+                                                    onclick="openAssignModal(&quot;<?php echo $row->task_id; ?>&quot;, &quot;<?php echo htmlspecialchars($row->service_type, ENT_QUOTES); ?>&quot;, &quot;<?php echo htmlspecialchars($row->customer_name, ENT_QUOTES); ?>&quot;, &quot;<?php echo $row->agent_id; ?>&quot;)">
+                                                <i class="fas fa-user-plus"></i>
+                                            </button>
+                                            <button class="btn-icon btn-icon-danger" title="Delete"
+                                                    onclick="openDeleteModal(&quot;<?php echo $row->task_id; ?>&quot;, &quot;<?php echo htmlspecialchars($row->service_type, ENT_QUOTES); ?>&quot;, &quot;<?php echo htmlspecialchars($row->customer_name, ENT_QUOTES); ?>&quot;)">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Add Task Modal -->

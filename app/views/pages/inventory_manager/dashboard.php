@@ -100,26 +100,30 @@ $dashboard_stats = [
                                 'current'  => $item->quantity ?? $item['quantity'],
                             ];
                         }, (array)$lowStockItems);
-
-                        $config = [
-                            'headers' => [
-                                ['key' => 'name',     'label' => 'Item'],
-                                ['key' => 'category', 'label' => 'Category'],
-                                ['key' => 'current',  'label' => 'Qty'],
-                            ],
-                            'rows'    => $lowStockRows,
-                            'columns' => [
-                                ['key' => 'name',    'render' => function($r) { return '<span class="font-medium">' . htmlspecialchars($r['name']) . '</span>'; }],
-                                ['key' => 'category','render' => function($r) { return '<span class="text-secondary">' . htmlspecialchars($r['category']) . '</span>'; }],
-                                ['key' => 'current', 'render' => function($r) { return '<span class="text-error font-semibold">' . (int)$r['current'] . '</span>'; }],
-                            ],
-                            'actions'       => [
-                                ['label' => 'View', 'icon' => 'fas fa-eye', 'url' => URLROOT . '/inventorymanager/item/{id}', 'class' => 'btn-sm btn-primary'],
-                            ],
-                            'empty_message' => 'No low stock items',
-                        ];
-                        include __DIR__ . '/../../inc/components/data_table.php';
                         ?>
+                        <div class="card">
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="data-table">
+                                        <thead><tr><th>Item</th><th>Category</th><th>Qty</th><th class="text-center">Actions</th></tr></thead>
+                                        <tbody>
+                                            <?php foreach ($lowStockRows as $r): ?>
+                                                <tr class="data-table-row">
+                                                    <td><span class="font-medium"><?php echo htmlspecialchars($r['name']); ?></span></td>
+                                                    <td><span class="text-secondary"><?php echo htmlspecialchars($r['category']); ?></span></td>
+                                                    <td><span class="text-error font-semibold"><?php echo (int)$r['current']; ?></span></td>
+                                                    <td>
+                                                        <div class="actions-menu d-flex gap-2 justify-center">
+                                                            <a href="<?php echo URLROOT; ?>/inventorymanager/item/<?php echo $r['id']; ?>" class="btn-icon btn-sm btn-primary" title="View"><i class="fas fa-eye"></i></a>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     <?php endif; ?>
                 </div>
             </div>
@@ -148,35 +152,34 @@ $dashboard_stats = [
                         'date'         => $o->date        ?? $o['date']        ?? '—',
                     ];
                 }, (array)$recentOrders);
-
-                $config = [
-                    'headers' => [
-                        ['key' => 'order_id',     'label' => 'Order #'],
-                        ['key' => 'date',         'label' => 'Date'],
-                        ['key' => 'total_amount', 'label' => 'Total'],
-                        ['key' => 'status',       'label' => 'Status'],
-                    ],
-                    'rows'    => $orderRows,
-                    'columns' => [
-                        ['key' => 'order_id',     'render' => function($r) { return '<span class="font-medium text-primary">' . htmlspecialchars($r['order_id']) . '</span>'; }],
-                        ['key' => 'total_amount', 'render' => function($r) { return '<span class="font-semibold">' . htmlspecialchars($r['total_amount']) . '</span>'; }],
-                        ['key' => 'status',       'render' => function($r) {
-                            $map = [
-                                'pending'   => ['bg-warning', 'Pending'],
-                                'completed' => ['bg-success', 'Completed'],
-                                'cancelled' => ['bg-error',   'Cancelled'],
-                                'approved'  => ['bg-accent',  'Approved'],
-                                'delivered' => ['bg-primary', 'Delivered'],
-                            ];
-                            $s = strtolower($r['status']);
-                            [$cls, $lbl] = $map[$s] ?? ['bg-secondary', ucfirst($r['status'])];
-                            return '<span class="badge ' . $cls . ' text-surface px-3 py-1 rounded-full text-xs">' . $lbl . '</span>';
-                        }],
-                    ],
-                    'empty_message' => 'No recent orders',
-                ];
-                include __DIR__ . '/../../inc/components/data_table.php';
                 ?>
+                <div class="card">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead><tr><th>Order #</th><th>Date</th><th>Total</th><th>Status</th></tr></thead>
+                                <tbody>
+                                    <?php if (empty($orderRows)): ?>
+                                        <tr><td colspan="4" class="text-center p-6 text-secondary">No recent orders</td></tr>
+                                    <?php else: ?>
+                                        <?php foreach ($orderRows as $r):
+                                            $s = strtolower($r['status']);
+                                            $map = ['pending'=>['bg-warning','Pending'],'completed'=>['bg-success','Completed'],'cancelled'=>['bg-error','Cancelled'],'approved'=>['bg-accent','Approved'],'delivered'=>['bg-primary','Delivered']];
+                                            [$cls, $lbl] = $map[$s] ?? ['bg-secondary', ucfirst($r['status'])];
+                                        ?>
+                                            <tr class="data-table-row">
+                                                <td><span class="font-medium text-primary"><?php echo htmlspecialchars($r['order_id']); ?></span></td>
+                                                <td><?php echo htmlspecialchars($r['date']); ?></td>
+                                                <td><span class="font-semibold"><?php echo htmlspecialchars($r['total_amount']); ?></span></td>
+                                                <td><span class="badge <?php echo $cls; ?> text-surface px-3 py-1 rounded-full text-xs"><?php echo $lbl; ?></span></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             <?php endif; ?>
         </div>
     </div>

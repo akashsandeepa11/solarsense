@@ -174,40 +174,60 @@ function getStatusClass($status)
     include __DIR__ . '/../../inc/components/stat_card.php';
     ?>
 
-    <?php
-    $config = [
-        'headers' => [
-            ['key' => 'company_id', 'label' => 'ID'],
-            ['key' => 'company_name', 'label' => 'Company Name'],
-            ['key' => 'email', 'label' => 'Email Address'],
-            ['key' => 'address', 'label' => 'Address'],
-            ['key' => 'contact', 'label' => 'Contact Number']
-        ],
-        'rows' => $data['companies'],
-        'columns' => [
-            [
-                'key' => 'company_name',
-                'render' => function ($row) {
-                    $name = is_object($row) ? $row->company_name : $row['company_name'];
-                    return '<div class="d-flex align-center gap-3">
-                            <img src="' . getAvatarUrl($name) . '" alt="' . htmlspecialchars($name) . '" style="width: 35px; border-radius: 50%;">
-                            <div class="agent-details">
-                                <div class="agent-name font-semibold">' . htmlspecialchars($name) . '</div>
-                            </div>
-                        </div>';
-                }
-            ]
-        ],
-        'actions' => [
-            ['label' => 'View', 'icon' => 'fas fa-eye', 'url' => URLROOT . '/superadmin/companies/details/{company_id}', 'class' => 'btn-sm btn-info'],
-            ['label' => 'Edit', 'icon' => 'fas fa-edit', 'url' => URLROOT . '/superadmin/companies/edit/{company_id}', 'class' => 'btn-sm btn-primary'],
-            ['label' => 'Remove', 'icon' => 'fas fa-trash', 'class' => 'btn-icon-danger', 'onclick' => 'onclick="openDeleteModal({company_id})"']
-        ],
-        'empty_message' => 'No verified companies found.'
-    ];
-
-    include __DIR__ . '/../../inc/components/data_table.php';
-    ?>
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Company Name</th>
+                            <th>Email Address</th>
+                            <th>Address</th>
+                            <th>Contact Number</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($data['companies'])): ?>
+                            <tr><td colspan="6" class="text-center p-6 text-secondary">No verified companies found.</td></tr>
+                        <?php else: ?>
+                            <?php foreach ($data['companies'] as $row): ?>
+                                <?php
+                                $cid   = is_object($row) ? $row->company_id   : $row['company_id'];
+                                $name  = is_object($row) ? $row->company_name : $row['company_name'];
+                                $email = is_object($row) ? $row->email        : $row['email'];
+                                $addr  = is_object($row) ? $row->address      : $row['address'];
+                                $phone = is_object($row) ? $row->contact      : $row['contact'];
+                                ?>
+                                <tr class="data-table-row">
+                                    <td><?php echo htmlspecialchars($cid); ?></td>
+                                    <td>
+                                        <div class="d-flex align-center gap-3">
+                                            <img src="<?php echo getAvatarUrl($name); ?>" alt="<?php echo htmlspecialchars($name); ?>" style="width:35px;border-radius:50%;">
+                                            <div class="agent-details">
+                                                <div class="agent-name font-semibold"><?php echo htmlspecialchars($name); ?></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($email); ?></td>
+                                    <td><?php echo htmlspecialchars($addr); ?></td>
+                                    <td><?php echo htmlspecialchars($phone); ?></td>
+                                    <td>
+                                        <div class="actions-menu d-flex gap-2 justify-center">
+                                            <a href="<?php echo URLROOT; ?>/superadmin/companies/details/<?php echo $cid; ?>" class="btn-icon btn-sm btn-info" title="View"><i class="fas fa-eye"></i></a>
+                                            <a href="<?php echo URLROOT; ?>/superadmin/companies/edit/<?php echo $cid; ?>" class="btn-icon btn-sm btn-primary" title="Edit"><i class="fas fa-edit"></i></a>
+                                            <button class="btn-icon btn-icon-danger" title="Remove" onclick="openDeleteModal(<?php echo (int)$cid; ?>)"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
     <?php
     $config = [

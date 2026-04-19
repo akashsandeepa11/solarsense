@@ -35,42 +35,48 @@
         </div>
     </div>
 
-    <?php
-    // Table configuration
-    $config = [
-        'headers' => [
-            ['key' => 'id', 'label' => 'Report ID'],
-            ['key' => 'type', 'label' => 'Task Type'],
-            ['key' => 'customer', 'label' => 'Customer'],
-            ['key' => 'agent', 'label' => 'Technician'],
-            ['key' => 'date', 'label' => 'Completion Date'],
-            ['key' => 'status', 'label' => 'Final Status']
-        ],
-        'rows' => $data['reports'],
-        'columns' => [
-            ['key' => 'id', 'render' => fn($row) => '<span class="font-semibold">#REP-' . $row->report_id . '</span>'],
-            ['key' => 'type', 'render' => fn($row) => htmlspecialchars($row->service_type)],
-            ['key' => 'customer', 'render' => fn($row) => htmlspecialchars($row->customer_name)],
-            ['key' => 'agent', 'render' => fn($row) => '<span class="text-primary">' . htmlspecialchars($row->agent_name) . '</span>'],
-            ['key' => 'date', 'render' => fn($row) => date('M d, Y', strtotime($row->completion_date))],
-            [
-                'key' => 'status',
-                'render' => function ($row) {
-                    $cls = $row->final_status === 'completed' ? 'badge-success' : 'badge-warning';
-                    return '<span class="badge ' . $cls . '">' . ucfirst($row->final_status) . '</span>';
-                }
-            ]
-        ],
-        'actions' => [
-            [
-                'label' => 'View Full Report',
-                'icon' => 'fas fa-eye',
-                'class' => 'btn-sm btn-info',
-                'url' => URLROOT . '/operationmanager/maintenance/reports/view/{report_id}'
-            ]
-        ],
-        'empty_message' => 'No service reports found.'
-    ];
-    include __DIR__ . '/../../inc/components/data_table.php';
-    ?>
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Report ID</th>
+                            <th>Task Type</th>
+                            <th>Customer</th>
+                            <th>Technician</th>
+                            <th>Completion Date</th>
+                            <th>Final Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($data['reports'])): ?>
+                            <tr><td colspan="7" class="text-center p-6 text-secondary">No service reports found.</td></tr>
+                        <?php else: ?>
+                            <?php foreach ($data['reports'] as $row): ?>
+                                <?php $cls = $row->final_status === 'completed' ? 'badge-success' : 'badge-warning'; ?>
+                                <tr class="data-table-row">
+                                    <td><span class="font-semibold">#REP-<?php echo $row->report_id; ?></span></td>
+                                    <td><?php echo htmlspecialchars($row->service_type); ?></td>
+                                    <td><?php echo htmlspecialchars($row->customer_name); ?></td>
+                                    <td><span class="text-primary"><?php echo htmlspecialchars($row->agent_name); ?></span></td>
+                                    <td><?php echo date('M d, Y', strtotime($row->completion_date)); ?></td>
+                                    <td><span class="badge <?php echo $cls; ?>"><?php echo ucfirst($row->final_status); ?></span></td>
+                                    <td>
+                                        <div class="actions-menu d-flex gap-2 justify-center">
+                                            <a href="<?php echo URLROOT; ?>/operationmanager/maintenance/reports/view/<?php echo $row->report_id; ?>"
+                                               class="btn-icon btn-sm btn-info" title="View Full Report">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>

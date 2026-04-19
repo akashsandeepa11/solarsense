@@ -126,100 +126,70 @@
         }
     }
 
-    $config = [
-        'headers' => [
-            ['key' => 'name', 'label' => 'Agent'],
-            ['key' => 'email', 'label' => 'Contact'],
-            ['key' => 'assigned', 'label' => 'Assigned Tasks'],
-            ['key' => 'completed', 'label' => 'Completed'],
-            ['key' => 'pending', 'label' => 'Pending'],
-            ['key' => 'status', 'label' => 'Status']
-        ],
-        'rows' => $processedAgents,
-        'columns' => [
-            [
-                'key' => 'name',
-                'render' => function ($row) {
-                    return '<div class="d-flex align-center gap-3">
-                                <div class="agent-avatar">
-                                    <img src="' . htmlspecialchars($row['avatar']) . '" alt="' . htmlspecialchars($row['name']) . '">
-                                </div>
-                                <div class="agent-details">
-                                    <div class="agent-name font-semibold">' . htmlspecialchars($row['name']) . '</div>
-                                    <div class="agent-role text-secondary text-sm">' . htmlspecialchars($row['role']) . '</div>
-                                </div>
-                            </div>';
-                }
-            ],
-            [
-                'key' => 'email',
-                'render' => function ($row) {
-                    return '<div class="contact-info">
-                                <div class="email text-sm">' . htmlspecialchars($row['email']) . '</div>
-                                <div class="phone text-secondary text-sm">' . htmlspecialchars($row['phone']) . '</div>
-                            </div>';
-                }
-            ],
-            [
-                'key' => 'assigned',
-                'render' => function ($row) {
-                    return '<div class="assgined text-sm">' . htmlspecialchars($row['assigned']) . '</div>';
-                }
-            ],
-            [
-                'key' => 'completed',
-                'render' => function ($row) {
-                    return '<div class="completed text-sm">' . htmlspecialchars($row['completed']) . '</div>';
-                }
-            ],
-            [
-                'key' => 'pending',
-                'render' => function ($row) {
-                    return '<div class="pending text-sm">' . htmlspecialchars($row['pending']) . '</div>';
-                }
-            ],
-            [
-                'key' => 'status',
-                'render' => function ($row) {
-                    $statusColor = $row['status'] === 'Active' ? 'text-success' : 'text-warning';
-                    return '<span class="status-badge status-' . strtolower(str_replace(' ', '-', $row['status'])) . '">
-                                <i class="fas fa-circle ' . $statusColor . ' mr-1"></i>' . htmlspecialchars($row['status']) . '
-                            </span>';
-                }
-            ]
-        ]
-    ];
-
-    $rolePath = ($data['user']['role'] === ROLE_INSTALLER_ADMIN) ? 'installeradmin' : 'operationmanager';
-
-    $config['actions'] = [
-        [
-            'label' => 'View Details',
-            'icon' => 'fas fa-eye',
-            'url' => URLROOT . '/' . $rolePath . '/team/agent_details/{id}',
-            'class' => 'btn-sm btn-info'
-        ]
-    ];
-
-    // Add Edit and Remove actions only for Installer Admin
-    if ($data['user']['role'] === ROLE_INSTALLER_ADMIN) {
-        $config['actions'][] = [
-            'label' => 'Edit',
-            'icon' => 'fas fa-edit',
-            'url' => URLROOT . '/installeradmin/team/edit_agent/{id}'
-        ];
-        $config['actions'][] = [
-            'label' => 'Remove',
-            'icon' => 'fas fa-trash',
-            'class' => 'btn-icon-danger',
-            'onclick' => 'onclick="openDeleteModal(' . '{id}' . ')"'
-        ];
-    }
-
-    $config['empty_message'] = 'No clients available';
-
-    include __DIR__ . '/../../inc/components/data_table.php';
-    ?>
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Agent</th>
+                            <th>Contact</th>
+                            <th>Assigned Tasks</th>
+                            <th>Completed</th>
+                            <th>Pending</th>
+                            <th>Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($processedAgents)): ?>
+                            <tr><td colspan="7" class="text-center p-6 text-secondary">No clients available</td></tr>
+                        <?php else: ?>
+                            <?php foreach ($processedAgents as $row): ?>
+                                <?php
+                                $statusColor = $row['status'] === 'Active' ? 'text-success' : 'text-warning';
+                                ?>
+                                <tr class="data-table-row">
+                                    <td>
+                                        <div class="d-flex align-center gap-3">
+                                            <div class="agent-avatar"><img src="<?php echo htmlspecialchars($row['avatar']); ?>" alt="<?php echo htmlspecialchars($row['name']); ?>"></div>
+                                            <div class="agent-details">
+                                                <div class="agent-name font-semibold"><?php echo htmlspecialchars($row['name']); ?></div>
+                                                <div class="agent-role text-secondary text-sm"><?php echo htmlspecialchars($row['role']); ?></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="contact-info">
+                                            <div class="email text-sm"><?php echo htmlspecialchars($row['email']); ?></div>
+                                            <div class="phone text-secondary text-sm"><?php echo htmlspecialchars($row['phone']); ?></div>
+                                        </div>
+                                    </td>
+                                    <td><div class="assgined text-sm"><?php echo htmlspecialchars($row['assigned']); ?></div></td>
+                                    <td><div class="completed text-sm"><?php echo htmlspecialchars($row['completed']); ?></div></td>
+                                    <td><div class="pending text-sm"><?php echo htmlspecialchars($row['pending']); ?></div></td>
+                                    <td>
+                                        <span class="status-badge status-<?php echo strtolower(str_replace(' ', '-', $row['status'])); ?>">
+                                            <i class="fas fa-circle <?php echo $statusColor; ?> mr-1"></i><?php echo htmlspecialchars($row['status']); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="actions-menu d-flex gap-2 justify-center">
+                                            <a href="<?php echo URLROOT; ?>/<?php echo $rolePath; ?>/team/agent_details/<?php echo $row['id']; ?>" class="btn-icon btn-sm btn-info" title="View Details"><i class="fas fa-eye"></i></a>
+                                            <?php if ($data['user']['role'] === ROLE_INSTALLER_ADMIN): ?>
+                                            <a href="<?php echo URLROOT; ?>/installeradmin/team/edit_agent/<?php echo $row['id']; ?>" class="btn-icon" title="Edit"><i class="fas fa-edit"></i></a>
+                                            <button class="btn-icon btn-icon-danger" title="Remove" onclick="openDeleteModal(<?php echo (int)$row['id']; ?>)"><i class="fas fa-trash"></i></button>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
     <!-- Delete Confirmation Modal -->
     <?php
