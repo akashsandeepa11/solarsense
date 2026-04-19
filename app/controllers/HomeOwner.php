@@ -28,6 +28,13 @@ class HomeOwner extends Controller
         $this->managerModel      = $this->model('M_Manager');
     }
 
+    /** Fetch notifications for the logged-in homeowner (reused on every page). */
+    private function getNotifications(): array
+    {
+        $userId = (int) $_SESSION['user_id'];
+        return $this->notificationModel->get_notifications($userId, 10);
+    }
+
 
     public function dashboard($page = 'index')
     {
@@ -54,8 +61,6 @@ class HomeOwner extends Controller
             require_once APPROOT . '/api/weather_api.php';
             $daily_forecast = getDailySolarForecast($lat, $lon);
 
-            $notifications = $this->notificationModel->get_notifications($userId, 10);
-
             $data = [
                 'user'            => $this->user,
                 'stats'           => $stats,
@@ -63,7 +68,7 @@ class HomeOwner extends Controller
                 'selected_year'   => $selectedYear,
                 'available_years' => $availYears,
                 'daily_forecast'  => $daily_forecast,
-                'notifications'   => $notifications,
+                'notifications'   => $this->getNotifications(),
             ];
 
             $this->view('pages/homeowner/dashboard', $data, layout: 'dashboard');
@@ -271,7 +276,8 @@ class HomeOwner extends Controller
             'service_type' => trim($_POST['service_type'] ?? ''),
             'service_description' => trim($_POST['service_description'] ?? ''),
             'service_type_err' => '',
-            'service_description_err' => ''
+            'service_description_err' => '',
+            'notifications' => $this->getNotifications(),
         ];
 
         // validation
@@ -330,11 +336,12 @@ class HomeOwner extends Controller
             $data = [
                 'user' => $this->user,
                 'serviceTypes' => $serviceTypes,
-                 'serviceHistory' => $history,
+                'serviceHistory' => $history,
                 'service_type' => '',
                 'service_description' => '',
                 'service_type_err' => '',
-                'service_description_err' => ''
+                'service_description_err' => '',
+                'notifications' => $this->getNotifications(),
             ];
         
             $this->view('pages/homeowner/service', $data, layout: 'dashboard');
@@ -357,6 +364,7 @@ class HomeOwner extends Controller
                 'user' => $this->user,
                 'products' => $products ?? [],
                 'categories' => $categories ?? [],
+                'notifications' => $this->getNotifications(),
             ];
 
             $this->view('pages/homeowner/shop', $data, 'dashboard');
@@ -364,6 +372,7 @@ class HomeOwner extends Controller
         } else if ($page == 'cart') {
             $data = [
                 'user' => $this->user,
+                'notifications' => $this->getNotifications(),
             ];
 
             $this->view('pages/homeowner/cart', $data, 'dashboard');
@@ -377,7 +386,8 @@ class HomeOwner extends Controller
         $user_data = $this->profileModel->getHomeownerProfile($_SESSION['user_id']);
         $data = [
             'user' => $this->user,
-            'user_data' => $user_data
+            'user_data' => $user_data,
+            'notifications' => $this->getNotifications(),
         ];
 
         $this->view('pages/homeowner/profile', $data, 'dashboard');
@@ -387,6 +397,7 @@ class HomeOwner extends Controller
     {
         $data = [
             'user' => $this->user,
+            'notifications' => $this->getNotifications(),
         ];
         $this->view('pages/homeowner/help', $data, 'dashboard');
     }
@@ -404,12 +415,13 @@ class HomeOwner extends Controller
         $serviceHistory = $this->serviceModel->get_service_history();
 
         $data = [
-            'user'          => $this->user,
-            'chart_data'    => $chartData,
-            'sms_history'   => $smsHistory,
+            'user'            => $this->user,
+            'chart_data'      => $chartData,
+            'sms_history'     => $smsHistory,
             'service_history' => $serviceHistory,
-            'selected_year' => $selectedYear,
+            'selected_year'   => $selectedYear,
             'available_years' => $availYears ?: [(int)date('Y')],
+            'notifications'   => $this->getNotifications(),
         ];
 
         $this->view('pages/homeowner/reports', $data, 'dashboard');
@@ -497,8 +509,9 @@ class HomeOwner extends Controller
         } else {
             // GET — show the upload form
             $data = [
-                'user' => $this->user,
-                'recentUploads' => $this->smsModel->sms_history()
+                'user'          => $this->user,
+                'recentUploads' => $this->smsModel->sms_history(),
+                'notifications' => $this->getNotifications(),
             ];
             $this->view('pages/homeowner/uploadsms', $data, 'dashboard');
         }
@@ -542,8 +555,9 @@ class HomeOwner extends Controller
         }
 
         $data = [
-            'user' => $this->user,
-            'product' => $product
+            'user'          => $this->user,
+            'product'       => $product,
+            'notifications' => $this->getNotifications(),
         ];
 
         $this->view('pages/homeowner/product_details', $data, 'dashboard');

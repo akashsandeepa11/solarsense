@@ -51,6 +51,19 @@ function notifBadgeColor(string $type): string {
 <div class="notification-container" style="position: relative;">
     <button class="btn border-0 navbar-icon-btn mr-3" id="notification-btn" style="position: relative;">
         <i class="fas fa-regular fa-bell"></i>
+        <?php if (!empty($notifications)): ?>
+        <span id="notif-badge" style="
+            position: absolute; top: 2px; right: 2px;
+            background: #ef4444; color: #fff;
+            font-size: 0.65rem; font-weight: 700;
+            min-width: 18px; height: 18px;
+            border-radius: 9999px;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0 4px; line-height: 1;
+            pointer-events: none;
+            box-shadow: 0 0 0 2px #fff;
+        "><?php echo count($notifications) > 99 ? '99+' : count($notifications); ?></span>
+        <?php endif; ?>
     </button>
 
     <!-- Notification Dropdown Panel -->
@@ -157,6 +170,10 @@ function notifBadgeColor(string $type): string {
         e.stopPropagation();
         const isHidden = notificationPanel.style.display === 'none' || notificationPanel.style.display === '';
         notificationPanel.style.display = isHidden ? 'block' : 'none';
+
+        // Hide the badge once the user opens the panel
+        const badge = document.getElementById('notif-badge');
+        if (badge && isHidden) badge.style.display = 'none';
     });
 
     // Close panel when clicking outside
@@ -204,6 +221,9 @@ function notifBadgeColor(string $type): string {
                             '<div style="padding: 2rem; text-align: center; color: #9ca3af;">' +
                             '<i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>' +
                             'No notifications</div>';
+                        // Also hide badge after clearing
+                        const badge = document.getElementById('notif-badge');
+                        if (badge) badge.style.display = 'none';
                     }
                 })
                 .catch(() => {

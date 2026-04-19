@@ -96,14 +96,14 @@ if (!empty($data['user_type'])) {
     $config = [
         'title' => 'Super Admin Dashboard',
         'description' => 'Platform management and monitoring overview',
-        'buttons' => [
-            [
-                'label' => 'Generate Report',
-                'url' => URLROOT . '/superadmin/reports/generate',
-                'icon' => 'fas fa-file-alt',
-                'class' => 'btn-primary'
-            ]
-        ]
+        // 'buttons' => [
+        //     [
+        //         'label' => 'Generate Report',
+        //         'url' => URLROOT . '/superadmin/reports/generate',
+        //         'icon' => 'fas fa-file-alt',
+        //         'class' => 'btn-primary'
+        //     ]
+        // ]
     ];
     include __DIR__ . '/../../inc/components/page_header.php';
     ?>
