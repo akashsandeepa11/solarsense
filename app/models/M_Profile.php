@@ -105,6 +105,24 @@ class M_Profile
         return $this->db->single_assoc();
     }
 
+    public function updateServiceAgentProfile($userId, $userData)
+    {
+        $this->db->query('
+        UPDATE service_agent 
+        SET contact = :contact, address = :address, district = :district, specialization = :specialization, 
+        status = :status
+         WHERE user_id = :user_id');
+        $this->db->bind(':contact', $userData['contactNumber']);
+        $this->db->bind(':address', $userData['address']);
+        $this->db->bind(':district', $userData['district']);
+        $this->db->bind(':specialization', $userData['specialization']);
+        $this->db->bind(':status', $userData['status']);
+        $this->db->bind(':user_id', $userId);
+        $this->db->execute();
+
+        return true;
+    }
+
     public function getOperationManagerProfile($user_id, $company_id)
     {
         $this->db->query("
