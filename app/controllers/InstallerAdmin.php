@@ -1874,7 +1874,8 @@ class InstallerAdmin extends Controller
 
         $data = [
             'user' => $this->user,
-            'user_data' => $user_data
+            'profile_data' => $user_data,
+            'user_id' => $userId
         ];
 
         $this->view('pages/installer_admin/profile', $data, layout: 'dashboard');

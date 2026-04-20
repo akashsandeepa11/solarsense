@@ -3,7 +3,7 @@
 // --- Navigation Array for Super Admin ---
 $super_admin_nav = [
     'MAIN' => [
-        ['title' => 'Dashboard', 'url' => '/superadmin/dashboard', 'icon' => 'fa-solid fa-shield-halved'],
+        //['title' => 'Dashboard', 'url' => '/superadmin/dashboard', 'icon' => 'fa-solid fa-shield-halved'],
         ['title' => 'Companies', 'url' => '/superadmin/companies', 'icon' => 'fa-solid fa-building-user'],
         ['title' => 'Verification', 'url' => '/superadmin/verification', 'icon' => 'fa-solid fa-check-to-slot'],
         ['title' => 'Support', 'url' => '/superadmin/complaints', 'icon' => 'fa-solid fa-comment-dots'],

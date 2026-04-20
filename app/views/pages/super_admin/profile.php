@@ -1,10 +1,7 @@
 <div class="container-fluid p-8">
   <!-- Page Header -->
   <?php
-  $profile_data = [
-    'full_name' => $data['user_data']->full_name ?? 'Admin User',
-    'email' => $data['user_data']->email ?? 'admin@solarsense.com'
-  ];
+  $profile_data = $data['user_data'];
   $config = [
     'title' => 'Administrator Profile',
     'description' => 'Manage your account settings'
@@ -12,149 +9,32 @@
   include __DIR__ . '/../../inc/components/page_header.php';
   ?>
 
-  <div class="row">
-    <!-- Left Column -->
-    <div class="col-lg-8">
-      <?php
+  <link rel="stylesheet" href="<?php echo URLROOT; ?>/public/css/components/add_customer_form.css">
 
-      $profileSections = [
-        [
-          'title' => 'Personal Details',
-          'fields' => [
-            [
-              'id' => 'full-name',
-              'label' => 'Full Name',
-              'value' => $profile_data['full_name'],
-              'editable' => true,
-              'required' => true,
-              'summaryTarget' => 'summary-name'
-            ],
-            [
-              'id' => 'email',
-              'label' => 'Email',
-              'value' => $profile_data['email'],
-              'type' => 'email',
-              'editable' => true,
-              'required' => true,
-              'summaryTarget' => 'summary-email'
-            ]
-          ]
-        ],
-        [
-          'title' => 'System Settings',
-          'fields' => [
-            [
-              'id' => 'role',
-              'label' => 'Role',
-              'value' => 'Super Administrator',
-              'editable' => false
-            ],
-            [
-              'id' => 'status',
-              'label' => 'Account Status',
-              'value' => 'Active',
-              'editable' => false
-            ]
-          ]
-        ]
-      ];
+  <!-- Main Form Card -->
+  <div class="card shadow-lg rounded-xl">
+    <div class="card-body p-10">
 
-      foreach ($profileSections as $section):
-        ?>
-        <div class="card mb-4">
-          <div class="card-header bg-light border-bottom">
-            <h5 class="mb-0"><?php echo htmlspecialchars($section['title']); ?></h5>
-          </div>
-          <div class="card-body">
-            <div class="row">
-              <?php
-              foreach ($section['fields'] as $field) {
-                $inputConfig = [
-                  'id' => $field['id'],
-                  'name' => $field['id'],
-                  'label' => $field['label'],
-                  'value' => $field['value'],
-                  'type' => $field['type'] ?? 'text',
-                  'required' => $field['required'] ?? false,
-                  'editable' => $field['editable'] ?? true,
-                  'wrapperClass' => 'mb-3'
-                ];
-
-                if (!empty($field['summaryTarget'])) {
-                  $inputConfig['inputClass'] = 'update-summary';
-                }
-                ?>
-                <div class="col-md-6">
-                  <?php include APPROOT . '/views/inc/components/input_field.php'; ?>
-                </div>
-                <?php
-              }
-              ?>
+      <form id="profile" action="<?php echo URLROOT ?>/serviceagent/update_profile/" method="post" novalidate>
+        <!-- Personal & Contact Details Section -->
+        <div class="form-section mb-10">
+          <h3 class="text-lg font-semibold mb-6"><i class="fas fa-user text-primary mr-2"></i>Personal & Contact Details
+          </h3>
+          <div class="row">
+            <div class="col-md-6 form-group">
+              <?php $inputConfig = ['id' => 'fullName', 'name' => 'fullName', 'label' => 'Full Name', 'type' => 'text', 'icon' => 'fas fa-user', 'value' => $profile_data['full_name'] ?? '', 'required' => true, 'editable'=>false];
+              require APPROOT . '/views/inc/components/input_field.php'; ?>
+            </div>
+            <div class="col-md-6 form-group">
+              <?php $inputConfig = ['id' => 'email', 'name' => 'email', 'label' => 'Email Address (Username)', 'type' => 'email', 'icon' => 'fas fa-envelope', 'value' => $profile_data['email'] ?? '', 'editable'=>false];
+              require APPROOT . '/views/inc/components/input_field.php'; ?>
+            </div>
+            <div class="col-md-6 form-group">
+              <?php $inputConfig = ['id' => 'userID', 'name' => 'userID', 'label' => 'userID', 'type' => 'text', 'icon' => 'fas fa-phone', 'value' => $data['user_id'] ?? '', 'required' => true];
+              require APPROOT . '/views/inc/components/input_field.php'; ?>
             </div>
           </div>
         </div>
-      <?php endforeach; ?>
-    </div>
-
-    <!-- Right Column -->
-    <div class="col-lg-4">
-      <div class="card sticky-top" style="top: 20px;">
-        <div class="card-body">
-
-          <!-- Profile Info -->
-          <div class="text-center">
-            <img src="<?php echo htmlspecialchars(getAvatarUrl('Admin User', 140)); ?>" alt="Profile"
-              style="object-fit:cover;">
-            <h5 class="mb-1 fw-bold" id="summary-name"><?php echo htmlspecialchars($profile_data['full_name']); ?></h5>
-            <p class="text-muted small mb-1" id="summary-email"><?php echo htmlspecialchars($profile_data['email']); ?></p>
-          </div>
-
-          <!-- Divider -->
-          <hr>
-
-          <!-- Status Info -->
-          <div class="alert alert-info alert-sm text-center mb-0">
-            <small><i class="fas fa-shield-alt me-2"></i> Super Administrator Account</small>
-          </div>
-        </div>
-      </div>
+      </form>
     </div>
   </div>
-</div>
-
-<script>
-  document.querySelectorAll('.update-summary').forEach(input => {
-    const id = input.id;
-    const summaryMap = {
-      'full-name': 'summary-name',
-      'email': 'summary-email',
-      'phone': 'summary-phone'
-    };
-
-    if (summaryMap[id]) {
-      input.addEventListener('input', function () {
-        const target = document.getElementById(summaryMap[id]);
-        if (target) {
-          target.textContent = this.value;
-        }
-      });
-    }
-  });
-
-  const avatarUpload = document.getElementById('avatar-upload');
-  const profileAvatar = document.getElementById('profile-avatar');
-
-  avatarUpload.addEventListener('change', function () {
-    const file = this.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const img = profileAvatar.querySelector('img');
-        if (img) {
-          img.src = e.target.result;
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  });
-</script>

@@ -318,10 +318,12 @@ class SuperAdmin extends Controller
 
     public function profile()
     {
-        $user_data = $this->profileModel->getSuperadminProfile($_SESSION['user_id']);
+        $userId = $_SESSION['user_id'];
+        $user_data = $this->profileModel->getSuperadminProfile($userId);
         $data = [
             'user' => $this->user,
-            'user_data' => $user_data
+            'user_data' => $user_data,
+            'user_id' => $userId
         ];
 
         $this->view('pages/super_admin/profile', $data, 'dashboard');

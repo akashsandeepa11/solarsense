@@ -14,7 +14,7 @@ class M_Profile
         SELECT full_name, email FROM user WHERE user_id = :user_id
         ");
         $this->db->bind(':user_id', $user_id);
-        return $this->db->single();
+        return $this->db->single_assoc();
     }
 
     public function getHomeownerProfile($user_id)
@@ -57,6 +57,7 @@ class M_Profile
         SELECT
             (SELECT full_name FROM user WHERE user_id = :user_id) AS full_name,
             (SELECT email FROM user WHERE user_id = :user_id) AS email,
+            (SELECT company_name FROM installer_company WHERE company_id = :company_id) AS company_name,
             (SELECT contact FROM installer_company WHERE company_id = :company_id) AS phone_number,
             (SELECT address FROM installer_company WHERE company_id = :company_id) AS address,
             (SELECT district FROM installer_company WHERE company_id = :company_id) AS district,
@@ -67,7 +68,7 @@ class M_Profile
         $this->db->bind(':user_id', $user_id);
         $this->db->bind(':company_id', $company_id);
 
-        return $this->db->single();
+        return $this->db->single_assoc();
     }
 
     public function getInstalleradminProfileByCompany($company_id)
