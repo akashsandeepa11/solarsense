@@ -5,7 +5,7 @@
 $cfg = $selectConfig ?? [];
 $id = $cfg['id'] ?? ('select_' . uniqid());
 $name = $cfg['name'] ?? $id;
-$label = $cfg['label'] ?? 'Some Fancy Label';
+$label = $cfg['label'] ?? '';
 $options = $cfg['options'] ?? []; // Array of options
 $value = $cfg['value'] ?? ''; // Currently selected value
 $icon = $cfg['icon'] ?? ''; // Expects Font Awesome classes e.g., "fas fa-location"

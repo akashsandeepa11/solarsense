@@ -1,11 +1,4 @@
 <?php
-// Summary Card Data
-$summary_cards = [
-    ['label' => 'Total Companies', 'value' => '128', 'icon' => 'fas fa-users', 'color' => 'primary'],
-    ['label' => 'Suspended', 'value' => '4', 'icon' => 'fas fa-exclamation-triangle', 'color' => 'error'],
-    ['label' => 'Pending', 'value' => '9', 'icon' => 'fas fa-wrench', 'color' => 'warning'],
-    ['label' => 'Active', 'value' => '23', 'icon' => 'fas fa-check-circle', 'color' => 'success']
-];
 
 // Updated function to match Company Statuses
 function getStatusClass($status)
@@ -82,25 +75,25 @@ function getStatusClass($status)
 
     <?php
     $config = [
-        'title'   => 'Companies Management',
+        'title' => 'Companies Management',
         'buttons' => [
             [
                 'label' => 'Add Company',
-                'url'   => URLROOT . '/superadmin/companies/add',
-                'icon'  => 'fas fa-plus',
+                'url' => URLROOT . '/superadmin/companies/add',
+                'icon' => 'fas fa-plus',
                 'class' => 'btn-primary'
             ],
             [
-                'label'   => 'Download PDF',
-                'icon'    => 'fas fa-file-pdf',
-                'class'   => 'btn-outline-primary',
+                'label' => 'Download PDF',
+                'icon' => 'fas fa-file-pdf',
+                'class' => 'btn-outline-primary',
                 'onclick' => 'onclick="SolarSenseReport.download({tableSelector:\'.data-table\',title:\'Companies Report\',subtitle:\'Verified installer companies\',columns:[\'ID\',\'Company Name\',\'Email\',\'Address\',\'Contact\']},this)"'
             ]
         ]
     ];
     include __DIR__ . '/../../inc/components/page_header.php';
     ?>
-
+    
     <?php
     $config = [
         'search' => [
@@ -117,7 +110,7 @@ function getStatusClass($status)
     include __DIR__ . '/../../inc/components/filter_bar.php';
     ?>
 
-    
+
 
     <?php
     $config = [

@@ -5,7 +5,7 @@
 $cfg = $inputConfig ?? [];
 $id = $cfg['id'] ?? ('input_' . uniqid());
 $name = $cfg['name'] ?? $id;
-$label = $cfg['label'] ?? 'Some Fancy Label';
+$label = $cfg['label'] ?? '';
 $type = $cfg['type'] ?? 'text';
 $value = $cfg['value'] ?? '';
 $icon = $cfg['icon'] ?? ''; // Expects Font Awesome classes e.g., "fas fa-envelope"
