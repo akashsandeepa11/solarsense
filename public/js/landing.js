@@ -766,7 +766,7 @@ function updateNavigationState() {
 
   // Step 3 = contact/review, next button says "Get My Quote"
   if (currentStep === 3) {
-    nextBtn.textContent = "Get My Quote";
+    nextBtn.textContent = "Book Site Visit";
   } else {
     nextBtn.textContent = "Continue";
   }

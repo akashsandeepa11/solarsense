@@ -88,7 +88,7 @@
                         <div class="hero__cta-group">
                             <a href="#quotation-section" class="btn btn-primary btn-lg hero__cta quote-trigger">
                                 <i class="fas fa-calculator"></i>
-                                Get a Free Quotation Now
+                                Book a Site Visit Now
                             </a>
                             <a href="#how-it-works" class="btn btn-primary-outline btn-lg">
                                 <i class="fas fa-play-circle"></i>
@@ -566,7 +566,7 @@
                         <li><a href="#how-it-works">How It Works</a></li>
                         <li><a href="#installers">Find Installers</a></li>
                         <li><a href="<?php echo URLROOT; ?>/users/login">Login</a></li>
-                        <li><a href="#quotation-section" class="quote-trigger">Get Quote</a></li>
+                        <li><a href="#quotation-section" class="quote-trigger">Book Site Visit</a></li>
                     </ul>
                 </div>
 

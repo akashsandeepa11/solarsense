@@ -46,7 +46,7 @@ class OperationManager extends Controller
 
         if (!$companyId) {
             setToast('Unauthorized access. Company ID not found.', 'error');
-            redirect('pages/login');
+            redirect('auth/login');
             return;
         }
 
@@ -176,7 +176,7 @@ class OperationManager extends Controller
 
         if (!$companyId) {
             setToast('Unauthorized access.', 'error');
-            redirect('pages/login');
+            redirect('auth/login');
             return;
         }
 

@@ -30,7 +30,7 @@ class InstallerAdmin extends Controller
         $companyId = $this->teamModel->get_company_id_by_user($userId);
 
         if (!$companyId) {
-            redirect('pages/login');
+            redirect('auth/login');
             return;
         }
 
@@ -690,7 +690,7 @@ class InstallerAdmin extends Controller
 
         if (!$companyId) {
             setToast('Unauthorized access or company not found.', 'error');
-            redirect('pages/login');
+            redirect('auth/login');
             return;
         }
 
@@ -947,7 +947,7 @@ class InstallerAdmin extends Controller
 
         if (!$companyId) {
             setToast('Unauthorized access.', 'error');
-            redirect('pages/login');
+            redirect('auth/login');
             return;
         }
 
@@ -1225,7 +1225,7 @@ class InstallerAdmin extends Controller
 
         if (!$companyId) {
             setToast('Unauthorized access or company not found.', 'error');
-            redirect('pages/login');
+            redirect('auth/login');
             return;
         }
 
@@ -1288,7 +1288,7 @@ class InstallerAdmin extends Controller
         $companyId = $this->teamModel->get_company_id_by_user($userId);
 
         if (!$companyId) {
-            redirect('pages/login');
+            redirect('auth/login');
             return;
         }
 
@@ -1329,7 +1329,7 @@ class InstallerAdmin extends Controller
         $companyId = $this->teamModel->get_company_id_by_user($userId);
 
         if (!$companyId) {
-            redirect('pages/login');
+            redirect('auth/login');
             return;
         }
 
