@@ -66,16 +66,16 @@ class InstallerAdmin extends Controller
     // --- Reports ---
     public function reports()
     {
-        $userId    = $_SESSION['user_id'] ?? null;
+        $userId = $_SESSION['user_id'] ?? null;
         $companyId = $this->teamModel->get_company_id_by_user($userId);
 
-        $customers = $companyId ? $this->fleetModel->get_customer_stats($companyId)      : [];
-        $agents    = $companyId ? $this->teamModel->get_service_agent_stats($companyId)  : [];
+        $customers = $companyId ? $this->fleetModel->get_customer_stats($companyId) : [];
+        $agents = $companyId ? $this->teamModel->get_service_agent_stats($companyId) : [];
 
         $data = [
-            'user'      => $this->user,
+            'user' => $this->user,
             'customers' => $customers,
-            'agents'    => $agents,
+            'agents' => $agents,
         ];
 
         $this->view('pages/installer_admin/reports', $data, layout: 'dashboard');
@@ -343,8 +343,8 @@ class InstallerAdmin extends Controller
                 // Send credentials email with set-password link
                 $plainPassword = $createResult['password'] ?? '';
                 $recipientEmail = $createResult['email'] ?? $userData['email'];
-                $newUserId  = (int) ($createResult['user_id'] ?? 0);
-                $resetUrl   = $newUserId ? generateWelcomeResetUrl($newUserId) : '';
+                $newUserId = (int) ($createResult['user_id'] ?? 0);
+                $resetUrl = $newUserId ? generateWelcomeResetUrl($newUserId) : '';
                 $mailSent = sendWelcomeEmail($recipientEmail, $recipientEmail, $plainPassword, $resetUrl);
 
                 if ($mailSent) {
@@ -867,10 +867,10 @@ class InstallerAdmin extends Controller
                     $createResult = $this->teamModel->add_service_agent($userData, $agentData);
                     if ($createResult && is_array($createResult) && !empty($createResult['success'])) {
                         // Send credentials email with set-password link
-                        $plainPassword  = $createResult['password'] ?? '';
+                        $plainPassword = $createResult['password'] ?? '';
                         $recipientEmail = $createResult['email'] ?? $data['email'];
-                        $newUserId      = (int) ($createResult['user_id'] ?? 0);
-                        $resetUrl       = $newUserId ? generateWelcomeResetUrl($newUserId) : '';
+                        $newUserId = (int) ($createResult['user_id'] ?? 0);
+                        $resetUrl = $newUserId ? generateWelcomeResetUrl($newUserId) : '';
                         $mailSent = sendWelcomeEmail($recipientEmail, $recipientEmail, $plainPassword, $resetUrl);
 
                         if ($mailSent) {
@@ -1607,10 +1607,10 @@ class InstallerAdmin extends Controller
                         $createResult = $this->managerModel->add_operation_manager($data);
                         if ($createResult && is_array($createResult) && !empty($createResult['success'])) {
                             // Send credentials email with set-password link
-                            $plainPassword  = $createResult['password'] ?? '';
+                            $plainPassword = $createResult['password'] ?? '';
                             $recipientEmail = $createResult['email'] ?? $data['email'];
-                            $newUserId      = (int) ($createResult['user_id'] ?? 0);
-                            $resetUrl       = $newUserId ? generateWelcomeResetUrl($newUserId) : '';
+                            $newUserId = (int) ($createResult['user_id'] ?? 0);
+                            $resetUrl = $newUserId ? generateWelcomeResetUrl($newUserId) : '';
                             $mailSent = sendWelcomeEmail($recipientEmail, $recipientEmail, $plainPassword, $resetUrl);
 
                             if ($mailSent) {
@@ -1628,10 +1628,10 @@ class InstallerAdmin extends Controller
                         $createResult = $this->managerModel->add_inventory_manager($data);
                         if ($createResult && is_array($createResult) && !empty($createResult['success'])) {
                             // Send credentials email with set-password link
-                            $plainPassword  = $createResult['password'] ?? '';
+                            $plainPassword = $createResult['password'] ?? '';
                             $recipientEmail = $createResult['email'] ?? $data['email'];
-                            $newUserId      = (int) ($createResult['user_id'] ?? 0);
-                            $resetUrl       = $newUserId ? generateWelcomeResetUrl($newUserId) : '';
+                            $newUserId = (int) ($createResult['user_id'] ?? 0);
+                            $resetUrl = $newUserId ? generateWelcomeResetUrl($newUserId) : '';
                             $mailSent = sendWelcomeEmail($recipientEmail, $recipientEmail, $plainPassword, $resetUrl);
 
                             if ($mailSent) {
@@ -1879,6 +1879,33 @@ class InstallerAdmin extends Controller
         ];
 
         $this->view('pages/installer_admin/profile', $data, layout: 'dashboard');
+    }
+
+    public function update_profile()
+    {
+        $userId = $_SESSION['user_id'] ?? null;
+        $companyId = $this->profileModel->getCompanyIdByUser($userId);
+
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            // Sanitize input
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+
+            $data = [
+                'contact' => trim($_POST['contactNumber']),
+                'address' => trim($_POST['physicalAddress']),
+                'district' => trim($_POST['district']),
+                'website' => trim($_POST['website']),
+            ];
+
+            if ($this->profileModel->updateInstalleradminProfile($companyId, $data)) {
+                setToast('Company Profile Updated Successfully', 'success');
+                redirect('installeradmin/profile');
+                return;
+            } else {
+                setToast('Something went wrong during update', 'error');
+                redirect('installeradmin/profile');
+            }
+        }
     }
 
     public function help()

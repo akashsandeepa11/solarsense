@@ -10,7 +10,7 @@ class HomeOwner extends Controller
     private $notificationModel;
     private $managerModel;
 
-    
+
 
     private $user = [
         'role' => ROLE_HOMEOWNER,
@@ -18,14 +18,14 @@ class HomeOwner extends Controller
 
     public function __construct()
     {
-        $this->serviceModel      = $this->model('M_Service');
-        $this->smsModel          = $this->model('M_SMS');
-        $this->solarSystemModel  = $this->model('M_SolarSystem');
-        $this->dashboardModel    = $this->model('M_Homeowner_Dashboard');
-        $this->inventoryModel    = $this->model('M_inventory');
-        $this->profileModel      = $this->model('M_Profile');
+        $this->serviceModel = $this->model('M_Service');
+        $this->smsModel = $this->model('M_SMS');
+        $this->solarSystemModel = $this->model('M_SolarSystem');
+        $this->dashboardModel = $this->model('M_Homeowner_Dashboard');
+        $this->inventoryModel = $this->model('M_inventory');
+        $this->profileModel = $this->model('M_Profile');
         $this->notificationModel = $this->model('M_Notification');
-        $this->managerModel      = $this->model('M_Manager');
+        $this->managerModel = $this->model('M_Manager');
     }
 
     /** Fetch notifications for the logged-in homeowner (reused on every page). */
@@ -62,13 +62,13 @@ class HomeOwner extends Controller
             $daily_forecast = getDailySolarForecast($lat, $lon);
 
             $data = [
-                'user'            => $this->user,
-                'stats'           => $stats,
-                'chart_data'      => $this->smsModel->get_chart_data($userId, 12, $selectedYear),
-                'selected_year'   => $selectedYear,
+                'user' => $this->user,
+                'stats' => $stats,
+                'chart_data' => $this->smsModel->get_chart_data($userId, 12, $selectedYear),
+                'selected_year' => $selectedYear,
                 'available_years' => $availYears,
-                'daily_forecast'  => $daily_forecast,
-                'notifications'   => $this->getNotifications(),
+                'daily_forecast' => $daily_forecast,
+                'notifications' => $this->getNotifications(),
             ];
 
             $this->view('pages/homeowner/dashboard', $data, layout: 'dashboard');
@@ -124,14 +124,16 @@ class HomeOwner extends Controller
         // manager in that item's company — no AJAX, just direct model calls.
         foreach ($cart as $item) {
             $inventoryId = (int) ($item['id'] ?? 0);
-            if ($inventoryId <= 0) continue;
+            if ($inventoryId <= 0)
+                continue;
 
             $stockRow = $this->inventoryModel->get_item_stock_and_company($inventoryId);
-            if (!$stockRow) continue;
+            if (!$stockRow)
+                continue;
 
             $currentQty = (int) $stockRow->quantity;
-            $itemName   = $stockRow->item_name;
-            $companyId  = (int) $stockRow->company_id;
+            $itemName = $stockRow->item_name;
+            $companyId = (int) $stockRow->company_id;
 
             if ($currentQty < 10) {
                 $managerIds = $this->inventoryModel->get_inventory_managers_by_company($companyId);
@@ -259,80 +261,80 @@ class HomeOwner extends Controller
     //             'service_description' => $data['service_description']
     //         ];
 
-  public function service(): void
-{
-    $serviceTypes = $this->serviceModel->get_service_types();
-    $history = $this->serviceModel->get_service_history();
+    public function service(): void
+    {
+        $serviceTypes = $this->serviceModel->get_service_types();
+        $history = $this->serviceModel->get_service_history();
 
 
-    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
-        $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS);
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS);
 
-        $data = [
-            'user' => $this->user,
-            'serviceTypes' => $serviceTypes,
-            'serviceHistory' => $history,
-            'service_type' => trim($_POST['service_type'] ?? ''),
-            'service_description' => trim($_POST['service_description'] ?? ''),
-            'service_type_err' => '',
-            'service_description_err' => '',
-            'notifications' => $this->getNotifications(),
-        ];
+            $data = [
+                'user' => $this->user,
+                'serviceTypes' => $serviceTypes,
+                'serviceHistory' => $history,
+                'service_type' => trim($_POST['service_type'] ?? ''),
+                'service_description' => trim($_POST['service_description'] ?? ''),
+                'service_type_err' => '',
+                'service_description_err' => '',
+                'notifications' => $this->getNotifications(),
+            ];
 
-        // validation
-        if (empty($data['service_type'])) {
-            $data['service_type_err'] = "Please select a service type";
-        }
-
-        if (empty($data['service_description'])) {
-            $data['service_description_err'] = "Please describe the issue";
-        }
-
-        if (!empty($data['service_type_err']) || !empty($data['service_description_err'])) {
-            $this->view('pages/homeowner/service', $data, layout: 'dashboard');
-            return;
-        }
-
-        $modelData = [
-            'service_type_id' => $data['service_type'],
-            'service_description' => $data['service_description']
-        ];
-
-        if ($this->serviceModel->add_service_request($modelData)) {
-
-            // --- Service request notification (same pattern as SMS health alerts) ---
-            // Get the homeowner's company, then notify all operation managers in it.
-            $userId    = (int) $_SESSION['user_id'];
-            $companyId = $this->inventoryModel->getCompanyIdForHomeowner($userId);
-
-            if ($companyId) {
-                $serviceTypeName = $this->serviceTypes[$data['service_type']] ?? 'Service Request';
-                $managers = $this->managerModel->get_operation_manager_by_company_id($companyId);
-
-                foreach ($managers as $manager) {
-                    $this->notificationModel->add(
-                        (int) $manager->user_id,
-                        'info',
-                        'New Service Request',
-                        sprintf(
-                            'A homeowner has submitted a new "%s" service request. Please assign a service agent.',
-                            $serviceTypeName
-                        )
-                    );
-                }
+            // validation
+            if (empty($data['service_type'])) {
+                $data['service_type_err'] = "Please select a service type";
             }
-            // -----------------------------------------------------------------------
 
-            setToast('Request submitted successfully!', 'success');
-            redirect('homeowner/service');
-        } else {
-            setToast('Failed to submit request', 'error');
-            $this->view('pages/homeowner/service', $data, layout: 'dashboard');
-        }
+            if (empty($data['service_description'])) {
+                $data['service_description_err'] = "Please describe the issue";
+            }
+
+            if (!empty($data['service_type_err']) || !empty($data['service_description_err'])) {
+                $this->view('pages/homeowner/service', $data, layout: 'dashboard');
+                return;
+            }
+
+            $modelData = [
+                'service_type_id' => $data['service_type'],
+                'service_description' => $data['service_description']
+            ];
+
+            if ($this->serviceModel->add_service_request($modelData)) {
+
+                // --- Service request notification (same pattern as SMS health alerts) ---
+                // Get the homeowner's company, then notify all operation managers in it.
+                $userId = (int) $_SESSION['user_id'];
+                $companyId = $this->inventoryModel->getCompanyIdForHomeowner($userId);
+
+                if ($companyId) {
+                    $serviceTypeName = $this->serviceTypes[$data['service_type']] ?? 'Service Request';
+                    $managers = $this->managerModel->get_operation_manager_by_company_id($companyId);
+
+                    foreach ($managers as $manager) {
+                        $this->notificationModel->add(
+                            (int) $manager->user_id,
+                            'info',
+                            'New Service Request',
+                            sprintf(
+                                'A homeowner has submitted a new "%s" service request. Please assign a service agent.',
+                                $serviceTypeName
+                            )
+                        );
+                    }
+                }
+                // -----------------------------------------------------------------------
+
+                setToast('Request submitted successfully!', 'success');
+                redirect('homeowner/service');
+            } else {
+                setToast('Failed to submit request', 'error');
+                $this->view('pages/homeowner/service', $data, layout: 'dashboard');
+            }
 
         } else {
-        
+
             $data = [
                 'user' => $this->user,
                 'serviceTypes' => $serviceTypes,
@@ -343,7 +345,7 @@ class HomeOwner extends Controller
                 'service_description_err' => '',
                 'notifications' => $this->getNotifications(),
             ];
-        
+
             $this->view('pages/homeowner/service', $data, layout: 'dashboard');
         }
     }
@@ -393,6 +395,31 @@ class HomeOwner extends Controller
         $this->view('pages/homeowner/profile', $data, 'dashboard');
     }
 
+    public function update_profile()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            // Sanitize POST data
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+
+            $userId = $_SESSION['user_id'];
+
+            $data = [
+                'full_name' => trim($_POST['full-name']),
+                'email' => trim($_POST['email']),
+                'phone_number' => trim($_POST['phone']),
+                'address' => trim($_POST['address'])
+            ];
+
+            if ($this->profileModel->updateHomeownerProfile($userId, $data)) {
+                setToast('Profile updated successfully', 'success');
+                redirect('homeowner/profile');
+            } else {
+                setToast('Something went wrong. Please try again.', 'error');
+                redirect('homeowner/profile');
+            }
+        }
+    }
+
     public function help()
     {
         $data = [
@@ -404,24 +431,24 @@ class HomeOwner extends Controller
 
     public function reports()
     {
-        $userId      = (int) $_SESSION['user_id'];
-        $availYears  = $this->smsModel->get_available_years($userId);
-        $selectedYear = isset($_GET['year']) && in_array((int)$_GET['year'], $availYears)
-            ? (int)$_GET['year']
-            : ($availYears[0] ?? (int)date('Y'));
+        $userId = (int) $_SESSION['user_id'];
+        $availYears = $this->smsModel->get_available_years($userId);
+        $selectedYear = isset($_GET['year']) && in_array((int) $_GET['year'], $availYears)
+            ? (int) $_GET['year']
+            : ($availYears[0] ?? (int) date('Y'));
 
-        $chartData    = $this->smsModel->get_chart_data($userId, 12, $selectedYear);
-        $smsHistory   = $this->smsModel->sms_history();
+        $chartData = $this->smsModel->get_chart_data($userId, 12, $selectedYear);
+        $smsHistory = $this->smsModel->sms_history();
         $serviceHistory = $this->serviceModel->get_service_history();
 
         $data = [
-            'user'            => $this->user,
-            'chart_data'      => $chartData,
-            'sms_history'     => $smsHistory,
+            'user' => $this->user,
+            'chart_data' => $chartData,
+            'sms_history' => $smsHistory,
             'service_history' => $serviceHistory,
-            'selected_year'   => $selectedYear,
-            'available_years' => $availYears ?: [(int)date('Y')],
-            'notifications'   => $this->getNotifications(),
+            'selected_year' => $selectedYear,
+            'available_years' => $availYears ?: [(int) date('Y')],
+            'notifications' => $this->getNotifications(),
         ];
 
         $this->view('pages/homeowner/reports', $data, 'dashboard');
@@ -464,11 +491,11 @@ class HomeOwner extends Controller
             if ($this->smsModel->upload_sms($parsed)) {
 
                 // --- Health-status notification (server-side, no AJAX) --------
-                $actual   = (float) ($parsed['consumption_units']   ?? 0);
+                $actual = (float) ($parsed['consumption_units'] ?? 0);
                 $expected = (float) ($parsed['expected_generation'] ?? 0);
 
                 if ($expected > 0) {
-                    $pct   = ($actual / $expected) * 100;
+                    $pct = ($actual / $expected) * 100;
                     $month = date('F Y', strtotime($parsed['reading_date']));
 
                     if ($pct < HEALTH_WARNING_THRESHOLD) {
@@ -480,7 +507,9 @@ class HomeOwner extends Controller
                             sprintf(
                                 'Your solar system achieved only %.0f%% of expected generation '
                                 . '(%.1f / %.1f kWh). Immediate inspection is recommended.',
-                                $pct, $actual, $expected
+                                $pct,
+                                $actual,
+                                $expected
                             )
                         );
                     } elseif ($pct < HEALTH_GOOD_THRESHOLD) {
@@ -492,7 +521,9 @@ class HomeOwner extends Controller
                             sprintf(
                                 'Your solar system achieved %.0f%% of expected generation '
                                 . '(%.1f / %.1f kWh). Consider scheduling a maintenance check.',
-                                $pct, $actual, $expected
+                                $pct,
+                                $actual,
+                                $expected
                             )
                         );
                     }
@@ -509,7 +540,7 @@ class HomeOwner extends Controller
         } else {
             // GET — show the upload form
             $data = [
-                'user'          => $this->user,
+                'user' => $this->user,
                 'recentUploads' => $this->smsModel->sms_history(),
                 'notifications' => $this->getNotifications(),
             ];
@@ -555,8 +586,8 @@ class HomeOwner extends Controller
         }
 
         $data = [
-            'user'          => $this->user,
-            'product'       => $product,
+            'user' => $this->user,
+            'product' => $product,
             'notifications' => $this->getNotifications(),
         ];
 
@@ -597,7 +628,7 @@ class HomeOwner extends Controller
         $userId = (int) $_SESSION['user_id'];
 
         $data = [
-            'user'          => $this->user,
+            'user' => $this->user,
             'notifications' => $this->notificationModel->get_all_notifications($userId),
         ];
 

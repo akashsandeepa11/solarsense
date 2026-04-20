@@ -39,11 +39,7 @@
               <?php $inputConfig = ['id' => 'email', 'name' => 'email', 'label' => 'Email Address (Username)', 'type' => 'email', 'icon' => 'fas fa-envelope', 'value' => $profile_data['email'] ?? '', 'editable'=>false];
               require APPROOT . '/views/inc/components/input_field.php'; ?>
             </div>
-            <div class="col-md-4 form-group">
-              <?php $inputConfig = ['id' => 'nic', 'name' => 'nic', 'label' => 'NIC Number', 'type' => 'text', 'icon' => 'fas fa-id-card', 'value' => $profile_data['nic'] ?? '', 'editable'=>false];
-              require APPROOT . '/views/inc/components/input_field.php'; ?>
-            </div>
-            <div class="col-md-4 form-group">
+            <div class="col-md-6 form-group">
               <?php $inputConfig = ['id' => 'contactNumber', 'name' => 'contactNumber', 'label' => 'Contact Number', 'type' => 'tel', 'icon' => 'fas fa-phone', 'value' => $profile_data['contact'] ?? '', 'required' => true];
               require APPROOT . '/views/inc/components/input_field.php'; ?>
             </div>

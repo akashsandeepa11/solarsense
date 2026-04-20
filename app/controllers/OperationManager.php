@@ -353,12 +353,55 @@ class OperationManager extends Controller
         $data = [
             'user' => $this->user,
             'notifications' => $this->notifications,
-            'profileData' => $profileData
+            'profileData' => $profileData,
+            'user_id' => $userId,
         ];
 
         $this->view('pages/operation_manager/profile', $data, layout: 'dashboard');
     }
 
+    public function update_profile()
+    {
+        $userId = $_SESSION['user_id'] ?? 0;
+
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+
+            $data = [
+                'contactNumber' => trim($_POST['contactNumber'] ?? ''),
+                'physicalAddress' => trim($_POST['physicalAddress'] ?? ''),
+                'district' => trim($_POST['district'] ?? ''),
+                'specialization' => trim($_POST['specialization'] ?? ''),
+                'exp_level' => trim($_POST['exp_level'] ?? ''),
+                'team_size' => (int) ($_POST['team_size'] ?? 0),
+                'status' => trim($_POST['status'] ?? 'Active'),
+                'certifications' => trim($_POST['certifications'] ?? ''),
+                'emergency_name' => trim($_POST['emergency_name'] ?? ''),
+                'emergency_contact' => trim($_POST['emergency_contact'] ?? ''),
+            ];
+
+            if ($this->profileModel->updateOperationManagerProfile($userId, $data)) {
+                setToast('Profile updated successfully', 'success');
+                redirect('operationmanager/profile');
+                return;
+            } else {
+                setToast('Something went wrong. Please try again.', 'error');
+            }
+
+            $companyId = $this->teamModel->get_company_id_by_user($userId);
+            $profileData = $this->profileModel->getOperationManagerProfile($userId, $companyId);
+
+            $viewData = [
+                'user' => $this->user,
+                'notifications' => $this->notifications,
+                'profileData' => $profileData
+            ];
+
+            $this->view('pages/operation_manager/profile', $viewData, layout: 'dashboard');
+        } else {
+            redirect('operationmanager/profile');
+        }
+    }
     // --- Notifications (full page) ---
     public function notifications()
     {

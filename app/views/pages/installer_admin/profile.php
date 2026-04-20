@@ -46,7 +46,7 @@
   <div class="card shadow-lg rounded-xl">
     <div class="card-body p-10">
 
-      <form id="profile" action="<?php echo URLROOT ?>/serviceagent/update_profile/" method="post" novalidate>
+      <form id="profile" action="<?php echo URLROOT ?>/installeradmin/update_profile/" method="post" novalidate>
         <!-- Personal & Contact Details Section -->
         <div class="form-section mb-10">
           <h3 class="text-lg font-semibold mb-6"><i class="fas fa-user text-primary mr-2"></i>Personal & Contact Details
