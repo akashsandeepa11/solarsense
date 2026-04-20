@@ -7,42 +7,6 @@ $summary_cards = [
     ['label' => 'Active', 'value' => '23', 'icon' => 'fas fa-check-circle', 'color' => 'success']
 ];
 
-// Mock data provided in your snippet
-$clients = [
-    [
-        'id' => 1,
-        'company_name' => 'GreenMove Logistics',
-        'employees' => 85,
-        'installations' => 24,
-        'registration_no' => 'REG-10234',
-        'status' => 'Active'
-    ],
-    [
-        'id' => 2,
-        'company_name' => 'FleetPro Lanka',
-        'employees' => 60,
-        'installations' => 15,
-        'registration_no' => 'REG-20456',
-        'status' => 'Suspended'
-    ],
-    [
-        'id' => 3,
-        'company_name' => 'SmartTrans Pvt Ltd',
-        'employees' => 120,
-        'installations' => 32,
-        'registration_no' => 'REG-30211',
-        'status' => 'Pending'
-    ],
-    [
-        'id' => 4,
-        'company_name' => 'EcoDrive Solutions',
-        'employees' => 40,
-        'installations' => 12,
-        'registration_no' => 'REG-40122',
-        'status' => 'Active'
-    ]
-];
-
 // Updated function to match Company Statuses
 function getStatusClass($status)
 {
@@ -145,19 +109,6 @@ function getStatusClass($status)
             'label' => 'Search Companies',
             'placeholder' => 'Search by company name or Reg No...'
         ],
-        'filters' => [
-            [
-                'id' => 'filterStatus',
-                'name' => 'status',
-                'label' => 'Company Status',
-                'options' => [
-                    ['value' => '', 'label' => 'All Statuses'],
-                    ['value' => 'Active', 'label' => 'Active'],
-                    ['value' => 'Suspended', 'label' => 'Suspended'],
-                    ['value' => 'Pending', 'label' => 'Pending']
-                ]
-            ]
-        ],
         'form_action' => URLROOT . '/installeradmin/companies',
         'form_method' => 'GET',
         'auto_submit' => true,
@@ -166,13 +117,7 @@ function getStatusClass($status)
     include __DIR__ . '/../../inc/components/filter_bar.php';
     ?>
 
-    <?php
-    $config = [
-        'stats' => $summary_cards,
-        'columns' => 4
-    ];
-    include __DIR__ . '/../../inc/components/stat_card.php';
-    ?>
+    
 
     <?php
     $config = [
