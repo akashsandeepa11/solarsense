@@ -51,7 +51,7 @@ class Auth extends Controller
                 break;
             case ROLE_SUPER_ADMIN:
                 error_log("DEBUG: Redirecting super admin");
-                redirect('superadmin/dashboard');
+                redirect('superadmin/companies');
                 exit;
                 break;
             default:

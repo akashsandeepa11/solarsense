@@ -146,8 +146,10 @@ class M_Profile
     public function getInventoryManagerProfile($user_id, $company_id)
     {
         $this->db->query("
-        SELECT im.user_id, im.company_id, im.address, im.contact, im.district, im.register_date,
-               im.status,
+        SELECT im.user_id, im.company_id, im.contact, im.nic, im.address, im.district, 
+               im.register_date, im.warehouse_location, im.warehouse_capacity, 
+               im.exp_level, im.status, im.managed_categories, im.certifications, 
+               im.emergency_name, im.emergency_contact,
                u.full_name, u.email,
                ic.company_name
         FROM inventory_manager im
@@ -160,5 +162,41 @@ class M_Profile
         $this->db->bind(':company_id', $company_id);
 
         return $this->db->single_assoc();
+    }
+
+    /**
+     * Updates Inventory Manager specific fields
+     */
+    public function updateInventoryManagerProfile($userId, $userData)
+    {
+        $this->db->query('
+        UPDATE inventory_manager 
+        SET contact = :contact, 
+            address = :address, 
+            district = :district, 
+            warehouse_location = :warehouse_location,
+            warehouse_capacity = :warehouse_capacity,
+            exp_level = :exp_level,
+            status = :status,
+            managed_categories = :managed_categories,
+            certifications = :certifications,
+            emergency_name = :emergency_name,
+            emergency_contact = :emergency_contact
+        WHERE user_id = :user_id');
+
+        $this->db->bind(':contact', $userData['contactNumber']);
+        $this->db->bind(':address', $userData['physicalAddress']);
+        $this->db->bind(':district', $userData['district']);
+        $this->db->bind(':warehouse_location', $userData['warehouse_location']);
+        $this->db->bind(':warehouse_capacity', $userData['warehouse_capacity']);
+        $this->db->bind(':exp_level', $userData['exp_level']);
+        $this->db->bind(':status', $userData['status']);
+        $this->db->bind(':managed_categories', $userData['managed_categories']);
+        $this->db->bind(':certifications', $userData['certifications']);
+        $this->db->bind(':emergency_name', $userData['emergency_name']);
+        $this->db->bind(':emergency_contact', $userData['emergency_contact']);
+        $this->db->bind(':user_id', $userId);
+
+        return $this->db->execute();
     }
 }

@@ -31,13 +31,13 @@ class InventoryManager extends Controller
     // --- Dashboard Page ---
     public function dashboard()
     {
-        $totalItems        = $this->inventoryModel->get_total_items_count($this->company_id);
-        $lowStockItems     = $this->inventoryModel->get_low_stock_items(5, $this->company_id);
-        $totalStockValue   = $this->inventoryModel->get_total_stock_value($this->company_id);
-        $categoriesCount   = $this->inventoryModel->get_categories_count();
-        $stockByCategory   = $this->inventoryModel->get_stock_by_category($this->company_id);
-        $recentOrders      = $this->inventoryModel->get_recent_orders(5);
-        $totalOrdersCount  = $this->inventoryModel->get_total_orders_count();
+        $totalItems = $this->inventoryModel->get_total_items_count($this->company_id);
+        $lowStockItems = $this->inventoryModel->get_low_stock_items(5, $this->company_id);
+        $totalStockValue = $this->inventoryModel->get_total_stock_value($this->company_id);
+        $categoriesCount = $this->inventoryModel->get_categories_count();
+        $stockByCategory = $this->inventoryModel->get_stock_by_category($this->company_id);
+        $recentOrders = $this->inventoryModel->get_recent_orders(5);
+        $totalOrdersCount = $this->inventoryModel->get_total_orders_count();
         $totalOrdersAmount = $this->inventoryModel->get_total_orders_amount();
 
         $data = [
@@ -402,8 +402,13 @@ class InventoryManager extends Controller
     public function profile()
     {
         $userId = $_SESSION['user_id'] ?? 0;
+
+        // Get the company ID associated with the current user
         $companyId = $this->teamModel->get_company_id_by_user($userId);
+
+        // Fetch detailed profile data
         $profileData = $this->profileModel->getInventoryManagerProfile($userId, $companyId);
+
         $data = [
             'user' => $this->user,
             'notifications' => $this->notifications,
@@ -411,6 +416,55 @@ class InventoryManager extends Controller
         ];
 
         $this->view('pages/inventory_manager/profile', $data, layout: 'dashboard');
+    }
+
+    public function update_profile()
+    {
+        $userId = $_SESSION['user_id'] ?? 0;
+
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            // Sanitize POST data
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+
+            // Map form fields from profile.php to the array keys expected by the model
+            $data = [
+                'contactNumber' => trim($_POST['contactNumber'] ?? ''),
+                'physicalAddress' => trim($_POST['physicalAddress'] ?? ''),
+                'district' => trim($_POST['district'] ?? ''),
+                'warehouse_location' => trim($_POST['warehouse_location'] ?? ''),
+                'warehouse_capacity' => trim($_POST['warehouse_capacity'] ?? ''),
+                'exp_level' => trim($_POST['exp_level'] ?? ''),
+                'status' => trim($_POST['status'] ?? 'Active'),
+                'managed_categories' => trim($_POST['managed_categories'] ?? ''),
+                'certifications' => trim($_POST['certifications'] ?? ''),
+                'emergency_name' => trim($_POST['emergency_name'] ?? ''),
+                'emergency_contact' => trim($_POST['emergency_contact'] ?? ''),
+            ];
+
+            // Call the specialized update function in M_Profile
+            if ($this->profileModel->updateInventoryManagerProfile($userId, $data)) {
+                setToast('Profile updated successfully', 'success');
+                redirect('inventorymanager/profile');
+                return;
+            } else {
+                setToast('Something went wrong. Please try again.', 'error');
+            }
+
+            // If update fails, reload view with current data
+            $companyId = $this->teamModel->get_company_id_by_user($userId);
+            $profileData = $this->profileModel->getInventoryManagerProfile($userId, $companyId);
+
+            $viewData = [
+                'user' => $this->user,
+                'notifications' => $this->notifications,
+                'profileData' => $profileData
+            ];
+
+            $this->view('pages/inventory_manager/profile', $viewData, layout: 'dashboard');
+        } else {
+            // Redirect if accessed via GET
+            redirect('inventorymanager/profile');
+        }
     }
 
     // --- Notifications (full page) ---
