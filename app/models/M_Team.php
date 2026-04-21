@@ -70,9 +70,9 @@ class M_Team
             //          specialization, experience_years, availability, certifications, status, register_date, created_date
             $this->db->query('
                 INSERT INTO service_agent 
-                (user_id, company_id, nic, address, contact, district, specialization, experience_years, availability, certifications, status, register_date) 
+                (user_id, company_id, nic, address, contact, district, specialization, experience_years, availability, certifications, status, register_date, document) 
                 VALUES 
-                (:user_id, :company_id, :nic, :address, :contact, :district, :specialization, :experience_years, :availability, :certifications, :status, :register_date)
+                (:user_id, :company_id, :nic, :address, :contact, :district, :specialization, :experience_years, :availability, :certifications, :status, :register_date, :document)
             ');
 
             $this->db->bind(':user_id', $userId);
@@ -87,6 +87,7 @@ class M_Team
             $this->db->bind(':certifications', $agentData['certifications'] ?? NULL);
             $this->db->bind(':status', $agentData['status']);
             $this->db->bind(':register_date', date('Y-m-d'));
+            $this->db->bind(':document', $agentData['document'] ?? NULL);
 
             $this->db->execute();
 
@@ -345,6 +346,7 @@ class M_Team
                     u.email,
                     u.full_name,
                     sa.contact,
+                    sa.nic,
                     sa.status AS agent_status,
                     COUNT(sr.task_id)                                                  AS assigned_tasks,
                     SUM(CASE WHEN sr.status = 'Completed' THEN 1 ELSE 0 END)          AS completed_tasks,
@@ -353,13 +355,35 @@ class M_Team
                 INNER JOIN service_agent sa ON u.user_id = sa.user_id
                 LEFT JOIN service_req sr    ON sa.user_id = sr.agent_id
                 WHERE sa.company_id = :company_id
-                GROUP BY u.user_id, u.email, u.full_name, sa.contact, sa.status
+                GROUP BY u.user_id, u.email, u.full_name, sa.contact, sa.status, sa.nic
             ");
 
             $this->db->bind(':company_id', $companyId);
-            return $this->db->resultSet() ?: [];
+
+            $results = $this->db->resultSet();
+
+            foreach($results as $row){
+            // gender
+                $nic = (string) ($row->nic ?? 0);
+                $value = (int)substr($nic, 4, 3);
+                
+
+                if($value >= 500 )
+                {
+                    $row->gender = 'female';
+                }
+                else
+                {
+                    $row->gender = 'male';
+                }
+
+            };
+            return $results;
+           
         } catch (Exception $e) {
             error_log('Get service agents by company failed: ' . $e->getMessage());
+            var_dump($e->getMessage());
+            exit;
             return [];
         }
     }

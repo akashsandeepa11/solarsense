@@ -54,7 +54,7 @@
     <div class="card shadow-lg rounded-xl">
         <div class="card-body p-10">
 
-            <form id="registration-form" action="<?php echo URLROOT?>/installeradmin/fleet/<?php echo $isEditMode ? 'edit_customer/' . $customerId : 'add_customer'; ?>" method="post" novalidate>
+            <form id="registration-form" enctype="multipart/form-data" action="<?php echo URLROOT?>/installeradmin/fleet/<?php echo $isEditMode ? 'edit_customer/' . $customerId : 'add_customer'; ?>" method="post" novalidate>
                 
                 <!-- Hidden fields for form mode and customer ID -->
                 <input type="hidden" name="mode" value="<?php echo $mode; ?>">
@@ -75,13 +75,16 @@
                         <div class="col-md-6 form-group">
                             <?php $inputConfig = ['id' => 'contactNumber', 'name' => 'contactNumber', 'label' => 'Contact Number', 'type' => 'tel', 'icon' => 'fas fa-phone', 'value' => $data['contactNumber'] ?? '', 'error' => $data['contactNumber_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
-                        <div class="col-md-6 form-group">
+                        <div hidden class="col-md-6 form-group">
+                            <?php $inputConfig = ['id' => 'image', 'name' => 'img', 'label' => 'Image', 'type' => 'file', 'icon' => 'fas fa-phone', 'error' => $data['img_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                        </div>
+                        <div hidden class="col-md-6 form-group">
                             <?php $inputConfig = ['id' => 'nic', 'name' => 'nic', 'label' => 'NIC/ID Number', 'type' => 'text', 'icon' => 'fas fa-id-card', 'value' => $data['nic'] ?? '', 'error' => $data['nic_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                         <div class="col-md-12 form-group">
                             <?php $inputConfig = ['id' => 'physicalAddress', 'name' => 'physicalAddress', 'label' => 'Physical Address', 'type' => 'text', 'icon' => 'fas fa-map-marker-alt', 'value' => $data['physicalAddress'] ?? '', 'error' => $data['physicalAddress_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
-                        <div class="col-md-12 form-group">
+                        <div hidden class="col-md-12 form-group">
                             <?php 
                             $districtOptions = array_combine($all_districts, $all_districts);
                             $selectConfig = [

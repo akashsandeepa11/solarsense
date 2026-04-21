@@ -67,7 +67,7 @@
     <div class="card shadow-lg rounded-xl">
         <div class="card-body p-10">
 
-            <form id="add-agent-form" action="<?php echo URLROOT?>/installeradmin/team/<?php echo $isEditMode ? 'edit_agent/' . $agentId : 'add_service_agent'; ?>" method="post" novalidate>
+            <form id="add-agent-form" enctype="multipart/form-data" action="<?php echo URLROOT?>/installeradmin/team/<?php echo $isEditMode ? 'edit_agent/' . $agentId : 'add_service_agent'; ?>" method="post" novalidate>
                 
                 <!-- Hidden fields for form mode and agent ID -->
                 <input type="hidden" name="mode" value="<?php echo $mode; ?>">
@@ -88,7 +88,7 @@
                         <div class="col-md-6 form-group">
                             <?php $inputConfig = ['id' => 'contactNumber', 'name' => 'contactNumber', 'label' => 'Contact Number', 'type' => 'tel', 'icon' => 'fas fa-phone', 'value' => $data['contactNumber'] ?? '', 'error' => $data['contactNumber_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
-                        <div class="col-md-6 form-group">
+                        <div hidden class="col-md-6 form-group">
                             <?php $inputConfig = ['id' => 'nic', 'name' => 'nic', 'label' => 'NIC/ID Number', 'type' => 'text', 'icon' => 'fas fa-id-card', 'value' => $data['nic'] ?? '', 'error' => $data['nic_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>
                         <div class="col-md-12 form-group">
@@ -155,6 +155,11 @@
                         </div>
                         <div class="col-md-6 form-group">
                             <?php $inputConfig = ['id' => 'certifications', 'name' => 'certifications', 'label' => 'Certifications', 'type' => 'text', 'icon' => 'fas fa-certificate', 'value' => $data['certifications'] ?? '', 'error' => $data['certifications_err'] ?? '', 'required' => false, 'placeholder' => 'e.g., IEC 61730, PV Certified']; require APPROOT . '/views/inc/components/input_field.php'; ?>
+                        </div>
+                        <div hidden class="col-md-12 form-group">
+                            <label for="document" class="text-secondary text-sm mb-1 d-block">Upload Document (PDF Only)</label>
+                            <input type="file" id="document" name="document" class="input__field" accept="application/pdf" style="padding-left:10px;">
+                            <span class="text-error text-sm"><?php echo $data['document_err'] ?? ''; ?></span>
                         </div>
                     </div>
                 </div>

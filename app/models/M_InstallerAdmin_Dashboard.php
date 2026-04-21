@@ -130,7 +130,7 @@ class M_InstallerAdmin_Dashboard
         WHERE h.company_id = :company_id 
         HAVING priority IS NOT NULL
         ORDER BY priority DESC
-    ");
+        ");
 
         $this->db->bind(':company_id', $companyId);
         return $this->db->resultSet();
@@ -152,7 +152,7 @@ class M_InstallerAdmin_Dashboard
         JOIN homeowner h ON s1.user_id = h.user_id
         JOIN user u ON s1.user_id = u.user_id
         WHERE h.company_id = :company_id
-    ";
+        ";
 
         // Fetch Best Performers (Descending)
         $this->db->query($sql . " ORDER BY performance DESC LIMIT :limit");
@@ -185,7 +185,7 @@ class M_InstallerAdmin_Dashboard
         JOIN user u ON sa.user_id = u.user_id
         WHERE sa.company_id = :company_id
         ORDER BY sa.status ASC, u.full_name ASC
-    ");
+        ");
 
         $this->db->bind(':company_id', $companyId);
         return $this->db->resultSet();
@@ -206,7 +206,7 @@ class M_InstallerAdmin_Dashboard
           AND register_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
         GROUP BY sort_key, month_label
         ORDER BY sort_key ASC
-    ");
+        ");
 
         $this->db->bind(':company_id', $companyId);
         return $this->db->resultSet();
@@ -225,7 +225,7 @@ class M_InstallerAdmin_Dashboard
         JOIN homeowner h ON sr.homeowner_id = h.user_id
         WHERE h.company_id = :company_id
         GROUP BY sr.status
-    ");
+        ");
 
         $this->db->bind(':company_id', $companyId);
         return $this->db->resultSet();
@@ -250,7 +250,7 @@ class M_InstallerAdmin_Dashboard
         FROM installer_company ic
         WHERE ic.status = 'Verified'
         ORDER BY ic.company_name ASC
-    ");
+        ");
         return $this->db->resultSet();
     }
 }

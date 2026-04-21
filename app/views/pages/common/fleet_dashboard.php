@@ -103,6 +103,8 @@ function getStatusClass($health)
             font-size: 0.7rem;
         }
     }
+
+    
 </style>
 
 <div class="container-fluid p-8">
@@ -190,11 +192,14 @@ function getStatusClass($health)
     $config = [
         'headers' => [
             ['key' => 'name', 'label' => 'Client Name'],
-            ['key' => 'location', 'label' => 'Location'],
+            // ['key' => 'location', 'label' => 'Location'],
             ['key' => 'size', 'label' => 'System Size'],
             ['key' => 'health', 'label' => 'System Health'],
             ['key' => 'performance', 'label' => 'Performance'],
-            ['key' => 'last_upload', 'label' => 'Last SMS Upload']
+            // ['key' => 'nic', 'label' => 'NIC'],
+            ['key' => 'last_upload', 'label' => 'Last SMS Upload'],
+            // ['key' => 'gender', 'label' => 'Gender'],
+            // ['key' => 'days_since', 'label' => 'Days Since Install']
         ],
         'rows' => $clients,
         'columns' => [
@@ -235,6 +240,7 @@ function getStatusClass($health)
         'actions' => [],
         'empty_message' => 'No clients available'
     ];
+
 
     $rolePath = ($data['user']['role'] === ROLE_INSTALLER_ADMIN) ? 'installeradmin' : 'operationmanager';
 

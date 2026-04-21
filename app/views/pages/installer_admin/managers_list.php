@@ -174,6 +174,7 @@
             ['key' => 'specialization', 'label' => 'Specialization'],
             ['key' => 'district', 'label' => 'District'],
             ['key' => 'status', 'label' => 'Status'],
+    
             ['key' => 'pending_tasks', 'label' => 'Pending Tasks']
         ] : [
             ['key' => 'name', 'label' => 'Manager Name'],
@@ -181,6 +182,7 @@
             ['key' => 'status', 'label' => 'Status'],
             ['key' => 'inventory_items', 'label' => 'Inventory Items'],
             ['key' => 'low_stock', 'label' => 'Low Stock Items'],
+            
             ['key' => 'efficiency', 'label' => 'Efficiency Score']
         ];
 

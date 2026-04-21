@@ -516,7 +516,26 @@ class M_Manager{
                 WHERE om.company_id = :company_id
             ');
             $this->db->bind(':company_id', $companyId);
-            return $this->db->resultSet();
+
+            $results = $this->db->resultSet();
+
+            foreach($results as $row){
+            // gender
+                $nic = (string) ($row->nic ?? 0);
+                $value = (int)substr($nic, 4, 3);
+                
+
+                if($value >= 500 )
+                {
+                    $row->gender = 'female';
+                }
+                else
+                {
+                    $row->gender = 'male';
+                }
+
+            };
+            return $results;
         } catch (Exception $e) {
             error_log('get_operation_manager_by_company_id failed: ' . $e->getMessage());
             return [];
@@ -532,7 +551,26 @@ class M_Manager{
                 WHERE im.company_id = :company_id
             ');
             $this->db->bind(':company_id', $companyId);
-            return $this->db->resultSet();
+
+             $results = $this->db->resultSet();
+
+            foreach($results as $row){
+            // gender
+                $nic = (string) ($row->nic ?? 0);
+                $value = (int)substr($nic, 4, 3);
+                
+
+                if($value >= 500 )
+                {
+                    $row->gender = 'female';
+                }
+                else
+                {
+                    $row->gender = 'male';
+                }
+
+            };
+            return $results;
         } catch (Exception $e) {
             error_log('get_inventory_manager_by_company_id failed: ' . $e->getMessage());
             return [];

@@ -59,9 +59,10 @@ class M_Fleet
                 error_log($debug);
                 throw new Exception('Installer company not found for company_id: ' . var_export($companyId, true));
             }
-
+            var_dump($customerData);
+            exit;
             // 2. Insert into `homeowner` table
-            $sqlHomeowner = 'INSERT INTO homeowner (user_id, company_id, address, contact, register_date, nic, district, ceb_account) VALUES (:user_id, :company_id, :address, :contact, :register_date, :nic, :district, :ceb_account)';
+            $sqlHomeowner = 'INSERT INTO homeowner (user_id, company_id, address, contact, register_date, nic, district, ceb_account, img) VALUES (:user_id, :company_id, :address, :contact, :register_date, :nic, :district, :ceb_account, :img)';
             // Log the SQL and the values we'll bind to help diagnose missing field issues
             error_log('M_Fleet::add_customer homeowner SQL: ' . $sqlHomeowner);
             $binds = [
@@ -72,7 +73,9 @@ class M_Fleet
                 ':register_date' => date('Y-m-d'),
                 ':nic' => $customerData['nic'],
                 ':district' => $customerData['district'],
-                ':ceb_account' => $customerData['ceb_account']
+                ':ceb_account' => $customerData['ceb_account'],
+                ':img' => $customerData['img']
+
             ];
             error_log('M_Fleet::add_customer homeowner binds: ' . var_export($binds, true));
 
@@ -326,6 +329,7 @@ class M_Fleet
                         s.capacity,
                         s.installation_date,
                         sm.last_reading,
+                        h.nic,
                         latest_sms.expected_generation AS latest_expected,
                         (latest_sms.export_reading - latest_sms.prev_export_reading) AS latest_export
                     FROM user u
@@ -366,6 +370,28 @@ class M_Fleet
                     $healthStatus = HEALTH_STATUS_CRITICAL;
                 }
 
+                // gender
+                $nic = (string) ($row->nic ?? 0);
+                $value = (int)substr($nic, 4, 3);
+                
+
+                if($value >= 500 )
+                {
+                    $gender = 'female';
+                }
+                else
+                {
+                    $gender = 'male';
+                }
+
+                // Days since installation calculation
+                $daysSinceInstallation = 0;
+                if (!empty($row->installation_date)) {
+                    $installDate = new DateTime($row->installation_date);
+                    $now = new DateTime();
+                    $daysSinceInstallation = $installDate->diff($now)->days;
+                }
+
                 $formattedResults[] = [
                     'id' => $row->user_id,
                     'system_id' => $row->system_id,
@@ -374,6 +400,9 @@ class M_Fleet
                     'size' => $row->capacity,
                     'health' => $healthStatus,
                     'performance' => $performancePct,
+                    'nic'=>$row->nic,
+                    'gender'=>$gender,
+                    'days_since' => $daysSinceInstallation,
                     'last_upload' => $row->last_reading ?? 'No readings yet',
                     'avatar' => getAvatarUrl($row->full_name)
                 ];

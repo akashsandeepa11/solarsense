@@ -178,6 +178,8 @@ class InstallerAdmin extends Controller
                 'dcAcRatio' => trim($_POST['dcAcRatio'] ?? ''),
                 'invEffPCT' => trim($_POST['invEffPCT'] ?? ''),
                 'cebAccount' => trim($_POST['cebAccount'] ?? ''),
+                'img'=>null,
+
 
                 // Error fields
                 'fullName_err' => '',
@@ -197,8 +199,23 @@ class InstallerAdmin extends Controller
                 'lossesPCT_err' => '',
                 'dcAcRatio_err' => '',
                 'invEffPCT_err' => '',
-                'cebAccount_err' => ''
+                'cebAccount_err' => '',
+                'img_err'=>''
             ];
+
+            // Handle image upload
+            if (isset($_FILES['img']) && $_FILES['img']['error'] == 0) {
+                $uploadDir = APPROOT . '/../public/img/inventory/';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0777, true);
+                }
+                $fileName = time() . '_' . basename($_FILES['img']['name']);
+                $targetPath = $uploadDir . $fileName;
+
+                if (move_uploaded_file($_FILES['img']['tmp_name'], $targetPath)) {
+                    $data['img'] = $fileName;
+                }
+            }
 
             // Convert text azimuth values to numeric degrees (backwards compatibility)
             $azimuthMap = [
@@ -227,10 +244,6 @@ class InstallerAdmin extends Controller
                 if ($this->authModel->findUserByEmail($data['email'])) {
                     $data['email_err'] = 'Email is already registered';
                 }
-            }
-
-            if (empty($data['contactNumber']) || !preg_match('/^[0-9\-\+\s\(\)]+$/', $data['contactNumber'])) {
-                $data['contactNumber_err'] = "Please enter a valid contact number";
             }
 
             if (empty($data['physicalAddress'])) {
@@ -321,8 +334,12 @@ class InstallerAdmin extends Controller
                 'contact' => $data['contactNumber'],
                 'nic' => $data['nic'],
                 'district' => $data['district'],
-                'ceb_account' => $data['cebAccount']
+                'ceb_account' => $data['cebAccount'],
+                'img'=> $data['img']
             ];
+
+            var_dump($customerData['img']);
+            exit;
 
             $panelData = [
                 'system_capacity' => $data['systemCapacity'],
@@ -683,7 +700,7 @@ class InstallerAdmin extends Controller
 
     // --- Team Management ---
     public function team($page = 'dashboard', $agentId = null)
-    {
+    { 
         // 1. Get the current logged-in user's company ID
         $userId = $_SESSION['user_id'] ?? null;
         $companyId = $this->teamModel->get_company_id_by_user($userId);
@@ -751,6 +768,7 @@ class InstallerAdmin extends Controller
                 'experienceYears' => trim($_POST['experienceYears'] ?? ''),
                 'availability' => trim($_POST['availability'] ?? ''),
                 'certifications' => trim($_POST['certifications'] ?? ''),
+                'document' => null,
 
                 // Error fields
                 'fullName_err' => '',
@@ -762,7 +780,8 @@ class InstallerAdmin extends Controller
                 'specialization_err' => '',
                 'experienceYears_err' => '',
                 'availability_err' => '',
-                'certifications_err' => ''
+                'certifications_err' => '',
+                'document_err' => ''
             ];
 
             // Validate Full Name
@@ -816,11 +835,38 @@ class InstallerAdmin extends Controller
                 $data['availability_err'] = 'Availability is required';
             }
 
+            // Handle PDF Document upload
+            if (isset($_FILES['document']) && $_FILES['document']['error'] == 0) {
+                $allowedMimeTypes = ['application/pdf'];
+                $fileExtension = strtolower(pathinfo($_FILES['document']['name'], PATHINFO_EXTENSION));
+                
+                if (in_array($_FILES['document']['type'], $allowedMimeTypes) && $fileExtension === 'pdf') {
+                    $uploadDir = APPROOT . '/../public/documents/agents/';
+                    if (!is_dir($uploadDir)) {
+                        mkdir($uploadDir, 0777, true);
+                    }
+                    
+                    $fileName = time() . '_' . basename($_FILES['document']['name']);
+                    $targetPath = $uploadDir . $fileName;
+
+                    if (move_uploaded_file($_FILES['document']['tmp_name'], $targetPath)) {
+                        $data['document'] = $fileName;
+                    } else {
+                        $data['document_err'] = 'Failed to move the uploaded PDF document.';
+                    }
+                } else {
+                    $data['document_err'] = 'Invalid file format. Please upload a PDF file.';
+                }
+            } else {
+                $data['document_err'] = 'Please upload a PDF document.';
+            }
+
             // Check for validation errors
             if (
                 empty($data['fullName_err']) && empty($data['email_err']) && empty($data['contactNumber_err']) &&
                 empty($data['nic_err']) && empty($data['address_err']) && empty($data['district_err']) &&
-                empty($data['specialization_err']) && empty($data['experienceYears_err']) && empty($data['availability_err'])
+                empty($data['specialization_err']) && empty($data['experienceYears_err']) && empty($data['availability_err']) &&
+                empty($data['document_err'])
             ) {
 
                 // All validations passed - prepare data for model
@@ -835,6 +881,7 @@ class InstallerAdmin extends Controller
                     'experience_years' => $data['experienceYears'],
                     'availability' => $data['availability'],
                     'certifications' => $data['certifications'],
+                    'document' => $data['document'],
                     'status' => 'active'
                 ];
 
@@ -1314,6 +1361,8 @@ class InstallerAdmin extends Controller
                 'email' => $manager->email,
                 'specialization' => ucfirst($manager->specialization),
                 'district' => $manager->district,
+                'nic'=>$manager->nic,
+                'gender'=>$manager->gender,
                 'status' => ucfirst($manager->status),
                 'pending_tasks' => 0 // Placeholder: Requires per-manager task query
             ];
@@ -1353,6 +1402,8 @@ class InstallerAdmin extends Controller
                 'name' => $manager->full_name,
                 'email' => $manager->email,
                 'warehouse' => $manager->warehouse_location,
+                'nic' => $manager->nic,
+                'gender' => $manager->gender,
                 'status' => ucfirst($manager->status),
                 'inventory_items' => 0, // Placeholder
                 'low_stock' => 0,      // Placeholder
