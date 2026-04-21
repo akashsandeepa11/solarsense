@@ -345,6 +345,7 @@ class M_Team
                     u.email,
                     u.full_name,
                     sa.contact,
+                    sa.experience_years,
                     sa.status AS agent_status,
                     COUNT(sr.task_id)                                                  AS assigned_tasks,
                     SUM(CASE WHEN sr.status = 'Completed' THEN 1 ELSE 0 END)          AS completed_tasks,
@@ -353,7 +354,7 @@ class M_Team
                 INNER JOIN service_agent sa ON u.user_id = sa.user_id
                 LEFT JOIN service_req sr    ON sa.user_id = sr.agent_id
                 WHERE sa.company_id = :company_id
-                GROUP BY u.user_id, u.email, u.full_name, sa.contact, sa.status
+                GROUP BY u.user_id, u.email, u.full_name, sa.contact, sa.status, sa.experience_years
             ");
 
             $this->db->bind(':company_id', $companyId);
