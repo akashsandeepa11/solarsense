@@ -114,6 +114,13 @@ function getMaintenanceStatusClass($status)
                 'onclick' => 'onclick="showAddModal()"'
             ],
             [
+                'label'   => 'Sort by Date',
+                'url'     => 'javascript:void(0)',
+                'icon'    => 'fas fa-sort',
+                'class'   => 'btn-outline-secondary btn-md date-sort-btn',
+                'onclick' => 'onclick="toggleDateSort(this)"'
+            ],
+            [
                 'label'   => 'Download PDF',
                 'icon'    => 'fas fa-file-pdf',
                 'class'   => 'btn-outline-primary btn-md',
@@ -413,6 +420,39 @@ function getMaintenanceStatusClass($status)
         if (e.target.id === "assignModal") closeAssignModal();
         if (e.target.id === "deleteModal") closeDeleteModal();
     });
+
+    
+    let sortAscending = false; 
+    function toggleDateSort(btn) {
+        sortAscending = !sortAscending;
+        
+       
+        const icon = btn.querySelector('i');
+        if (icon) {
+            icon.className = sortAscending ? 'fas fa-sort-amount-up' : 'fas fa-sort-amount-down';
+        }
+
+        const table = document.querySelector('.data-table');
+        if (!table) return;
+        
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr:not(.no-data-row)')); // Ignored empty row if exists
+
+        rows.sort((a, b) => {
+            // Date is in the 5th column (index 4)
+            const dateA = new Date(a.children[4].innerText.trim());
+            const dateB = new Date(b.children[4].innerText.trim());
+
+            if (sortAscending) {
+                return dateA - dateB;
+            } else {
+                return dateB - dateA;
+            }
+        });
+
+        // Re-append rows in sorted order
+        rows.forEach(row => tbody.appendChild(row));
+    }
 </script>
 
 <?php require APPROOT . '/views/inc/components/report_downloader.php'; ?>
