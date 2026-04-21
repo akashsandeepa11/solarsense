@@ -169,6 +169,7 @@ class InstallerAdmin extends Controller
                 'systemCapacity' => trim($_POST['systemCapacity'] ?? ''),
                 'panelTilt' => trim($_POST['panelTilt'] ?? ''),
                 'panelAzimuth' => trim($_POST['panelAzimuth'] ?? ''),
+                'systemtype' => trim($_POST['systemtype'] ?? ''),
                 'installationDate' => trim($_POST['installationDate'] ?? ''),
                 'panelBrand' => trim($_POST['panelBrand'] ?? ''),
                 'inverterBrand' => trim($_POST['inverterBrand'] ?? ''),
@@ -189,6 +190,7 @@ class InstallerAdmin extends Controller
                 'systemCapacity_err' => '',
                 'panelTilt_err' => '',
                 'panelAzimuth_err' => '',
+                'systemtype_err' => '',
                 'installationDate_err' => '',
                 'panelBrand_err' => '',
                 'inverterBrand_err' => '',
@@ -220,14 +222,14 @@ class InstallerAdmin extends Controller
                 $data['fullName_err'] = "Please enter full name";
             }
 
-            if (empty($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-                $data['email_err'] = "Please enter a valid email address";
-            } else {
-                // Check email is already registed or not
-                if ($this->authModel->findUserByEmail($data['email'])) {
-                    $data['email_err'] = 'Email is already registered';
-                }
-            }
+            // if (empty($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+            //     $data['email_err'] = "Please enter a valid email address";
+            // } else {
+            //     // Check email is already registed or not
+            //     if ($this->authModel->findUserByEmail($data['email'])) {
+            //         $data['email_err'] = 'Email is already registered';
+            //     }
+            // }
 
             if (empty($data['contactNumber']) || !preg_match('/^[0-9\-\+\s\(\)]+$/', $data['contactNumber'])) {
                 $data['contactNumber_err'] = "Please enter a valid contact number";
@@ -255,6 +257,10 @@ class InstallerAdmin extends Controller
 
             if (empty($data['panelAzimuth']) || !is_numeric($data['panelAzimuth'])) {
                 $data['panelAzimuth_err'] = "Please select valid panel azimuth";
+            }
+
+            if (empty($data['systemtype'])) {
+                $data['systemtype_err'] = "Please select system type";
             }
 
             if (empty($data['installationDate'])) {
@@ -298,8 +304,8 @@ class InstallerAdmin extends Controller
                 !empty($data['contactNumber_err']) || !empty($data['physicalAddress_err']) ||
                 !empty($data['nic_err']) || !empty($data['district_err']) ||
                 !empty($data['systemCapacity_err']) || !empty($data['panelTilt_err']) ||
-                !empty($data['panelAzimuth_err']) || !empty($data['installationDate_err']) ||
-                !empty($data['panelBrand_err']) || !empty($data['inverterBrand_err']) || !empty($data['moduleType_err']) ||
+                !empty($data['panelAzimuth_err']) || !empty($data['systemtype_err']) ||
+                !empty($data['installationDate_err']) || !empty($data['panelBrand_err']) || !empty($data['inverterBrand_err']) || !empty($data['moduleType_err']) ||
                 !empty($data['arrayType_err']) || !empty($data['lossesPCT_err']) ||
                 !empty($data['dcAcRatio_err']) || !empty($data['invEffPCT_err']) ||
                 !empty($data['cebAccount_err']);
@@ -321,6 +327,7 @@ class InstallerAdmin extends Controller
                 'contact' => $data['contactNumber'],
                 'nic' => $data['nic'],
                 'district' => $data['district'],
+                'systemtype' => $data['systemtype'],
                 'ceb_account' => $data['cebAccount']
             ];
 
@@ -373,6 +380,7 @@ class InstallerAdmin extends Controller
                 'systemCapacity' => '',
                 'panelTilt' => '',
                 'panelAzimuth' => '',
+                'systemtype' => '',
                 'installationDate' => '',
                 'panelBrand' => '',
                 'inverterBrand' => '',
@@ -387,6 +395,7 @@ class InstallerAdmin extends Controller
                 'systemCapacity_err' => '',
                 'panelTilt_err' => '',
                 'panelAzimuth_err' => '',
+                'systemtype_err' => '',
                 'installationDate_err' => '',
                 'panelBrand_err' => '',
                 'inverterBrand_err' => '',

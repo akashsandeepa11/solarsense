@@ -83,22 +83,26 @@ $history = $data['serviceHistory'];
             <div class="card shadow-lg rounded-xl mb-4">
                 <div class="card-body">
                     <h3 class="card-title text-lg font-semibold mb-4">
-                        <i class="fas fa-clock text-primary mr-2"></i>Service Details
+                        <i class="fas fa-clock text-primary mr-2"></i>Recent Service Request
                     </h3>
                     <div class="info-item mb-3 pb-3 border-bottom">
-                        <p class="text-secondary text-sm mb-1">Response Time</p>
-                        <p class="text-lg font-semibold text-primary">24-48 Hours</p>
+                        <p class="text-secondary text-sm mb-1">Service Type</p>
+                        <p class="text-lg font-semibold text-primary"><?php echo $data['serviceHistory'][0]->service_type ?></p>
                     </div>
                     <div class="info-item mb-3 pb-3 border-bottom">
-                        <p class="text-secondary text-sm mb-1">Service Hours</p>
-                        <p class="text-lg font-semibold">Mon - Sat, 8AM - 6PM</p>
+                        <p class="text-secondary text-sm mb-1">Service Description</p>
+                        <p class="text-lg font-semibold"><?php echo $data['serviceHistory'][0]->service_description ?></p>
                     </div>
                     <div class="info-item">
-                        <p class="text-secondary text-sm mb-1">Support Contact</p>
+                        <p class="text-secondary text-sm mb-1">Status</p>
                         <p class="text-lg font-semibold">
-                            <i class="fas fa-phone text-success mr-1"></i>
-                            076 416 4347
+                            <?php echo $data['serviceHistory'][0]->status ?>
                         </p>
+                    </div>
+                    <div class="info-item">
+                        <?php if($data['serviceHistory'][0]->status == 'Pending') { ?>
+                            <a href="<?php echo URLROOT; ?>/homeowner/service/cancel/<?php echo $data['serviceHistory'][0]->task_id ?>" class="btn btn-error rounded-lg">Cancel Request</a>
+                        <?php } ?>
                     </div>
                 </div>
             </div>
@@ -144,6 +148,7 @@ $history = $data['serviceHistory'];
                                     <th class="text-sm font-semibold text-secondary">Service ID</th>
                                     <th class="text-sm font-semibold text-secondary">RequestDate</th>
                                     <th class="text-sm font-semibold text-secondary">Service Type</th>
+                                    <th class="text-sm font-semibold text-secondary">Description</th>
                                     <th class="text-sm font-semibold text-secondary">Technician</th>
                             
                                     <th class="text-sm font-semibold text-secondary">Status</th>
@@ -158,6 +163,8 @@ $history = $data['serviceHistory'];
 
                                             <td><?= htmlspecialchars($record->service_type) ?></td>
 
+                                            <td><?= htmlspecialchars($record->service_description) ?></td>
+                                            
                                             <!-- <td><?= htmlspecialchars($record->agent_name ?? 'Not Assigned') ?></td> -->
 
                                             <td>

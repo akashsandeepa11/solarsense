@@ -59,9 +59,9 @@ class M_Fleet
                 error_log($debug);
                 throw new Exception('Installer company not found for company_id: ' . var_export($companyId, true));
             }
-
+           
             // 2. Insert into `homeowner` table
-            $sqlHomeowner = 'INSERT INTO homeowner (user_id, company_id, address, contact, register_date, nic, district, ceb_account) VALUES (:user_id, :company_id, :address, :contact, :register_date, :nic, :district, :ceb_account)';
+            $sqlHomeowner = 'INSERT INTO homeowner (user_id, company_id, address, contact, register_date, nic, district, ceb_account, systemtype) VALUES (:user_id, :company_id, :address, :contact, :register_date, :nic, :district, :ceb_account, :systemtype)';
             // Log the SQL and the values we'll bind to help diagnose missing field issues
             error_log('M_Fleet::add_customer homeowner SQL: ' . $sqlHomeowner);
             $binds = [
@@ -72,10 +72,11 @@ class M_Fleet
                 ':register_date' => date('Y-m-d'),
                 ':nic' => $customerData['nic'],
                 ':district' => $customerData['district'],
+                ':systemtype' => $panelData['systemtype'] ?? null,
                 ':ceb_account' => $customerData['ceb_account']
             ];
             error_log('M_Fleet::add_customer homeowner binds: ' . var_export($binds, true));
-
+            
             $this->db->query($sqlHomeowner);
             foreach ($binds as $param => $val) {
                 $this->db->bind($param, $val);

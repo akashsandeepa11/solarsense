@@ -259,11 +259,10 @@ class HomeOwner extends Controller
     //             'service_description' => $data['service_description']
     //         ];
 
-  public function service(): void
+  public function service($action='', $task_id=''): void
 {
     $serviceTypes = $this->serviceModel->get_service_types();
     $history = $this->serviceModel->get_service_history();
-
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
@@ -301,8 +300,6 @@ class HomeOwner extends Controller
 
         if ($this->serviceModel->add_service_request($modelData)) {
 
-            // --- Service request notification (same pattern as SMS health alerts) ---
-            // Get the homeowner's company, then notify all operation managers in it.
             $userId    = (int) $_SESSION['user_id'];
             $companyId = $this->inventoryModel->getCompanyIdForHomeowner($userId);
 
@@ -322,8 +319,7 @@ class HomeOwner extends Controller
                     );
                 }
             }
-            // -----------------------------------------------------------------------
-
+           
             setToast('Request submitted successfully!', 'success');
             redirect('homeowner/service');
         } else {
@@ -343,6 +339,17 @@ class HomeOwner extends Controller
                 'service_description_err' => '',
                 'notifications' => $this->getNotifications(),
             ];
+
+            if($action == 'cancel') {
+                try {
+                    $this->serviceModel->cancel_service_request($task_id);
+                    setToast('Request cancelled successfully!', 'success');
+                    redirect('homeowner/service');
+                } catch (Exception $e) {
+                    setToast('Failed to cancel request', 'error');
+                    redirect('homeowner/service');
+                }
+            }
         
             $this->view('pages/homeowner/service', $data, layout: 'dashboard');
         }

@@ -41,6 +41,17 @@ class M_Service
         return $this->db->execute();
     }
 
+    public function cancel_service_request($task_id)
+    {
+        $this->db->query("
+            DELETE FROM service_req
+            WHERE task_id = :task_id
+        ");
+
+        $this->db->bind(':task_id', $task_id);
+
+        return $this->db->execute();
+    }
 
     public function get_service_history()
     {
@@ -50,6 +61,7 @@ class M_Service
                 sr.request_date,
                 sr.status,
                 st.type_name AS service_type,
+                sr.service_description,
                 u.full_name AS agent_name
             FROM service_req sr
             LEFT JOIN service_type st ON sr.service_type_id = st.service_type_id

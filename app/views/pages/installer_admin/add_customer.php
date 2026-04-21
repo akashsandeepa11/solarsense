@@ -137,6 +137,30 @@
                             require APPROOT . '/views/inc/components/select_field.php';
                             ?>
                         </div>
+
+                        <div class="col-md-6 form-group">
+                            <?php 
+                            $systemtypeOptions = [
+                                'hybrid' => 'hybrid',
+                                'offgrid' => 'offgrid',
+                                'on-grid' => 'on-grid',
+                               
+                            ];
+                            $selectConfig = [
+                                'id' => 'systemtype',
+                                'name' => 'systemtype',
+                                'label' => 'System Type',
+                                'options' => $systemtypeOptions,
+                                'value' => $data['systemtype'] ?? '',
+                                'icon' => 'fas fa-solar-panel',
+                                'required' => true,
+                                'error' => $data['systemtype_err'] ?? '',
+                                'placeholder' => 'Select system type'
+                            ];
+                            require APPROOT . '/views/inc/components/select_field.php';
+                            ?>
+                        </div>
+
                         <div class="col-md-6 form-group">
                             <?php $inputConfig = ['id' => 'installationDate', 'name' => 'installationDate', 'label' => 'Installation Date', 'type' => 'date', 'icon' => 'fas fa-calendar-alt', 'value' => $data['installationDate'] ?? '', 'error' => $data['installationDate_err'] ?? '', 'required' => true]; require APPROOT . '/views/inc/components/input_field.php'; ?>
                         </div>

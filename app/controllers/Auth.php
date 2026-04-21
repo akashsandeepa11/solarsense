@@ -491,3 +491,6 @@ class Auth extends Controller
 }
 
 ?>
+
+
+in team view in installer admin enable a feature to validate pending task before deleting them. if team member has even 1 task show error message when trying to delete

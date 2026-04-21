@@ -130,6 +130,7 @@
         'headers' => [
             ['key' => 'name', 'label' => 'Agent'],
             ['key' => 'email', 'label' => 'Contact'],
+            ['key' => 'userexperience', 'label' => 'User Experience'],
             ['key' => 'assigned', 'label' => 'Assigned Tasks'],
             ['key' => 'completed', 'label' => 'Completed'],
             ['key' => 'pending', 'label' => 'Pending'],
