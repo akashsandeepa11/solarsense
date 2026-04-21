@@ -357,7 +357,55 @@ class M_Team
             ");
 
             $this->db->bind(':company_id', $companyId);
-            return $this->db->resultSet() ?: [];
+
+            $formattedResults = [];
+            foreach ($results as $row) {
+                // Calculate performance % same as homeowner dashboard:
+                // actual generation (export) vs expected generation from latest SMS
+                $latestExport   = (float) ($row->latest_export ?? 0);
+                $latestExpected = (float) ($row->latest_expected ?? 0);
+
+                $performancePct = ($latestExpected > 0)
+                    ? min(100, round(($latestExport / $latestExpected) * 100))
+                    : 0;
+
+                // Classify against threshold constants from constants.php
+                if ($performancePct >= HEALTH_EXCELLENT_THRESHOLD) {
+                    $healthStatus = HEALTH_STATUS_EXCELLENT;
+                } elseif ($performancePct >= HEALTH_GOOD_THRESHOLD) {
+                    $healthStatus = HEALTH_STATUS_GOOD;
+                } elseif ($performancePct >= HEALTH_WARNING_THRESHOLD) {
+                    $healthStatus = HEALTH_STATUS_WARNING;
+                } else {
+                    $healthStatus = HEALTH_STATUS_CRITICAL;
+                }
+
+                // if experince is more than 5 display good, else display bad
+                $experience = (int) ($row->experience_years ?? 0);
+                
+
+                if($experience >= 5 )
+                {
+                    $status = 'good';
+                }
+                else
+                {
+                    $status = 'bad'; 
+                }
+
+                $formattedResults[] = [
+                    'id' => $row->user_id,
+                    'system_id' => $row->system_id,
+                    'name' => $row->full_name,
+                    'size' => $row->capacity,
+                    'health' => $healthStatus,
+                    'performance' => $performancePct,
+                    'status' => $status,
+                    'last_upload' => $row->last_reading ?? 'No readings yet',
+                    'avatar' => getAvatarUrl($row->full_name)
+                ];
+            }
+            return $formattedResults;
         } catch (Exception $e) {
             error_log('Get service agents by company failed: ' . $e->getMessage());
             return [];
