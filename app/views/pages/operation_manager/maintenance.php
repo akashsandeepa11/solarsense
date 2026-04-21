@@ -436,7 +436,7 @@ function getMaintenanceStatusClass($status)
         if (!table) return;
         
         const tbody = table.querySelector('tbody');
-        const rows = Array.from(tbody.querySelectorAll('tr:not(.no-data-row)')); // Ignored empty row if exists
+        const rows = Array.from(tbody.querySelectorAll('tr:not(. )')); 
 
         rows.sort((a, b) => {
             // Date is in the 5th column (index 4)
